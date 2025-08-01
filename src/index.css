@@ -2,41 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* Rua Iluminada Design System
+Inspirado na magia das ruas iluminadas, com tons noturnos sofisticados
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Rua Iluminada - Light theme (background noturno sofisticado) */
+    --background: 222 15% 8%;
+    --foreground: 50 20% 95%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 225 15% 12%;
+    --card-foreground: 50 20% 95%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 225 15% 12%;
+    --popover-foreground: 50 20% 95%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Golden illumination - cor primária dourada das luzes */
+    --primary: 45 85% 65%;
+    --primary-foreground: 222 15% 8%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Soft purple glow - secundária roxa suave */
+    --secondary: 280 40% 25%;
+    --secondary-foreground: 50 20% 95%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 225 10% 18%;
+    --muted-foreground: 220 8% 60%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Electric blue accent - azul elétrico para destaques */
+    --accent: 220 90% 65%;
+    --accent-foreground: 222 15% 8%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 50 20% 95%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 225 15% 20%;
+    --input: 225 15% 18%;
+    --ring: 45 85% 65%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
+
+    /* Gradientes mágicos */
+    --gradient-primary: linear-gradient(135deg, hsl(45 85% 65%), hsl(55 80% 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(280 40% 25%), hsl(260 45% 35%));
+    --gradient-accent: linear-gradient(135deg, hsl(220 90% 65%), hsl(240 85% 70%));
+    --gradient-magic: linear-gradient(135deg, hsl(45 85% 65%) 0%, hsl(280 40% 25%) 50%, hsl(220 90% 65%) 100%);
+    
+    /* Sombras luminosas */
+    --shadow-glow: 0 0 30px hsl(45 85% 65% / 0.3);
+    --shadow-magic: 0 10px 40px hsl(280 40% 25% / 0.4);
+    --shadow-soft: 0 4px 20px hsl(225 15% 8% / 0.6);
+
+    /* Animações */
+    --transition-magic: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-glow: all 0.3s ease-out;
 
     --sidebar-background: 0 0% 98%;
 

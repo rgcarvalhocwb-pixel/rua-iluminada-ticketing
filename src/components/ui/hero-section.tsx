@@ -1,0 +1,82 @@
+import { Button } from "@/components/ui/button";
+import { CalendarDays, Clock, MapPin, Sparkles } from "lucide-react";
+import heroImage from "@/assets/hero-rua-iluminada.jpg";
+
+export const HeroSection = () => {
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${heroImage})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/80" />
+      </div>
+      
+      {/* Floating lights animation */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="animate-pulse absolute top-1/4 left-1/4 w-2 h-2 bg-primary rounded-full shadow-glow" />
+        <div className="animate-pulse absolute top-1/3 right-1/3 w-1 h-1 bg-accent rounded-full shadow-glow opacity-60" style={{ animationDelay: '1s' }} />
+        <div className="animate-pulse absolute bottom-1/3 left-1/3 w-1.5 h-1.5 bg-secondary rounded-full shadow-glow opacity-80" style={{ animationDelay: '2s' }} />
+      </div>
+
+      {/* Content */}
+      <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <Sparkles className="w-6 h-6 text-primary animate-pulse" />
+          <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+            Evento Oficial
+          </span>
+          <Sparkles className="w-6 h-6 text-primary animate-pulse" />
+        </div>
+        
+        <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-magic bg-clip-text text-transparent animate-in slide-in-from-bottom-8 duration-1000">
+          Rua Iluminada
+        </h1>
+        
+        <p className="text-xl md:text-2xl text-muted-foreground mb-8 animate-in slide-in-from-bottom-8 duration-1000 delay-200">
+          50 dias de magia, música e luzes encantadoras
+        </p>
+        
+        {/* Event Info Cards */}
+        <div className="grid md:grid-cols-3 gap-4 mb-8 animate-in slide-in-from-bottom-8 duration-1000 delay-400">
+          <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-4 shadow-soft">
+            <CalendarDays className="w-6 h-6 text-primary mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Período</p>
+            <p className="font-semibold">50 Dias Consecutivos</p>
+          </div>
+          
+          <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-4 shadow-soft">
+            <Clock className="w-6 h-6 text-accent mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Horários</p>
+            <p className="font-semibold">19h às 23h30</p>
+          </div>
+          
+          <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-4 shadow-soft">
+            <MapPin className="w-6 h-6 text-secondary mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Shows</p>
+            <p className="font-semibold">6 Sessões Diárias</p>
+          </div>
+        </div>
+        
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center animate-in slide-in-from-bottom-8 duration-1000 delay-600">
+          <Button 
+            size="lg" 
+            className="bg-gradient-primary hover:shadow-glow transition-all duration-300 transform hover:scale-105 px-8 py-3 text-lg font-semibold"
+          >
+            Comprar Ingressos
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="lg"
+            className="border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground transition-all duration-300 px-8 py-3 text-lg"
+          >
+            Ver Programação
+          </Button>
+        </div>
+      </div>
+    </section>
+  );
+};
