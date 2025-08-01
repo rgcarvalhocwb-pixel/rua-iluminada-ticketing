@@ -67,11 +67,12 @@ export default {
 				'gradient-primary': 'var(--gradient-primary)',
 				'gradient-secondary': 'var(--gradient-secondary)',
 				'gradient-accent': 'var(--gradient-accent)',
-				'gradient-magic': 'var(--gradient-magic)'
+				'gradient-christmas': 'var(--gradient-christmas)'
 			},
 			boxShadow: {
 				'glow': 'var(--shadow-glow)',
-				'magic': 'var(--shadow-magic)',
+				'red-glow': 'var(--shadow-red-glow)',
+				'green-glow': 'var(--shadow-green-glow)',
 				'soft': 'var(--shadow-soft)'
 			},
 			borderRadius: {

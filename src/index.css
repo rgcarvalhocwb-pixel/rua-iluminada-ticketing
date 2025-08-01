@@ -9,50 +9,51 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Rua Iluminada - Light theme (background noturno sofisticado) */
-    --background: 222 15% 8%;
-    --foreground: 50 20% 95%;
+    /* Rua Iluminada - Identidade Visual Oficial */
+    --background: 0 5% 5%;
+    --foreground: 47 100% 95%;
 
-    --card: 225 15% 12%;
-    --card-foreground: 50 20% 95%;
+    --card: 0 8% 8%;
+    --card-foreground: 47 100% 95%;
 
-    --popover: 225 15% 12%;
-    --popover-foreground: 50 20% 95%;
+    --popover: 0 8% 8%;
+    --popover-foreground: 47 100% 95%;
 
-    /* Golden illumination - cor primária dourada das luzes */
-    --primary: 45 85% 65%;
-    --primary-foreground: 222 15% 8%;
+    /* Dourado oficial - cor primária das luzes natalinas */
+    --primary: 47 100% 70%;
+    --primary-foreground: 0 5% 5%;
 
-    /* Soft purple glow - secundária roxa suave */
-    --secondary: 280 40% 25%;
-    --secondary-foreground: 50 20% 95%;
+    /* Vermelho natalino - cor secundária das decorações */
+    --secondary: 355 85% 50%;
+    --secondary-foreground: 47 100% 95%;
 
-    --muted: 225 10% 18%;
-    --muted-foreground: 220 8% 60%;
+    --muted: 0 5% 15%;
+    --muted-foreground: 47 20% 65%;
 
-    /* Electric blue accent - azul elétrico para destaques */
-    --accent: 220 90% 65%;
-    --accent-foreground: 222 15% 8%;
+    /* Verde natalino - accent das árvores e guirlandas */
+    --accent: 142 50% 45%;
+    --accent-foreground: 47 100% 95%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 50 20% 95%;
+    --destructive-foreground: 47 100% 95%;
 
-    --border: 225 15% 20%;
-    --input: 225 15% 18%;
-    --ring: 45 85% 65%;
+    --border: 0 10% 18%;
+    --input: 0 5% 15%;
+    --ring: 47 100% 70%;
 
     --radius: 0.75rem;
 
-    /* Gradientes mágicos */
-    --gradient-primary: linear-gradient(135deg, hsl(45 85% 65%), hsl(55 80% 70%));
-    --gradient-secondary: linear-gradient(135deg, hsl(280 40% 25%), hsl(260 45% 35%));
-    --gradient-accent: linear-gradient(135deg, hsl(220 90% 65%), hsl(240 85% 70%));
-    --gradient-magic: linear-gradient(135deg, hsl(45 85% 65%) 0%, hsl(280 40% 25%) 50%, hsl(220 90% 65%) 100%);
+    /* Gradientes mágicos oficiais */
+    --gradient-primary: linear-gradient(135deg, hsl(47 100% 70%), hsl(35 95% 65%));
+    --gradient-secondary: linear-gradient(135deg, hsl(355 85% 50%), hsl(345 80% 55%));
+    --gradient-accent: linear-gradient(135deg, hsl(142 50% 45%), hsl(152 55% 50%));
+    --gradient-christmas: linear-gradient(135deg, hsl(47 100% 70%) 0%, hsl(355 85% 50%) 50%, hsl(142 50% 45%) 100%);
     
-    /* Sombras luminosas */
-    --shadow-glow: 0 0 30px hsl(45 85% 65% / 0.3);
-    --shadow-magic: 0 10px 40px hsl(280 40% 25% / 0.4);
-    --shadow-soft: 0 4px 20px hsl(225 15% 8% / 0.6);
+    /* Sombras luminosas natalinas */
+    --shadow-glow: 0 0 40px hsl(47 100% 70% / 0.4);
+    --shadow-red-glow: 0 0 30px hsl(355 85% 50% / 0.3);
+    --shadow-green-glow: 0 0 25px hsl(142 50% 45% / 0.3);
+    --shadow-soft: 0 8px 32px hsl(0 5% 5% / 0.8);
 
     /* Animações */
     --transition-magic: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);

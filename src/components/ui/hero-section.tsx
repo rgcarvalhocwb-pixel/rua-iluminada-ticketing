@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, MapPin, Sparkles } from "lucide-react";
 import heroImage from "@/assets/hero-rua-iluminada.jpg";
+import logoRuaIluminada from "@/assets/logo-rua-iluminada.webp";
 
 export const HeroSection = () => {
   return (
@@ -22,20 +23,26 @@ export const HeroSection = () => {
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+        {/* Logo Oficial */}
+        <div className="mb-8 animate-in slide-in-from-top-8 duration-1000">
+          <img 
+            src={logoRuaIluminada} 
+            alt="Rua Iluminada - Família Moletta" 
+            className="mx-auto h-32 md:h-40 w-auto drop-shadow-2xl"
+          />
+        </div>
+        
         <div className="flex items-center justify-center gap-2 mb-6">
           <Sparkles className="w-6 h-6 text-primary animate-pulse" />
           <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-            Evento Oficial
+            Família Moletta 2024
           </span>
           <Sparkles className="w-6 h-6 text-primary animate-pulse" />
         </div>
         
-        <h1 className="text-6xl md:text-8xl font-bold mb-6 bg-gradient-magic bg-clip-text text-transparent animate-in slide-in-from-bottom-8 duration-1000">
-          Rua Iluminada
-        </h1>
-        
         <p className="text-xl md:text-2xl text-muted-foreground mb-8 animate-in slide-in-from-bottom-8 duration-1000 delay-200">
-          50 dias de magia, música e luzes encantadoras
+          14 de Novembro a 31 de Dezembro<br />
+          <span className="text-primary font-semibold">48 dias de espetáculo natalino</span>
         </p>
         
         {/* Event Info Cards */}
@@ -43,7 +50,7 @@ export const HeroSection = () => {
           <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-4 shadow-soft">
             <CalendarDays className="w-6 h-6 text-primary mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Período</p>
-            <p className="font-semibold">50 Dias Consecutivos</p>
+            <p className="font-semibold">48 Dias Consecutivos</p>
           </div>
           
           <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-4 shadow-soft">

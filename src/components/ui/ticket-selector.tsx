@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, Clock, Users, Zap } from "lucide-react";
 import { useState } from "react";
-import { format } from "date-fns";
+import { format, addDays, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const timeSlots = [
@@ -35,12 +35,20 @@ const ticketTypes = [
 ];
 
 export const TicketSelector = () => {
+  // Datas do evento: 14 de novembro a 31 de dezembro de 2024
+  const eventStartDate = new Date(2024, 10, 14); // November is month 10
+  const eventEndDate = new Date(2024, 11, 31); // December is month 11
+  
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<string>("");
   const [ticketQuantities, setTicketQuantities] = useState<Record<string, number>>({
     inteira: 0,
     meia: 0,
   });
+
+  const isDateInEventRange = (date: Date) => {
+    return isWithinInterval(date, { start: eventStartDate, end: eventEndDate });
+  };
 
   const getAvailabilityStatus = (available: number, total: number) => {
     const percentage = (available / total) * 100;
@@ -90,7 +98,7 @@ export const TicketSelector = () => {
                   Escolha a Data
                 </CardTitle>
                 <CardDescription>
-                  Selecione um dos 50 dias do evento
+                  14 de novembro a 31 de dezembro de 2024
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -113,6 +121,9 @@ export const TicketSelector = () => {
                       mode="single"
                       selected={selectedDate}
                       onSelect={setSelectedDate}
+                      disabled={(date) => !isDateInEventRange(date)}
+                      fromDate={eventStartDate}
+                      toDate={eventEndDate}
                       initialFocus
                     />
                   </PopoverContent>
