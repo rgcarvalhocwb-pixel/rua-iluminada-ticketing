@@ -14,13 +14,381 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      event_sessions: {
+        Row: {
+          available_tickets: number
+          capacity: number
+          created_at: string
+          event_id: string
+          id: string
+          session_date: string
+          show_time_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          available_tickets: number
+          capacity: number
+          created_at?: string
+          event_id: string
+          id?: string
+          session_date: string
+          show_time_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          available_tickets?: number
+          capacity?: number
+          created_at?: string
+          event_id?: string
+          id?: string
+          session_date?: string
+          show_time_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_sessions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_sessions_show_time_id_fkey"
+            columns: ["show_time_id"]
+            isOneToOne: false
+            referencedRelation: "show_times"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          description: string | null
+          end_date: string
+          id: string
+          name: string
+          start_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          end_date: string
+          id?: string
+          name: string
+          start_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          id?: string
+          name?: string
+          start_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          quantity: number
+          subtotal: number
+          ticket_type_id: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          quantity: number
+          subtotal: number
+          ticket_type_id: string
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          quantity?: number
+          subtotal?: number
+          ticket_type_id?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_ticket_type_id_fkey"
+            columns: ["ticket_type_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_cpf: string
+          customer_email: string
+          customer_name: string
+          id: string
+          payment_method: string | null
+          payment_reference: string | null
+          payment_status: string | null
+          session_id: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_cpf: string
+          customer_email: string
+          customer_name: string
+          id?: string
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          session_id: string
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_cpf?: string
+          customer_email?: string
+          customer_name?: string
+          id?: string
+          payment_method?: string | null
+          payment_reference?: string | null
+          payment_status?: string | null
+          session_id?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "event_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      show_times: {
+        Row: {
+          capacity: number
+          created_at: string
+          event_id: string
+          id: string
+          time_slot: string
+        }
+        Insert: {
+          capacity?: number
+          created_at?: string
+          event_id: string
+          id?: string
+          time_slot: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          event_id?: string
+          id?: string
+          time_slot?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "show_times_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_id: string
+          id: string
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_id: string
+          id?: string
+          name: string
+          price: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_id?: string
+          id?: string
+          name?: string
+          price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_types_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          created_at: string
+          id: string
+          order_item_id: string
+          qr_code: string
+          status: string | null
+          ticket_number: string
+          updated_at: string
+          used_at: string | null
+          validated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_item_id: string
+          qr_code: string
+          status?: string | null
+          ticket_number: string
+          updated_at?: string
+          used_at?: string | null
+          validated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_item_id?: string
+          qr_code?: string
+          status?: string | null
+          ticket_number?: string
+          updated_at?: string
+          used_at?: string | null
+          validated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      turnstiles: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          location: string | null
+          name: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          location?: string | null
+          name: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          location?: string | null
+          name?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      validations: {
+        Row: {
+          id: string
+          notes: string | null
+          ticket_id: string
+          turnstile_id: string | null
+          validated_at: string
+          validation_method: string
+          validator_user: string | null
+        }
+        Insert: {
+          id?: string
+          notes?: string | null
+          ticket_id: string
+          turnstile_id?: string | null
+          validated_at?: string
+          validation_method: string
+          validator_user?: string | null
+        }
+        Update: {
+          id?: string
+          notes?: string | null
+          ticket_id?: string
+          turnstile_id?: string | null
+          validated_at?: string
+          validation_method?: string
+          validator_user?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "validations_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "validations_turnstile_id_fkey"
+            columns: ["turnstile_id"]
+            isOneToOne: false
+            referencedRelation: "turnstiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_qr_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_ticket_number: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
