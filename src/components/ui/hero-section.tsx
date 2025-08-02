@@ -35,13 +35,13 @@ export const HeroSection = () => {
         <div className="flex items-center justify-center gap-2 mb-6">
           <Sparkles className="w-6 h-6 text-primary animate-pulse" />
           <span className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-            Família Moletta 2024
+            Família Moletta 2025
           </span>
           <Sparkles className="w-6 h-6 text-primary animate-pulse" />
         </div>
         
         <p className="text-xl md:text-2xl text-muted-foreground mb-8 animate-in slide-in-from-bottom-8 duration-1000 delay-200">
-          14 de Novembro a 31 de Dezembro<br />
+          14 de Novembro a 31 de Dezembro de 2025<br />
           <span className="text-primary font-semibold">48 dias de espetáculo natalino</span>
         </p>
         
@@ -71,6 +71,9 @@ export const HeroSection = () => {
           <Button 
             size="lg" 
             className="bg-gradient-primary hover:shadow-glow transition-all duration-300 transform hover:scale-105 px-8 py-3 text-lg font-semibold"
+            onClick={() => {
+              document.getElementById('ticket-selector')?.scrollIntoView({ behavior: 'smooth' });
+            }}
           >
             Comprar Ingressos
           </Button>
@@ -79,6 +82,9 @@ export const HeroSection = () => {
             variant="outline" 
             size="lg"
             className="border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground transition-all duration-300 px-8 py-3 text-lg"
+            onClick={() => {
+              window.open('https://ruailuminada.com.br/#programacao', '_blank');
+            }}
           >
             Ver Programação
           </Button>

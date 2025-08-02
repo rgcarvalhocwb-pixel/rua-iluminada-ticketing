@@ -21,23 +21,33 @@ const ticketTypes = [
   { 
     id: "inteira", 
     name: "Inteira", 
-    price: 85.00, 
+    price: 30.00, 
     description: "Ingresso padrão para o evento",
     icon: Users 
   },
   { 
     id: "meia", 
     name: "Meia-entrada", 
-    price: 42.50, 
+    price: 15.00, 
     description: "Para estudantes, idosos e pessoas com deficiência",
     icon: Zap 
   },
 ];
 
-export const TicketSelector = () => {
-  // Datas do evento: 14 de novembro a 31 de dezembro de 2024
-  const eventStartDate = new Date(2024, 10, 14); // November is month 10
-  const eventEndDate = new Date(2024, 11, 31); // December is month 11
+interface TicketSelectorProps {
+  onProceedToCheckout?: (ticketData: {
+    selectedDate: Date;
+    selectedTime: string;
+    ticketQuantities: Record<string, number>;
+    totalPrice: number;
+    totalTickets: number;
+  }) => void;
+}
+
+export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => {
+  // Datas do evento: 14 de novembro a 31 de dezembro de 2025
+  const eventStartDate = new Date(2025, 10, 14); // November is month 10
+  const eventEndDate = new Date(2025, 11, 31); // December is month 11
   
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<string>("");
@@ -76,7 +86,7 @@ export const TicketSelector = () => {
   };
 
   return (
-    <section className="py-16 px-4">
+    <section id="ticket-selector" className="py-16 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
@@ -98,7 +108,7 @@ export const TicketSelector = () => {
                   Escolha a Data
                 </CardTitle>
                 <CardDescription>
-                  14 de novembro a 31 de dezembro de 2024
+                  14 de novembro a 31 de dezembro de 2025
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -125,6 +135,7 @@ export const TicketSelector = () => {
                       fromDate={eventStartDate}
                       toDate={eventEndDate}
                       initialFocus
+                      className="p-3 pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
@@ -268,6 +279,19 @@ export const TicketSelector = () => {
                     <Button 
                       className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300 text-lg py-6"
                       disabled={!selectedDate || !selectedTime}
+                      onClick={() => {
+                        if (selectedDate && selectedTime && getTotalTickets() > 0) {
+                          const ticketData = {
+                            selectedDate,
+                            selectedTime,
+                            ticketQuantities,
+                            totalPrice: getTotalPrice(),
+                            totalTickets: getTotalTickets()
+                          };
+                          // Esta função será passada via props
+                          onProceedToCheckout?.(ticketData);
+                        }
+                      }}
                     >
                       Continuar para Pagamento
                     </Button>
