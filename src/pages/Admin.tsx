@@ -1,0 +1,167 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+import { User } from '@supabase/supabase-js';
+import { EventsManager } from '@/components/admin/EventsManager';
+import { OrdersView } from '@/components/admin/OrdersView';
+import { CashRegister } from '@/components/admin/CashRegister';
+import { PaymentSettings } from '@/components/admin/PaymentSettings';
+import { LogOut, Calendar, ShoppingCart, CreditCard, DollarSign } from 'lucide-react';
+
+const Admin = () => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session?.user) {
+        navigate('/auth');
+        return;
+      }
+
+      setUser(session.user);
+      setLoading(false);
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session?.user) {
+        navigate('/auth');
+      } else {
+        setUser(session.user);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso.",
+    });
+    navigate('/auth');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Carregando painel administrativo...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold">Painel Administrativo</h1>
+            <p className="text-sm text-muted-foreground">
+              Bem-vindo, {user?.email}
+            </p>
+          </div>
+          <Button onClick={handleSignOut} variant="outline" size="sm">
+            <LogOut className="w-4 h-4 mr-2" />
+            Sair
+          </Button>
+        </div>
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        <Tabs defaultValue="events" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="events" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Eventos
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="flex items-center gap-2">
+              <ShoppingCart className="w-4 h-4" />
+              Pedidos
+            </TabsTrigger>
+            <TabsTrigger value="cash-register" className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
+              Caixa
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="flex items-center gap-2">
+              <CreditCard className="w-4 h-4" />
+              Pagamentos
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="events">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gerenciar Eventos</CardTitle>
+                <CardDescription>
+                  Crie e gerencie eventos, configure tipos de ingressos e preços
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <EventsManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <Card>
+              <CardHeader>
+                <CardTitle>Visualizar Pedidos</CardTitle>
+                <CardDescription>
+                  Acompanhe todas as vendas online e presenciais
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <OrdersView />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="cash-register">
+            <Card>
+              <CardHeader>
+                <CardTitle>Fechamento de Caixa</CardTitle>
+                <CardDescription>
+                  Registre vendas presenciais e faça a conciliação financeira
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <CashRegister />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurações de Pagamento</CardTitle>
+                <CardDescription>
+                  Configure as credenciais do PagSeguro para processar pagamentos online
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PaymentSettings />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
+    </div>
+  );
+};
+
+export default Admin;
