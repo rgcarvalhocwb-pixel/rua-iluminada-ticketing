@@ -3,58 +3,58 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Calculator, DollarSign, Receipt } from 'lucide-react';
+import { Plus, Trash2, Calculator, DollarSign, Receipt, CreditCard, Banknote } from 'lucide-react';
 
 interface Event {
   id: string;
   name: string;
 }
 
-interface TicketType {
+interface CashEntry {
   id: string;
-  name: string;
-  price: number;
-}
-
-interface Expense {
-  id: string;
+  type: 'income' | 'expense';
   description: string;
   amount: number;
+  paymentMethod: 'cash' | 'credit' | 'debit' | 'pix';
+  ticketQuantity?: {
+    inteira: number;
+    meia: number;
+  };
 }
 
-interface ManualSale {
-  ticketTypeId: string;
-  quantity: number;
-  unitPrice: number;
+interface ConciliationData {
+  turnstileInteira: number;
+  turnstileMeia: number;
 }
 
 export const CashRegister = () => {
   const [events, setEvents] = useState<Event[]>([]);
-  const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   
-  // Cash register state
+  // Cash book state
   const [initialCash, setInitialCash] = useState<string>('');
-  const [manualSales, setManualSales] = useState<ManualSale[]>([]);
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [entries, setEntries] = useState<CashEntry[]>([]);
   const [finalCash, setFinalCash] = useState<string>('');
   
-  // Form states
-  const [saleForm, setSaleForm] = useState({
-    ticketTypeId: '',
-    quantity: ''
+  // Conciliation from turnstile
+  const [conciliation, setConciliation] = useState<ConciliationData>({
+    turnstileInteira: 0,
+    turnstileMeia: 0
   });
   
-  const [expenseForm, setExpenseForm] = useState({
+  // Form states
+  const [entryForm, setEntryForm] = useState({
+    type: 'income' as 'income' | 'expense',
     description: '',
-    amount: ''
+    amount: '',
+    paymentMethod: 'cash' as 'cash' | 'credit' | 'debit' | 'pix',
+    inteiraQty: '',
+    meiaQty: ''
   });
   
   const [isClosingRegister, setIsClosingRegister] = useState(false);
@@ -63,12 +63,6 @@ export const CashRegister = () => {
   useEffect(() => {
     fetchEvents();
   }, []);
-
-  useEffect(() => {
-    if (selectedEventId) {
-      fetchTicketTypes();
-    }
-  }, [selectedEventId]);
 
   const fetchEvents = async () => {
     try {
@@ -88,87 +82,92 @@ export const CashRegister = () => {
     }
   };
 
-  const fetchTicketTypes = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('ticket_types')
-        .select('id, name, price')
-        .eq('event_id', selectedEventId)
-        .order('name');
-
-      if (error) throw error;
-      setTicketTypes(data || []);
-    } catch (error: any) {
+  const addEntry = () => {
+    if (!entryForm.description || !entryForm.amount) {
       toast({
         title: "Erro",
-        description: "Erro ao carregar tipos de ingresso: " + error.message,
-        variant: "destructive"
-      });
-    }
-  };
-
-  const addManualSale = () => {
-    if (!saleForm.ticketTypeId || !saleForm.quantity) {
-      toast({
-        title: "Erro",
-        description: "Selecione o tipo de ingresso e quantidade",
+        description: "Preencha descrição e valor",
         variant: "destructive"
       });
       return;
     }
 
-    const ticketType = ticketTypes.find(t => t.id === saleForm.ticketTypeId);
-    if (!ticketType) return;
-
-    const newSale: ManualSale = {
-      ticketTypeId: saleForm.ticketTypeId,
-      quantity: parseInt(saleForm.quantity),
-      unitPrice: ticketType.price
-    };
-
-    setManualSales([...manualSales, newSale]);
-    setSaleForm({ ticketTypeId: '', quantity: '' });
-  };
-
-  const removeManualSale = (index: number) => {
-    setManualSales(manualSales.filter((_, i) => i !== index));
-  };
-
-  const addExpense = () => {
-    if (!expenseForm.description || !expenseForm.amount) {
-      toast({
-        title: "Erro",
-        description: "Preencha descrição e valor da despesa",
-        variant: "destructive"
-      });
-      return;
+    // Para vendas de ingressos, validar quantidades
+    if (entryForm.type === 'income' && entryForm.description.toLowerCase().includes('ingresso')) {
+      if (!entryForm.inteiraQty && !entryForm.meiaQty) {
+        toast({
+          title: "Erro",
+          description: "Para venda de ingressos, informe a quantidade de inteira e/ou meia",
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
-    const newExpense: Expense = {
+    const newEntry: CashEntry = {
       id: Date.now().toString(),
-      description: expenseForm.description,
-      amount: parseFloat(expenseForm.amount)
+      type: entryForm.type,
+      description: entryForm.description,
+      amount: parseFloat(entryForm.amount),
+      paymentMethod: entryForm.paymentMethod,
+      ticketQuantity: (entryForm.inteiraQty || entryForm.meiaQty) ? {
+        inteira: parseInt(entryForm.inteiraQty) || 0,
+        meia: parseInt(entryForm.meiaQty) || 0
+      } : undefined
     };
 
-    setExpenses([...expenses, newExpense]);
-    setExpenseForm({ description: '', amount: '' });
+    setEntries([...entries, newEntry]);
+    setEntryForm({
+      type: 'income',
+      description: '',
+      amount: '',
+      paymentMethod: 'cash',
+      inteiraQty: '',
+      meiaQty: ''
+    });
   };
 
-  const removeExpense = (id: string) => {
-    setExpenses(expenses.filter(e => e.id !== id));
+  const removeEntry = (id: string) => {
+    setEntries(entries.filter(e => e.id !== id));
   };
 
   const calculateTotals = () => {
-    const salesTotal = manualSales.reduce((sum, sale) => sum + (sale.quantity * sale.unitPrice), 0);
-    const expensesTotal = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-    const expectedCash = parseFloat(initialCash || '0') + salesTotal - expensesTotal;
+    const incomeTotal = entries
+      .filter(e => e.type === 'income')
+      .reduce((sum, entry) => sum + entry.amount, 0);
+    
+    const expenseTotal = entries
+      .filter(e => e.type === 'expense')
+      .reduce((sum, entry) => sum + entry.amount, 0);
+
+    const cashIncome = entries
+      .filter(e => e.type === 'income' && e.paymentMethod === 'cash')
+      .reduce((sum, entry) => sum + entry.amount, 0);
+
+    const cashExpense = entries
+      .filter(e => e.type === 'expense' && e.paymentMethod === 'cash')
+      .reduce((sum, entry) => sum + entry.amount, 0);
+
+    const expectedCash = parseFloat(initialCash || '0') + cashIncome - cashExpense;
     const difference = parseFloat(finalCash || '0') - expectedCash;
 
+    // Calcular totais de ingressos vendidos
+    const ticketsSold = entries.reduce((acc, entry) => {
+      if (entry.ticketQuantity) {
+        acc.inteira += entry.ticketQuantity.inteira;
+        acc.meia += entry.ticketQuantity.meia;
+      }
+      return acc;
+    }, { inteira: 0, meia: 0 });
+
     return {
-      salesTotal,
-      expensesTotal,
+      incomeTotal,
+      expenseTotal,
+      cashIncome,
+      cashExpense,
       expectedCash,
-      difference
+      difference,
+      ticketsSold
     };
   };
 
@@ -185,86 +184,20 @@ export const CashRegister = () => {
     setIsClosingRegister(true);
 
     try {
-      // Get event session or create one
-      const { data: showTimes } = await supabase
-        .from('show_times')
-        .select('id')
-        .eq('event_id', selectedEventId)
-        .limit(1);
-
-      if (!showTimes || showTimes.length === 0) {
-        throw new Error('Nenhum horário encontrado para este evento');
-      }
-
-      let { data: session } = await supabase
-        .from('event_sessions')
-        .select('id')
-        .eq('event_id', selectedEventId)
-        .eq('show_time_id', showTimes[0].id)
-        .eq('session_date', selectedDate)
-        .single();
-
-      if (!session) {
-        const { data: newSession, error: sessionError } = await supabase
-          .from('event_sessions')
-          .insert({
-            event_id: selectedEventId,
-            show_time_id: showTimes[0].id,
-            session_date: selectedDate,
-            capacity: 100,
-            available_tickets: 100
-          })
-          .select('id')
-          .single();
-
-        if (sessionError) throw sessionError;
-        session = newSession;
-      }
-
-      // Create orders for manual sales
-      for (const sale of manualSales) {
-        const { data: order, error: orderError } = await supabase
-          .from('orders')
-          .insert({
-            session_id: session.id,
-            customer_name: 'Venda Presencial',
-            customer_email: 'presencial@ruailuminada.com',
-            customer_cpf: '00000000000',
-            total_amount: sale.quantity * sale.unitPrice,
-            payment_status: 'paid',
-            payment_method: 'cash'
-          })
-          .select('id')
-          .single();
-
-        if (orderError) throw orderError;
-
-        // Create order items
-        const { error: itemError } = await supabase
-          .from('order_items')
-          .insert({
-            order_id: order.id,
-            ticket_type_id: sale.ticketTypeId,
-            quantity: sale.quantity,
-            unit_price: sale.unitPrice,
-            subtotal: sale.quantity * sale.unitPrice
-          });
-
-        if (itemError) throw itemError;
-      }
-
       const totals = calculateTotals();
       
       toast({
-        title: "Caixa fechado com sucesso!",
-        description: `Diferença: ${totals.difference >= 0 ? '+' : ''}R$ ${totals.difference.toFixed(2)}`,
+        title: "Livro Caixa fechado com sucesso!",
+        description: `Diferença no dinheiro: ${totals.difference >= 0 ? '+' : ''}R$ ${totals.difference.toFixed(2)}`,
       });
 
+      // Aqui poderia salvar o fechamento no banco se necessário
+
       // Reset form
-      setManualSales([]);
-      setExpenses([]);
+      setEntries([]);
       setInitialCash('');
       setFinalCash('');
+      setConciliation({ turnstileInteira: 0, turnstileMeia: 0 });
 
     } catch (error: any) {
       toast({
@@ -332,96 +265,54 @@ export const CashRegister = () => {
         </CardContent>
       </Card>
 
-      {/* Manual Sales */}
+      {/* Livro Caixa - Lançamentos */}
       <Card>
         <CardHeader>
-          <CardTitle>Vendas Presenciais</CardTitle>
+          <CardTitle>Lançamentos no Livro Caixa</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <Label>Tipo de Ingresso</Label>
+              <Label>Tipo de Lançamento</Label>
               <Select 
-                value={saleForm.ticketTypeId} 
-                onValueChange={(value) => setSaleForm({...saleForm, ticketTypeId: value})}
+                value={entryForm.type} 
+                onValueChange={(value: 'income' | 'expense') => setEntryForm({...entryForm, type: value})}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Selecione" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ticketTypes.map((ticket) => (
-                    <SelectItem key={ticket.id} value={ticket.id}>
-                      {ticket.name} - R$ {ticket.price.toFixed(2)}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="income">Entrada</SelectItem>
+                  <SelectItem value="expense">Saída</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label>Quantidade</Label>
-              <Input
-                type="number"
-                min="1"
-                value={saleForm.quantity}
-                onChange={(e) => setSaleForm({...saleForm, quantity: e.target.value})}
-                placeholder="0"
-              />
-            </div>
-            <div className="flex items-end">
-              <Button onClick={addManualSale} className="w-full">
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar
-              </Button>
+              <Label>Forma de Pagamento</Label>
+              <Select 
+                value={entryForm.paymentMethod} 
+                onValueChange={(value: 'cash' | 'credit' | 'debit' | 'pix') => setEntryForm({...entryForm, paymentMethod: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cash">💵 Dinheiro</SelectItem>
+                  <SelectItem value="credit">💳 Cartão Crédito</SelectItem>
+                  <SelectItem value="debit">💳 Cartão Débito</SelectItem>
+                  <SelectItem value="pix">📱 PIX</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {manualSales.length > 0 && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Quantidade</TableHead>
-                  <TableHead>Preço Unit.</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {manualSales.map((sale, index) => {
-                  const ticketType = ticketTypes.find(t => t.id === sale.ticketTypeId);
-                  return (
-                    <TableRow key={index}>
-                      <TableCell>{ticketType?.name}</TableCell>
-                      <TableCell>{sale.quantity}</TableCell>
-                      <TableCell>R$ {sale.unitPrice.toFixed(2)}</TableCell>
-                      <TableCell>R$ {(sale.quantity * sale.unitPrice).toFixed(2)}</TableCell>
-                      <TableCell>
-                        <Button size="sm" variant="destructive" onClick={() => removeManualSale(index)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Expenses */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Despesas</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label>Descrição</Label>
               <Input
-                value={expenseForm.description}
-                onChange={(e) => setExpenseForm({...expenseForm, description: e.target.value})}
-                placeholder="Ex: Troco, Combustível..."
+                value={entryForm.description}
+                onChange={(e) => setEntryForm({...entryForm, description: e.target.value})}
+                placeholder="Ex: Venda de ingressos, Combustível, Troco..."
               />
             </div>
             <div>
@@ -429,35 +320,81 @@ export const CashRegister = () => {
               <Input
                 type="number"
                 step="0.01"
-                value={expenseForm.amount}
-                onChange={(e) => setExpenseForm({...expenseForm, amount: e.target.value})}
+                value={entryForm.amount}
+                onChange={(e) => setEntryForm({...entryForm, amount: e.target.value})}
                 placeholder="0.00"
               />
             </div>
-            <div className="flex items-end">
-              <Button onClick={addExpense} className="w-full">
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar
-              </Button>
-            </div>
           </div>
 
-          {expenses.length > 0 && (
+          {entryForm.type === 'income' && entryForm.description.toLowerCase().includes('ingresso') && (
+            <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded">
+              <div>
+                <Label>Quantidade Inteira</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={entryForm.inteiraQty}
+                  onChange={(e) => setEntryForm({...entryForm, inteiraQty: e.target.value})}
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <Label>Quantidade Meia</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  value={entryForm.meiaQty}
+                  onChange={(e) => setEntryForm({...entryForm, meiaQty: e.target.value})}
+                  placeholder="0"
+                />
+              </div>
+            </div>
+          )}
+
+          <Button onClick={addEntry} className="w-full">
+            <Plus className="w-4 h-4 mr-2" />
+            Adicionar Lançamento
+          </Button>
+
+          {entries.length > 0 && (
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Tipo</TableHead>
                   <TableHead>Descrição</TableHead>
+                  <TableHead>Pagamento</TableHead>
                   <TableHead>Valor</TableHead>
+                  <TableHead>Ingressos</TableHead>
                   <TableHead>Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {expenses.map((expense) => (
-                  <TableRow key={expense.id}>
-                    <TableCell>{expense.description}</TableCell>
-                    <TableCell>R$ {expense.amount.toFixed(2)}</TableCell>
+                {entries.map((entry) => (
+                  <TableRow key={entry.id}>
                     <TableCell>
-                      <Button size="sm" variant="destructive" onClick={() => removeExpense(expense.id)}>
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        entry.type === 'income' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {entry.type === 'income' ? 'Entrada' : 'Saída'}
+                      </span>
+                    </TableCell>
+                    <TableCell>{entry.description}</TableCell>
+                    <TableCell>
+                      {entry.paymentMethod === 'cash' && '💵 Dinheiro'}
+                      {entry.paymentMethod === 'credit' && '💳 Crédito'}
+                      {entry.paymentMethod === 'debit' && '💳 Débito'}
+                      {entry.paymentMethod === 'pix' && '📱 PIX'}
+                    </TableCell>
+                    <TableCell>R$ {entry.amount.toFixed(2)}</TableCell>
+                    <TableCell>
+                      {entry.ticketQuantity ? 
+                        `I: ${entry.ticketQuantity.inteira} | M: ${entry.ticketQuantity.meia}` : 
+                        '-'
+                      }
+                    </TableCell>
+                    <TableCell>
+                      <Button size="sm" variant="destructive" onClick={() => removeEntry(entry.id)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </TableCell>
@@ -469,35 +406,110 @@ export const CashRegister = () => {
         </CardContent>
       </Card>
 
-      {/* Cash Calculation */}
+      {/* Conciliação da Catraca */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Conciliação - Dados da Catraca</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label>Inteira (Catraca)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={conciliation.turnstileInteira}
+                onChange={(e) => setConciliation({...conciliation, turnstileInteira: parseInt(e.target.value) || 0})}
+                placeholder="0"
+              />
+            </div>
+            <div>
+              <Label>Meia (Catraca)</Label>
+              <Input
+                type="number"
+                min="0"
+                value={conciliation.turnstileMeia}
+                onChange={(e) => setConciliation({...conciliation, turnstileMeia: parseInt(e.target.value) || 0})}
+                placeholder="0"
+              />
+            </div>
+          </div>
+          
+          <div className="mt-4 p-4 bg-muted rounded">
+            <h4 className="font-semibold mb-2">Comparativo</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p><strong>Vendidos (Caixa):</strong></p>
+                <p>Inteira: {totals.ticketsSold.inteira}</p>
+                <p>Meia: {totals.ticketsSold.meia}</p>
+              </div>
+              <div>
+                <p><strong>Entradas (Catraca):</strong></p>
+                <p>Inteira: {conciliation.turnstileInteira}</p>
+                <p>Meia: {conciliation.turnstileMeia}</p>
+              </div>
+            </div>
+            <div className="mt-2 text-sm">
+              <p><strong>Diferenças:</strong></p>
+              <p className={`${totals.ticketsSold.inteira !== conciliation.turnstileInteira ? 'text-red-600' : 'text-green-600'}`}>
+                Inteira: {totals.ticketsSold.inteira - conciliation.turnstileInteira}
+              </p>
+              <p className={`${totals.ticketsSold.meia !== conciliation.turnstileMeia ? 'text-red-600' : 'text-green-600'}`}>
+                Meia: {totals.ticketsSold.meia - conciliation.turnstileMeia}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Resumo Financeiro e Fechamento */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calculator className="w-5 h-5" />
-            Fechamento de Caixa
+            Resumo Financeiro e Fechamento
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-6">
             <div className="space-y-2">
+              <h4 className="font-semibold">Movimentação Geral</h4>
+              <div className="flex justify-between">
+                <span>Total Entradas:</span>
+                <span className="text-green-600">+R$ {totals.incomeTotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Total Saídas:</span>
+                <span className="text-red-600">-R$ {totals.expenseTotal.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between font-bold border-t pt-2">
+                <span>Saldo:</span>
+                <span>R$ {(totals.incomeTotal - totals.expenseTotal).toFixed(2)}</span>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h4 className="font-semibold">Movimentação em Dinheiro</h4>
               <div className="flex justify-between">
                 <span>Troco Inicial:</span>
                 <span>R$ {parseFloat(initialCash || '0').toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Vendas em Dinheiro:</span>
-                <span>R$ {totals.salesTotal.toFixed(2)}</span>
+                <span>Entradas em Dinheiro:</span>
+                <span className="text-green-600">+R$ {totals.cashIncome.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Despesas:</span>
-                <span>-R$ {totals.expensesTotal.toFixed(2)}</span>
+                <span>Saídas em Dinheiro:</span>
+                <span className="text-red-600">-R$ {totals.cashExpense.toFixed(2)}</span>
               </div>
               <div className="flex justify-between font-bold border-t pt-2">
-                <span>Valor Esperado no Caixa:</span>
+                <span>Esperado no Caixa:</span>
                 <span>R$ {totals.expectedCash.toFixed(2)}</span>
               </div>
             </div>
-            
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="final-cash">Valor Contado no Caixa (R$)</Label>
               <Input
@@ -508,11 +520,15 @@ export const CashRegister = () => {
                 onChange={(e) => setFinalCash(e.target.value)}
                 placeholder="0.00"
               />
+            </div>
+            <div className="flex items-end">
               {finalCash && (
-                <div className={`mt-2 p-2 rounded text-sm ${totals.difference >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                  Diferença: {totals.difference >= 0 ? '+' : ''}R$ {totals.difference.toFixed(2)}
+                <div className={`w-full p-3 rounded text-sm ${totals.difference >= 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  <div className="font-semibold">
+                    Diferença: {totals.difference >= 0 ? '+' : ''}R$ {totals.difference.toFixed(2)}
+                  </div>
                   <div className="text-xs">
-                    {totals.difference > 0 ? '(Sobra)' : totals.difference < 0 ? '(Falta)' : '(Certo)'}
+                    {totals.difference > 0 ? '(Sobra no caixa)' : totals.difference < 0 ? '(Falta no caixa)' : '(Caixa confere)'}
                   </div>
                 </div>
               )}
@@ -526,7 +542,7 @@ export const CashRegister = () => {
             size="lg"
           >
             <Receipt className="w-4 h-4 mr-2" />
-            {isClosingRegister ? 'Fechando Caixa...' : 'Fechar Caixa'}
+            {isClosingRegister ? 'Fechando Livro Caixa...' : 'Fechar Livro Caixa'}
           </Button>
         </CardContent>
       </Card>
