@@ -13,7 +13,8 @@ const corsHeaders = {
 interface ResetPasswordRequest {
   targetUserId: string;
   userEmail: string;
-  newPassword: string;
+  newPassword?: string;
+  displayName?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -60,40 +61,52 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("Insufficient permissions");
     }
 
-    const { targetUserId, userEmail, newPassword }: ResetPasswordRequest = await req.json();
+    const { targetUserId, userEmail, newPassword, displayName }: ResetPasswordRequest = await req.json();
 
-    // Update user password using admin privileges
+    // Prepare update data
+    const updateData: any = {};
+    if (newPassword) {
+      updateData.password = newPassword;
+    }
+    if (displayName !== undefined) {
+      updateData.user_metadata = { display_name: displayName };
+    }
+
+    // Update user using admin privileges
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
       targetUserId,
-      { password: newPassword }
+      updateData
     );
 
     if (updateError) {
       throw updateError;
     }
 
-    // Send email with new password
-    const emailResponse = await resend.emails.send({
-      from: "Rua Iluminada <onboarding@resend.dev>",
-      to: [userEmail],
-      subject: "Nova senha criada",
-      html: `
-        <h1>Sua senha foi redefinida</h1>
-        <p>Uma nova senha foi criada para sua conta no sistema Rua Iluminada.</p>
-        <p><strong>Nova senha:</strong> ${newPassword}</p>
-        <p>Por favor, faça login com esta nova senha e altere-a por uma de sua preferência.</p>
-        <br>
-        <p>Atenciosamente,<br>Equipe Rua Iluminada</p>
-      `,
-    });
+    let emailResponse = null;
+    // Send email only if password was changed
+    if (newPassword) {
+      emailResponse = await resend.emails.send({
+        from: "Rua Iluminada <onboarding@resend.dev>",
+        to: [userEmail],
+        subject: "Nova senha criada",
+        html: `
+          <h1>Sua senha foi redefinida</h1>
+          <p>Uma nova senha foi criada para sua conta no sistema Rua Iluminada.</p>
+          <p><strong>Nova senha:</strong> ${newPassword}</p>
+          <p>Por favor, faça login com esta nova senha e altere-a por uma de sua preferência.</p>
+          <br>
+          <p>Atenciosamente,<br>Equipe Rua Iluminada</p>
+        `,
+      });
+    }
 
-    console.log("Password reset successfully:", emailResponse);
+    console.log("User updated successfully:", emailResponse);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: "Senha redefinida e email enviado com sucesso",
-        emailId: emailResponse.data?.id 
+        message: newPassword ? "Dados atualizados e email enviado com sucesso" : "Dados atualizados com sucesso",
+        emailId: emailResponse?.data?.id 
       }),
       {
         status: 200,

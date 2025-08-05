@@ -10,7 +10,7 @@ import { Users, Check, X, Settings } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CreateUserDialog } from './CreateUserDialog';
-import { ResetPasswordDialog } from './ResetPasswordDialog';
+import { EditUserDialog } from './EditUserDialog';
 
 interface UserPermission {
   id: string;
@@ -340,14 +340,15 @@ export const UserManagement = () => {
                              Promover
                            </Button>
                          )}
-                         {user.status === 'approved' && (
-                           <ResetPasswordDialog
-                             targetUserId={user.user_id}
-                             userEmail={user.user_id} // Usando user_id como email por enquanto
-                             onPasswordReset={fetchUsers}
-                             canResetPassword={['master', 'admin'].includes(currentUserRole)}
-                           />
-                         )}
+                          {user.status === 'approved' && (
+                            <EditUserDialog
+                              targetUserId={user.user_id}
+                              userEmail={user.user_id} // Usando user_id como email por enquanto
+                              currentDisplayName="Usuário"
+                              onUserUpdated={fetchUsers}
+                              canEditUser={['master', 'admin'].includes(currentUserRole)}
+                            />
+                          )}
                        </div>
                      </TableCell>
                   </TableRow>
