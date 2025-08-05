@@ -14,9 +14,9 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Ceará Natal de Luz Theme - Tropical Christmas */
-    --background: 45 40% 92%;     /* Warm cream background */
-    --foreground: 158 60% 15%;    /* Deep green text */
+    /* Ceará Natal de Luz Theme - Noturno como o site oficial */
+    --background: 240 20% 8%;     /* Fundo escuro noturno */
+    --foreground: 45 60% 90%;     /* Texto claro dourado */
 
     --card: 0 0% 100%;            /* Pure white cards */
     --card-foreground: 158 60% 15%;
