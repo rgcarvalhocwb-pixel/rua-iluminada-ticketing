@@ -13,7 +13,8 @@ import { PaymentSettings } from '@/components/admin/PaymentSettings';
 import { StoresManager } from '@/components/admin/StoresManager';
 import { OnlineSalesManager } from '@/components/admin/OnlineSalesManager';
 import { TicketTypesManager } from '@/components/admin/TicketTypesManager';
-import { LogOut, Calendar, ShoppingCart, CreditCard, DollarSign, Store, Globe, Ticket } from 'lucide-react';
+import { UserManagement } from '@/components/admin/UserManagement';
+import { LogOut, Calendar, ShoppingCart, CreditCard, DollarSign, Store, Globe, Ticket, Users } from 'lucide-react';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -87,7 +88,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="events" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Eventos
@@ -115,6 +116,10 @@ const Admin = () => {
             <TabsTrigger value="payments" className="flex items-center gap-2">
               <CreditCard className="w-4 h-4" />
               Pagamentos
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Usuários
             </TabsTrigger>
           </TabsList>
 
@@ -212,6 +217,20 @@ const Admin = () => {
               </CardHeader>
               <CardContent>
                 <PaymentSettings />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="users">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gerenciamento de Usuários</CardTitle>
+                <CardDescription>
+                  Aprove novos usuários e gerencie permissões de acesso
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <UserManagement />
               </CardContent>
             </Card>
           </TabsContent>

@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Eye, EyeOff, Save, ExternalLink } from 'lucide-react';
 
 export const PaymentSettings = () => {
@@ -18,12 +19,33 @@ export const PaymentSettings = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load settings from localStorage (in a real app, this would come from a secure backend)
-    const savedSettings = localStorage.getItem('pagseguro-settings');
-    if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
-    }
+    loadSettings();
   }, []);
+
+  const loadSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('payment_settings')
+        .select('*')
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (data) {
+        setSettings({
+          pagseguroEmail: data.pagseguro_email || '',
+          pagseguroToken: data.pagseguro_token || '',
+          pagseguroEnvironment: data.pagseguro_environment || 'sandbox'
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar configurações: " + error.message,
+        variant: "destructive"
+      });
+    }
+  };
 
   const handleSave = async () => {
     if (!settings.pagseguroEmail || !settings.pagseguroToken) {
@@ -38,12 +60,19 @@ export const PaymentSettings = () => {
     setLoading(true);
     
     try {
-      // In a real application, these credentials should be stored securely on the backend
-      localStorage.setItem('pagseguro-settings', JSON.stringify(settings));
+      const { data, error } = await supabase
+        .from('payment_settings')
+        .upsert({
+          pagseguro_email: settings.pagseguroEmail,
+          pagseguro_token: settings.pagseguroToken,
+          pagseguro_environment: settings.pagseguroEnvironment
+        });
+
+      if (error) throw error;
       
       toast({
         title: "Configurações salvas",
-        description: "Para integração completa, configure os secrets PAGSEGURO_EMAIL e PAGSEGURO_TOKEN no Supabase. Por ora, os dados de demonstração serão usados.",
+        description: "Configurações PagSeguro salvas com sucesso. Configure os secrets no Supabase para integração completa.",
       });
     } catch (error: any) {
       toast({
