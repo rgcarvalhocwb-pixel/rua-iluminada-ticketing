@@ -79,42 +79,19 @@ All colors MUST be HSL.
     --snow-3: 0 0 6px hsla(0, 0%, 100%, 0.5);
   }
 
-  .dark {
-    /* Tema escuro - fundo escuro com letras claras */
-    --background: 240 30% 4%;
-    --foreground: 210 40% 95%;        /* Letras claras no escuro */
-    --card: 240 20% 8%;
-    --card-foreground: 210 40% 92%;   /* Letras claras em cards */
-    --popover: 240 20% 8%;
-    --popover-foreground: 210 40% 92%;
-    --primary: 0 75% 40%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 45 90% 55%;
-    --secondary-foreground: 240 30% 15%;
-    --muted: 240 20% 10%;
-    --muted-foreground: 210 40% 70%;  /* Texto muted claro */
-    --accent: 45 90% 55%;
-    --accent-foreground: 240 30% 15%;
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 20% 15%;
-    --input: 240 20% 10%;
-    --ring: 0 75% 40%;
-  }
-
-  /* Admin theme - garante harmonia em ambos os temas */
+  /* Admin theme - cores profissionais sem dourado no tema claro */
   .admin-theme {
-    /* Cores profissionais para admin - tema claro */
+    /* Tema claro - letras escuras, sem dourado */
     --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;     /* Letras escuras no claro */
+    --foreground: 222.2 84% 4.9%;     /* LETRAS ESCURAS no tema claro */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%; /* Letras escuras em cards */
+    --card-foreground: 222.2 84% 4.9%; /* LETRAS ESCURAS em cards */
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%; /* Letras escuras */
+    --secondary-foreground: 222.2 84% 4.9%; /* LETRAS ESCURAS */
     --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%; /* Texto muted escuro */
+    --muted-foreground: 215.4 16.3% 46.9%; /* Texto muted ESCURO */
     --accent: 142 76% 36%;
     --accent-foreground: 355.7 100% 97.3%;
     --border: 214.3 31.8% 91.4%;
