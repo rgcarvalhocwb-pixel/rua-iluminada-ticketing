@@ -198,7 +198,7 @@ const Admin = () => {
   if (hasPermission(userPermissions, 'payments_config')) {
     availableTabs.push({
       id: 'payments',
-      label: 'Pagtos',
+      label: 'Pagamentos',
       icon: <CreditCard className="w-4 h-4" />,
       component: <PaymentSettings />,
       title: 'Configurações de Pagamento',
@@ -211,7 +211,7 @@ const Admin = () => {
     availableTabs.push(
       {
         id: 'reports',
-        label: 'Reports',
+        label: 'Relatórios',
         icon: <BarChart3 className="w-4 h-4" />,
         component: <ReportsAnalytics />,
         title: 'Relatórios e Analytics',
@@ -235,7 +235,7 @@ const Admin = () => {
       },
       {
         id: 'performance',
-        label: 'Perf.',
+        label: 'Performance',
         icon: <Activity className="w-4 h-4" />,
         component: <PerformanceMonitoring />,
         title: 'Monitoramento de Performance',
@@ -255,7 +255,7 @@ const Admin = () => {
   if (hasPermission(userPermissions, 'users_manage')) {
     availableTabs.push({
       id: 'users',
-      label: 'Users',
+      label: 'Usuários',
       icon: <Users className="w-4 h-4" />,
       component: <UserManagement />,
       title: 'Gerenciamento de Usuários',
@@ -311,18 +311,43 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue={availableTabs[0]?.id} className="space-y-6">
-          <TabsList className={`grid w-full grid-cols-${Math.min(availableTabs.length, 12)}`}>
-            {availableTabs.map((tab) => (
-              <TabsTrigger
-                key={tab.id}
-                value={tab.id}
-                className="flex items-center gap-1 text-xs"
-              >
-                {tab.icon}
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="relative bg-gradient-to-r from-primary/5 via-background to-primary/5 p-1 rounded-xl shadow-lg border border-primary/10">
+            <TabsList className={`grid w-full bg-transparent gap-1 h-auto p-1 grid-cols-${Math.min(availableTabs.length, 12)}`}>
+              {availableTabs.map((tab, index) => (
+                <TabsTrigger
+                  key={tab.id}
+                  value={tab.id}
+                  className="
+                    relative flex items-center justify-center gap-2 
+                    text-sm font-medium py-3 px-4 
+                    rounded-lg transition-all duration-300 ease-in-out
+                    data-[state=active]:bg-primary data-[state=active]:text-primary-foreground
+                    data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20
+                    data-[state=active]:scale-105 data-[state=active]:z-10
+                    hover:bg-primary/10 hover:text-primary hover:scale-102
+                    hover:shadow-md hover:shadow-primary/10
+                    text-muted-foreground
+                    animate-fade-in
+                    border border-transparent
+                    data-[state=active]:border-primary/20
+                  "
+                  style={{ 
+                    animationDelay: `${index * 0.05}s`,
+                    transform: 'translateZ(0)' // Força aceleração por hardware
+                  }}
+                >
+                  <span className="transition-transform duration-200 group-hover:scale-110">
+                    {tab.icon}
+                  </span>
+                  <span className="hidden sm:inline font-medium">
+                    {tab.label}
+                  </span>
+                  {/* Efeito de brilho na aba ativa */}
+                  <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 data-[state=active]:opacity-100 transition-opacity duration-300" />
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
 
           {availableTabs.map((tab) => (
             <TabsContent key={tab.id} value={tab.id}>
