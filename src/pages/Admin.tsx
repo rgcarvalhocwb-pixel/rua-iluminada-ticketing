@@ -10,7 +10,9 @@ import { EventsManager } from '@/components/admin/EventsManager';
 import { OrdersView } from '@/components/admin/OrdersView';
 import { CashRegister } from '@/components/admin/CashRegister';
 import { PaymentSettings } from '@/components/admin/PaymentSettings';
-import { LogOut, Calendar, ShoppingCart, CreditCard, DollarSign } from 'lucide-react';
+import { StoresManager } from '@/components/admin/StoresManager';
+import { OnlineSalesManager } from '@/components/admin/OnlineSalesManager';
+import { LogOut, Calendar, ShoppingCart, CreditCard, DollarSign, Store, Globe } from 'lucide-react';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -84,18 +86,26 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="events" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Eventos
             </TabsTrigger>
-            <TabsTrigger value="orders" className="flex items-center gap-2">
-              <ShoppingCart className="w-4 h-4" />
-              Pedidos
-            </TabsTrigger>
             <TabsTrigger value="cash-register" className="flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
               Caixa
+            </TabsTrigger>
+            <TabsTrigger value="stores" className="flex items-center gap-2">
+              <Store className="w-4 h-4" />
+              Lojas
+            </TabsTrigger>
+            <TabsTrigger value="online" className="flex items-center gap-2">
+              <Globe className="w-4 h-4" />
+              Online
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="flex items-center gap-2">
+              <ShoppingCart className="w-4 h-4" />
+              Pedidos
             </TabsTrigger>
             <TabsTrigger value="payments" className="flex items-center gap-2">
               <CreditCard className="w-4 h-4" />
@@ -117,20 +127,6 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="orders">
-            <Card>
-              <CardHeader>
-                <CardTitle>Visualizar Pedidos</CardTitle>
-                <CardDescription>
-                  Acompanhe todas as vendas online e presenciais
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <OrdersView />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
           <TabsContent value="cash-register">
             <Card>
               <CardHeader>
@@ -141,6 +137,48 @@ const Admin = () => {
               </CardHeader>
               <CardContent>
                 <CashRegister />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="stores">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gestão de Lojas</CardTitle>
+                <CardDescription>
+                  Cadastre lojas, registre vendas e gerencie comissões
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <StoresManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="online">
+            <Card>
+              <CardHeader>
+                <CardTitle>Vendas Online de Terceiros</CardTitle>
+                <CardDescription>
+                  Gerencie vendas de plataformas externas e repasses
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <OnlineSalesManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <Card>
+              <CardHeader>
+                <CardTitle>Visualizar Pedidos</CardTitle>
+                <CardDescription>
+                  Acompanhe todas as vendas online e presenciais
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <OrdersView />
               </CardContent>
             </Card>
           </TabsContent>

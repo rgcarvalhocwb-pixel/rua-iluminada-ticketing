@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_transfers: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          notes: string | null
+          transfer_amount: number
+          transfer_date: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          notes?: string | null
+          transfer_amount: number
+          transfer_date: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          notes?: string | null
+          transfer_amount?: number
+          transfer_date?: string
+        }
+        Relationships: []
+      }
+      daily_closures: {
+        Row: {
+          closure_date: string
+          created_at: string
+          event_id: string
+          final_balance: number
+          id: string
+          total_expense: number
+          total_income: number
+          updated_at: string
+        }
+        Insert: {
+          closure_date: string
+          created_at?: string
+          event_id: string
+          final_balance: number
+          id?: string
+          total_expense: number
+          total_income: number
+          updated_at?: string
+        }
+        Update: {
+          closure_date?: string
+          created_at?: string
+          event_id?: string
+          final_balance?: number
+          id?: string
+          total_expense?: number
+          total_income?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_sessions: {
         Row: {
           available_tickets: number
@@ -91,6 +151,81 @@ export type Database = {
           id?: string
           name?: string
           start_date?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      online_sales: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          platform_name: string
+          quantity_refunded: number
+          quantity_sold: number
+          sale_date: string
+          ticket_type: string
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          platform_name: string
+          quantity_refunded?: number
+          quantity_sold?: number
+          sale_date: string
+          ticket_type: string
+          unit_price: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          platform_name?: string
+          quantity_refunded?: number
+          quantity_sold?: number
+          sale_date?: string
+          ticket_type?: string
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      online_transfers: {
+        Row: {
+          created_at: string
+          expected_amount: number
+          id: string
+          notes: string | null
+          platform_name: string
+          received_amount: number | null
+          status: string
+          transfer_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expected_amount: number
+          id?: string
+          notes?: string | null
+          platform_name: string
+          received_amount?: number | null
+          status?: string
+          transfer_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expected_amount?: number
+          id?: string
+          notes?: string | null
+          platform_name?: string
+          received_amount?: number | null
+          status?: string
+          transfer_date?: string
           updated_at?: string
         }
         Relationships: []
@@ -221,6 +356,72 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      store_daily_sales: {
+        Row: {
+          commission_amount: number
+          created_at: string
+          event_id: string
+          id: string
+          sale_date: string
+          store_id: string
+          total_sales: number
+          updated_at: string
+        }
+        Insert: {
+          commission_amount: number
+          created_at?: string
+          event_id: string
+          id?: string
+          sale_date: string
+          store_id: string
+          total_sales: number
+          updated_at?: string
+        }
+        Update: {
+          commission_amount?: number
+          created_at?: string
+          event_id?: string
+          id?: string
+          sale_date?: string
+          store_id?: string
+          total_sales?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      stores: {
+        Row: {
+          commission_percentage: number
+          contact: string | null
+          created_at: string
+          id: string
+          name: string
+          responsible: string
+          space_value: number
+          updated_at: string
+        }
+        Insert: {
+          commission_percentage?: number
+          contact?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          responsible: string
+          space_value?: number
+          updated_at?: string
+        }
+        Update: {
+          commission_percentage?: number
+          contact?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          responsible?: string
+          space_value?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       ticket_types: {
         Row: {
