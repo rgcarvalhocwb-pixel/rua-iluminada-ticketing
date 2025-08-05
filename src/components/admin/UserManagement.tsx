@@ -10,6 +10,7 @@ import { Users, Check, X, Settings } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CreateUserDialog } from './CreateUserDialog';
+import { ResetPasswordDialog } from './ResetPasswordDialog';
 
 interface UserPermission {
   id: string;
@@ -309,38 +310,46 @@ export const UserManagement = () => {
                     <TableCell>
                       {format(new Date(user.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                     </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        {user.status === 'pending' && (
-                          <>
-                            <Button 
-                              size="sm" 
-                              onClick={() => updateUserStatus(user.id, 'approved')}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <Check className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="destructive"
-                              onClick={() => updateUserStatus(user.id, 'rejected')}
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
-                          </>
-                        )}
-                        {user.status === 'approved' && user.role !== 'admin' && (
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => promoteToAdmin(user.id)}
-                          >
-                            <Settings className="w-4 h-4" />
-                            Promover
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div className="flex gap-2">
+                         {user.status === 'pending' && (
+                           <>
+                             <Button 
+                               size="sm" 
+                               onClick={() => updateUserStatus(user.id, 'approved')}
+                               className="bg-green-600 hover:bg-green-700"
+                             >
+                               <Check className="w-4 h-4" />
+                             </Button>
+                             <Button 
+                               size="sm" 
+                               variant="destructive"
+                               onClick={() => updateUserStatus(user.id, 'rejected')}
+                             >
+                               <X className="w-4 h-4" />
+                             </Button>
+                           </>
+                         )}
+                         {user.status === 'approved' && user.role !== 'admin' && user.role !== 'master' && (
+                           <Button 
+                             size="sm" 
+                             variant="outline"
+                             onClick={() => promoteToAdmin(user.id)}
+                           >
+                             <Settings className="w-4 h-4" />
+                             Promover
+                           </Button>
+                         )}
+                         {user.status === 'approved' && (
+                           <ResetPasswordDialog
+                             targetUserId={user.user_id}
+                             userEmail={user.user_id} // Usando user_id como email por enquanto
+                             onPasswordReset={fetchUsers}
+                             canResetPassword={['master', 'admin'].includes(currentUserRole)}
+                           />
+                         )}
+                       </div>
+                     </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
