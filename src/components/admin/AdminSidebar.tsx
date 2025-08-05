@@ -188,17 +188,17 @@ export function AdminSidebar({
 
   return (
     <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className="border-b bg-gradient-christmas shadow-green-glow/20">
+      <SidebarHeader className="border-b bg-gradient-to-r from-red-900 to-red-800 shadow-red-glow/20">
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary text-primary-foreground shadow-glow">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white shadow-soft">
             <Building2 className="h-4 w-4" />
           </div>
           {state === "expanded" && (
             <div className="flex flex-col">
-              <span className="text-sm font-bold font-dancing bg-gradient-primary bg-clip-text text-transparent">
+              <span className="text-sm font-bold font-dancing text-white">
                 🎄 Rua Iluminada
               </span>
-              <span className="text-xs text-secondary/80 font-inter">Painel Natalino</span>
+              <span className="text-xs text-white/80 font-inter">Painel Natalino</span>
             </div>
           )}
         </div>
@@ -208,7 +208,7 @@ export function AdminSidebar({
         {/* Operações */}
         {operationsItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-primary font-semibold font-inter text-xs">
+            <SidebarGroupLabel className="text-white font-semibold font-inter text-xs">
               🎅 Operações
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -222,8 +222,8 @@ export function AdminSidebar({
                       className={`
                         transition-all duration-300 
                         ${isActive(item.id) 
-                          ? "bg-gradient-primary text-primary-foreground shadow-glow border border-primary/20" 
-                          : "hover:bg-gradient-accent hover:text-accent-foreground hover:shadow-green-glow/30"
+                          ? "bg-red-800 text-white shadow-red-glow border border-red-700/50" 
+                          : "hover:bg-accent hover:text-accent-foreground hover:shadow-green-glow/30"
                         }
                       `}
                     >
@@ -243,7 +243,7 @@ export function AdminSidebar({
         {/* Vendas */}
         {salesItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-secondary font-semibold font-inter text-xs">
+            <SidebarGroupLabel className="text-white font-semibold font-inter text-xs">
               🛷 Vendas
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -278,7 +278,7 @@ export function AdminSidebar({
         {/* Financeiro */}
         {financialItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-accent font-semibold font-inter text-xs">
+            <SidebarGroupLabel className="text-white font-semibold font-inter text-xs">
               💰 Financeiro
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -313,7 +313,7 @@ export function AdminSidebar({
         {/* Administração */}
         {adminItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-primary font-semibold font-inter text-xs">
+            <SidebarGroupLabel className="text-white font-semibold font-inter text-xs">
               ⭐ Administração
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -352,10 +352,10 @@ export function AdminSidebar({
             <div className="flex flex-col gap-2 p-2">
               {state === "expanded" && (
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium font-inter truncate bg-gradient-primary bg-clip-text text-transparent">
+                  <span className="text-sm font-medium font-inter truncate text-white">
                     {userEmail}
                   </span>
-                  <span className="text-xs text-secondary/80 capitalize font-inter">
+                  <span className="text-xs text-white/80 capitalize font-inter">
                     🎄 {userRole}
                   </span>
                 </div>
