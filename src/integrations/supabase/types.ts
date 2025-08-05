@@ -697,6 +697,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_audit_logs: {
+        Row: {
+          action: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: unknown | null
+          session_id: string | null
+          timestamp: string
+          user_agent: string | null
+          user_email: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          session_id?: string | null
+          timestamp?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: unknown | null
+          session_id?: string | null
+          timestamp?: string
+          user_agent?: string | null
+          user_email?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_permissions: {
         Row: {
           created_at: string
@@ -832,6 +874,20 @@ export type Database = {
       is_user_approved: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      log_user_action: {
+        Args: {
+          p_user_id: string
+          p_user_email: string
+          p_action: string
+          p_entity_type?: string
+          p_entity_id?: string
+          p_details?: Json
+          p_ip_address?: unknown
+          p_user_agent?: string
+          p_session_id?: string
+        }
+        Returns: string
       }
       promote_first_user_to_admin: {
         Args: Record<PropertyKey, never>
