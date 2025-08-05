@@ -22,6 +22,7 @@ import { BackupRecovery } from '@/components/admin/BackupRecovery';
 import { BrandingSettings } from '@/components/admin/BrandingSettings';
 import { PerformanceMonitoring } from '@/components/admin/PerformanceMonitoring';
 import { AnalyticsIntegration } from '@/components/admin/AnalyticsIntegration';
+import { StoreDailySalesManager } from '@/components/admin/StoreDailySalesManager';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -119,6 +120,11 @@ const Admin = () => {
         component: <StoresManager />,
         title: 'Gestão de Lojas',
         description: 'Cadastre lojas, registre vendas e gerencie comissões'
+      },
+      'store-sales': {
+        component: <StoreDailySalesManager />,
+        title: 'Vendas Diárias das Lojas',
+        description: 'Registre as vendas diárias de cada loja e calcule comissões automaticamente'
       },
       online: {
         component: <OnlineSalesManager />,

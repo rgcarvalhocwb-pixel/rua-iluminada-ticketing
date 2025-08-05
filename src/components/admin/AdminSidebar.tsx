@@ -106,6 +106,15 @@ export function AdminSidebar({
     });
   }
 
+  if (hasPermission(userPermissions, "stores_manage")) {
+    sidebarItems.push({
+      id: "store-sales",
+      title: "Vendas das Lojas",
+      icon: DollarSign,
+      category: "operations",
+    });
+  }
+
   if (hasPermission(userPermissions, "online_sales")) {
     sidebarItems.push({
       id: "online",
