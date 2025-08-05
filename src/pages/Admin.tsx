@@ -69,7 +69,10 @@ const Admin = () => {
       if (hasPermission(userPermissions, 'tickets_manage')) availableTabs.push('tickets');
       if (hasPermission(userPermissions, 'cash_daily')) availableTabs.push('cash-register');
       if (hasPermission(userPermissions, 'cash_general')) availableTabs.push('general-cash');
-      if (hasPermission(userPermissions, 'stores_manage')) availableTabs.push('stores');
+      if (hasPermission(userPermissions, 'stores_manage')) {
+        availableTabs.push('stores');
+        availableTabs.push('store-sales');
+      }
       if (hasPermission(userPermissions, 'online_sales')) availableTabs.push('online');
       if (hasPermission(userPermissions, 'orders_view')) availableTabs.push('orders');
       if (hasPermission(userPermissions, 'payments_config')) availableTabs.push('payments');
