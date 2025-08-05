@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { BarChart3, Download, TrendingUp, Calendar, DollarSign } from 'lucide-react';
+import { BarChart3, Download, TrendingUp, Calendar, DollarSign, Store } from 'lucide-react';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -24,9 +24,19 @@ interface EventPerformance {
   avg_ticket_price: number;
 }
 
+interface StorePerformance {
+  store_id: string;
+  store_name: string;
+  total_sales: number;
+  total_commission: number;
+  commission_percentage: number;
+  sales_count: number;
+}
+
 export const ReportsAnalytics = () => {
   const [salesData, setSalesData] = useState<SalesData[]>([]);
   const [eventPerformance, setEventPerformance] = useState<EventPerformance[]>([]);
+  const [storePerformance, setStorePerformance] = useState<StorePerformance[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<string>('7');
   const [selectedEvent, setSelectedEvent] = useState<string>('all');
   const [events, setEvents] = useState<any[]>([]);
@@ -65,7 +75,8 @@ export const ReportsAnalytics = () => {
     try {
       await Promise.all([
         fetchSalesData(),
-        fetchEventPerformance()
+        fetchEventPerformance(),
+        fetchStorePerformance()
       ]);
     } catch (error: any) {
       toast({
@@ -175,6 +186,52 @@ export const ReportsAnalytics = () => {
     }
 
     setEventPerformance(performance.sort((a, b) => b.total_revenue - a.total_revenue));
+  };
+
+  const fetchStorePerformance = async () => {
+    const days = parseInt(selectedPeriod);
+    const startDate = format(subDays(new Date(), days), 'yyyy-MM-dd');
+    const endDate = format(new Date(), 'yyyy-MM-dd');
+
+    try {
+      const { data: storeSales } = await supabase
+        .from('store_daily_sales')
+        .select(`
+          *,
+          stores(name, commission_percentage)
+        `)
+        .gte('sale_date', startDate)
+        .lte('sale_date', endDate);
+
+      if (!storeSales) return;
+
+      // Agrupar por loja
+      const storeMap = new Map<string, StorePerformance>();
+
+      storeSales.forEach(sale => {
+        const storeId = sale.store_id;
+        const existing = storeMap.get(storeId);
+        
+        if (existing) {
+          existing.total_sales += sale.total_sales;
+          existing.total_commission += sale.commission_amount;
+          existing.sales_count += 1;
+        } else {
+          storeMap.set(storeId, {
+            store_id: storeId,
+            store_name: sale.stores.name,
+            total_sales: sale.total_sales,
+            total_commission: sale.commission_amount,
+            commission_percentage: sale.stores.commission_percentage,
+            sales_count: 1
+          });
+        }
+      });
+
+      setStorePerformance(Array.from(storeMap.values()).sort((a, b) => b.total_sales - a.total_sales));
+    } catch (error: any) {
+      console.error('Erro ao carregar performance das lojas:', error);
+    }
   };
 
   const exportToCSV = () => {
@@ -358,6 +415,47 @@ export const ReportsAnalytics = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Performance das Lojas */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Store className="w-5 h-5" />
+            Performance das Lojas
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {storePerformance.length === 0 ? (
+              <p className="text-muted-foreground text-center py-4">
+                Nenhuma venda de loja registrada no período selecionado
+              </p>
+            ) : (
+              storePerformance.map((store) => (
+                <div key={store.store_id} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex-1">
+                    <h4 className="font-medium">{store.store_name}</h4>
+                    <div className="flex gap-4 mt-1 text-sm text-muted-foreground">
+                      <span>Vendas: R$ {store.total_sales.toFixed(2)}</span>
+                      <span>Comissão: R$ {store.total_commission.toFixed(2)}</span>
+                      <span>{store.commission_percentage}% de comissão</span>
+                      <span>{store.sales_count} registro(s)</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold text-blue-600">
+                      R$ {store.total_sales.toFixed(2)}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      R$ {store.total_commission.toFixed(2)} comissão
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
