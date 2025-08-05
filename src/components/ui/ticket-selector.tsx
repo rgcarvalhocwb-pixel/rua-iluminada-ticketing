@@ -261,10 +261,10 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                   🎄 Continuar para Pagamento
                 </Button>
 
-                <div className="text-center">
-                  <div className="flex items-center justify-center space-x-2 text-gray-300 text-sm">
-                    <MapPin className="h-4 w-4" />
-                    <span>Rua Anita Moletta, 123 - Itajaí/SC</span>
+                <div className="text-center bg-red-800 p-3 rounded-lg border border-yellow-400/50">
+                  <div className="flex items-center justify-center space-x-2 text-white text-sm font-medium">
+                    <MapPin className="h-4 w-4 text-yellow-300" />
+                    <span>R. Nicola Pellanda, 5962 - Umbará, Curitiba - PR, 81940-305</span>
                   </div>
                 </div>
               </CardContent>
