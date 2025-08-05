@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Users, Check, X, Settings } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { CreateUserDialog } from './CreateUserDialog';
 
 interface UserPermission {
   id: string;
@@ -18,7 +19,7 @@ interface UserPermission {
 interface UserRole {
   id: string;
   user_id: string;
-  role: 'admin' | 'user' | 'moderator';
+  role: 'admin' | 'user' | 'master';
   status: 'pending' | 'approved' | 'rejected';
   approved_by?: string;
   approved_at?: string;
@@ -46,11 +47,32 @@ const SYSTEM_PERMISSIONS = [
 export const UserManagement = () => {
   const [users, setUsers] = useState<UserWithPermissions[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserRole, setCurrentUserRole] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
     fetchUsers();
+    fetchCurrentUserRole();
   }, []);
+
+  const fetchCurrentUserRole = async () => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (user.user) {
+        const { data, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.user.id)
+          .single();
+        
+        if (!error && data) {
+          setCurrentUserRole(data.role);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao buscar role do usuário:', error);
+    }
+  };
 
   const fetchUsers = async () => {
     try {
@@ -197,6 +219,10 @@ export const UserManagement = () => {
           <Users className="w-6 h-6" />
           Gerenciamento de Usuários
         </h2>
+        <CreateUserDialog 
+          onUserCreated={fetchUsers} 
+          isMaster={currentUserRole === 'master'} 
+        />
       </div>
 
       <Card>
@@ -233,12 +259,12 @@ export const UserManagement = () => {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
-                        {user.role === 'admin' ? 'Administrador' : 
-                         user.role === 'moderator' ? 'Moderador' : 'Usuário'}
-                      </Badge>
-                    </TableCell>
+                     <TableCell>
+                       <Badge variant={user.role === 'admin' || user.role === 'master' ? 'default' : 'secondary'}>
+                         {user.role === 'admin' ? 'Administrador' : 
+                          user.role === 'master' ? 'Master' : 'Usuário'}
+                       </Badge>
+                     </TableCell>
                     <TableCell>
                       <Badge variant={user.status === 'approved' ? 'default' : 'destructive'}>
                         {user.status === 'approved' ? 'Aprovado' : 
