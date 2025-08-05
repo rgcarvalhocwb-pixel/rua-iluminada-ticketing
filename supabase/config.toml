@@ -68,6 +68,9 @@ inspector_port = 54331
 [functions.fetch-pagseguro-sales]
 verify_jwt = false
 
+[functions.create-pagseguro-payment]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54332

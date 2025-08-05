@@ -173,18 +173,59 @@ export const useTicketFlow = () => {
 
   const processPayment = async (orderId: string, customer: CustomerData, tickets: TicketData) => {
     try {
-      // Aqui seria a integração com PagSeguro
-      // Por enquanto, simularemos o redirecionamento
+      // Buscar tipos de ingresso para enviar para o PagSeguro
+      const { data: ticketTypes, error: ticketTypesError } = await supabase
+        .from('ticket_types')
+        .select('*')
+        .eq('event_id', tickets.eventId);
+
+      if (ticketTypesError || !ticketTypes) {
+        throw new Error('Erro ao buscar tipos de ingresso');
+      }
+
+      // Construir lista de itens para o pagamento
+      const items = [];
+      for (const [ticketTypeId, quantity] of Object.entries(tickets.ticketQuantities)) {
+        if (quantity === 0) continue;
+        
+        const ticketType = ticketTypes.find(t => t.id === ticketTypeId);
+        if (ticketType) {
+          items.push({
+            name: `${tickets.eventName} - ${ticketType.name}`,
+            quantity,
+            price: ticketType.price
+          });
+        }
+      }
+
+      // Criar pagamento via PagSeguro
+      const { data: paymentResult, error: paymentError } = await supabase.functions.invoke('create-pagseguro-payment', {
+        body: {
+          orderId,
+          customerName: customer.name,
+          customerEmail: customer.email,
+          customerCpf: customer.cpf.replace(/\D/g, ''),
+          totalAmount: tickets.totalPrice,
+          items
+        }
+      });
+
+      if (paymentError) {
+        throw new Error('Erro ao conectar com o serviço de pagamento: ' + paymentError.message);
+      }
+
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.error || 'Erro ao criar pagamento');
+      }
+
       toast({
         title: "Redirecionando para pagamento",
         description: "Você será redirecionado para o PagSeguro em instantes...",
       });
 
-      // Simular redirecionamento para PagSeguro
+      // Redirecionamento real para PagSeguro
       setTimeout(() => {
-        // Em produção, isso seria um redirect real para o PagSeguro
-        const pagseguroUrl = `https://pagseguro.uol.com.br/checkout/payment.html?code=SIMULATED_${orderId}`;
-        window.open(pagseguroUrl, '_blank');
+        window.open(paymentResult.paymentUrl, '_blank');
         
         toast({
           title: "Página de pagamento aberta",
