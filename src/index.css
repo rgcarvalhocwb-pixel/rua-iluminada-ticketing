@@ -79,47 +79,48 @@ All colors MUST be HSL.
     --snow-3: 0 0 6px hsla(0, 0%, 100%, 0.5);
   }
 
-  /* Admin theme - cores profissionais com diferenciação no tema claro */
+  /* Admin theme - baseado no CodingNepal moderno */
   .admin-theme {
-    /* Tema claro - menu preto, módulos vermelho bordô */
-    --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;     /* LETRAS PRETAS para menu geral */
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%; /* LETRAS PRETAS em cards */
-    --primary: 0 75% 35%;             /* VERMELHO BORDÔ para módulos */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%; /* LETRAS PRETAS para itens secundários */
-    --muted: 210 40% 96%;
-    --muted-foreground: 115 10% 40%;  /* Texto muted ESCURO para seções */
-    --accent: 0 75% 35%;              /* VERMELHO BORDÔ para destaques */
-    --accent-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    /* Tema claro - fundo branco limpo, textos escuros */
+    --background: 0 0% 100%;              /* Branco puro */
+    --foreground: 210 10% 20%;            /* Cinza escuro profissional */
+    --card: 0 0% 100%;                    /* Cards brancos */
+    --card-foreground: 210 10% 20%;       /* Texto escuro em cards */
+    --primary: 217 91% 60%;               /* Azul moderno */
+    --primary-foreground: 0 0% 100%;      /* Branco em primary */
+    --secondary: 210 40% 96%;             /* Cinza muito claro */
+    --secondary-foreground: 210 10% 20%;  /* Texto escuro */
+    --muted: 210 40% 98%;                 /* Background sutil */
+    --muted-foreground: 215 20% 65%;      /* Texto muted suave */
+    --accent: 217 91% 60%;                /* Azul para destaques */
+    --accent-foreground: 0 0% 100%;       /* Branco em accent */
+    --destructive: 0 72% 51%;             /* Vermelho para deletar */
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;                /* Bordas sutis */
+    --input: 220 13% 91%;                 /* Input border */
+    --ring: 217 91% 60%;                  /* Focus ring azul */
   }
 
-  /* Admin theme no modo escuro */
+  /* Admin theme no modo escuro - baseado no CodingNepal */
   .dark .admin-theme {
-    /* Cores profissionais para admin - tema escuro */
-    --background: 240 30% 4%;
-    --foreground: 210 40% 95%;        /* Letras claras no escuro */
-    --card: 240 20% 8%;
-    --card-foreground: 210 40% 92%;   /* Letras claras em cards */
-    --primary: 221.2 83.2% 63.3%;
-    --primary-foreground: 240 30% 4%;
-    --secondary: 240 20% 10%;
-    --secondary-foreground: 210 40% 92%; /* Letras claras */
-    --muted: 240 20% 10%;
-    --muted-foreground: 210 40% 70%;  /* Texto muted claro */
-    --accent: 142 76% 46%;
-    --accent-foreground: 240 30% 4%;
-    --border: 240 20% 15%;
-    --input: 240 20% 10%;
-    --ring: 221.2 83.2% 63.3%;
+    /* Tema escuro - fundo escuro moderno, textos claros */
+    --background: 222 84% 5%;             /* Fundo escuro profundo */
+    --foreground: 210 40% 98%;            /* Texto claro */
+    --card: 222 84% 5%;                   /* Cards escuros */
+    --card-foreground: 210 40% 98%;       /* Texto claro em cards */
+    --primary: 217 91% 60%;               /* Azul moderno */
+    --primary-foreground: 0 0% 100%;      /* Branco em primary */
+    --secondary: 217 32% 17%;             /* Cinza escuro */
+    --secondary-foreground: 210 40% 98%;  /* Texto claro */
+    --muted: 217 32% 17%;                 /* Background muted escuro */
+    --muted-foreground: 215 20% 65%;      /* Texto muted */
+    --accent: 217 91% 60%;                /* Azul para destaques */
+    --accent-foreground: 0 0% 100%;       /* Branco em accent */
+    --destructive: 0 72% 51%;             /* Vermelho para deletar */
+    --destructive-foreground: 0 0% 100%;
+    --border: 217 32% 17%;                /* Bordas escuras */
+    --input: 217 32% 17%;                 /* Input border escuro */
+    --ring: 217 91% 60%;                  /* Focus ring azul */
   }
 
   /* Ceará Christmas Animations */
