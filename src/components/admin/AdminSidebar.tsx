@@ -422,7 +422,7 @@ export function AdminSidebar({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent 
                     align="end" 
-                    className="w-48 bg-popover border shadow-lg z-50"
+                    className="w-48"
                     sideOffset={4}
                   >
                     <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer">

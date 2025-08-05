@@ -14,69 +14,92 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Ceará Natal de Luz Theme - Noturno como o site oficial */
-    --background: 240 20% 8%;     /* Fundo escuro noturno */
-    --foreground: 45 60% 90%;     /* Texto claro dourado */
+    /* Ceará Natal de Luz Theme - Inspirado no site oficial */
+    --background: 240 20% 8%;        /* Fundo escuro noturno */
+    --foreground: 45 80% 85%;        /* Texto dourado claro */
 
-    --card: 0 0% 100%;            /* Pure white cards */
-    --card-foreground: 158 60% 15%;
+    --card: 0 0% 100%;               /* Cards brancos */
+    --card-foreground: 0 80% 25%;    /* Texto escuro em cards */
 
-    --popover: 0 0% 100%;         /* White popovers */
-    --popover-foreground: 158 60% 15%;
+    --popover: 0 0% 100%;            /* Popovers brancos */
+    --popover-foreground: 0 80% 25%;
 
-    /* Ceará Green - Nature, Hope, Tropical Christmas */
-    --primary: 158 85% 45%;       /* Vibrant Ceará green */
+    /* Vermelho Bordô - Cor principal do site */
+    --primary: 0 75% 35%;            /* Vermelho bordô profundo */
     --primary-foreground: 0 0% 98%;
 
-    /* Warm Pink/Red - Joy, Celebration */
-    --secondary: 340 85% 55%;     /* Warm Christmas pink */
-    --secondary-foreground: 0 0% 98%;
+    /* Dourado - Elegância e celebração */
+    --secondary: 45 90% 60%;         /* Dourado vibrante */
+    --secondary-foreground: 0 80% 15%;
 
-    /* Deep Green - Stability, Trust */
-    --muted: 158 30% 85%;         /* Light green muted */
-    --muted-foreground: 158 60% 25%;
+    /* Tons sutis */
+    --muted: 240 20% 15%;            /* Cinza escuro sutil */
+    --muted-foreground: 45 60% 70%;
 
-    /* Bright Pink Accent */
-    --accent: 340 85% 60%;        /* Bright pink for highlights */
-    --accent-foreground: 0 0% 98%;
+    /* Dourado para destaques */
+    --accent: 45 90% 60%;            /* Dourado brilhante */
+    --accent-foreground: 0 80% 15%;
 
-    /* Pink/Red for alerts */
-    --destructive: 340 85% 55%;
+    /* Vermelho para alertas */
+    --destructive: 0 75% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Warm amber warning */
-    --warning: 35 90% 55%;
-    --warning-foreground: 158 60% 15%;
+    /* Dourado para avisos */
+    --warning: 45 90% 60%;
+    --warning-foreground: 0 80% 15%;
 
-    /* Ceará Green success */
-    --success: 158 85% 45%;
+    /* Verde para sucesso */
+    --success: 120 60% 40%;
     --success-foreground: 0 0% 98%;
 
-    /* Subtle borders */
-    --border: 158 20% 80%;
+    /* Bordas sutis */
+    --border: 240 20% 20%;
     --input: 0 0% 100%;
-    --ring: 158 85% 45%;          /* Green focus ring */
+    --ring: 0 75% 35%;               /* Foco em bordô */
 
     --radius: 0.75rem;
 
-    /* Ceará Chart Colors */
-    --chart-1: 158 85% 45%;       /* Ceará Green */
-    --chart-2: 340 85% 55%;       /* Ceará Pink */
-    --chart-3: 45 70% 70%;        /* Warm Cream */
-    --chart-4: 158 60% 25%;       /* Deep Green */
-    --chart-5: 340 70% 35%;       /* Deep Pink */
+    /* Cores para gráficos */
+    --chart-1: 0 75% 35%;            /* Bordô */
+    --chart-2: 45 90% 60%;           /* Dourado */
+    --chart-3: 0 0% 95%;             /* Branco */
+    --chart-4: 240 20% 15%;          /* Cinza escuro */
+    --chart-5: 0 75% 50%;            /* Vermelho */
 
-    /* Ceará Magic Effects */
-    --shimmer: linear-gradient(90deg, transparent 0%, hsla(158, 85%, 70%, 0.4) 50%, transparent 100%);
-    --sparkle: radial-gradient(circle, hsla(158, 85%, 80%, 0.8) 0%, transparent 70%);
-    --glow-green: 0 0 20px hsla(158, 85%, 45%, 0.5);
-    --glow-pink: 0 0 20px hsla(340, 85%, 55%, 0.4);
-    --glow-cream: 0 0 15px hsla(45, 70%, 70%, 0.4);
+    /* Efeitos mágicos de Natal */
+    --shimmer: linear-gradient(90deg, transparent 0%, hsla(45, 90%, 70%, 0.4) 50%, transparent 100%);
+    --sparkle: radial-gradient(circle, hsla(45, 90%, 80%, 0.8) 0%, transparent 70%);
+    --glow-red: 0 0 20px hsla(0, 75%, 50%, 0.5);
+    --glow-gold: 0 0 20px hsla(45, 90%, 60%, 0.4);
+    --glow-white: 0 0 15px hsla(0, 0%, 100%, 0.4);
     
-    /* Snow animation */
+    /* Neve */
     --snow-1: 0 0 2px hsla(0, 0%, 100%, 0.9);
     --snow-2: 0 0 4px hsla(0, 0%, 100%, 0.7);
     --snow-3: 0 0 6px hsla(0, 0%, 100%, 0.5);
+  }
+
+  .dark {
+    /* Tema escuro - fundo ainda mais escuro */
+    --background: 240 30% 4%;
+    --foreground: 45 80% 90%;
+    --card: 240 20% 8%;
+    --card-foreground: 45 80% 85%;
+    --popover: 240 20% 8%;
+    --popover-foreground: 45 80% 85%;
+    --primary: 0 75% 40%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 45 90% 55%;
+    --secondary-foreground: 240 30% 15%;
+    --muted: 240 20% 10%;
+    --muted-foreground: 45 60% 60%;
+    --accent: 45 90% 55%;
+    --accent-foreground: 240 30% 15%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 20% 15%;
+    --input: 240 20% 10%;
+    --ring: 0 75% 40%;
   }
 
   /* Admin-specific theme with professional colors */
@@ -106,8 +129,8 @@ All colors MUST be HSL.
   }
 
   @keyframes glow-pulse {
-    0%, 100% { box-shadow: var(--glow-green); }
-    50% { box-shadow: var(--glow-pink); }
+    0%, 100% { box-shadow: var(--glow-red); }
+    50% { box-shadow: var(--glow-gold); }
   }
 
   @keyframes sparkle {
@@ -147,13 +170,13 @@ All colors MUST be HSL.
 }
 
 @layer components {
-  /* Ceará Natal de Luz Magic Classes */
+  /* Rua Iluminada - Classes personalizadas com cores oficiais */
   .ceara-card {
     @apply relative overflow-hidden bg-white shadow-lg;
-    border: 2px solid hsl(158, 85%, 45%);
+    border: 2px solid hsl(0, 75%, 35%);
     box-shadow: 
-      0 4px 20px hsla(158, 85%, 45%, 0.2),
-      inset 0 1px 0 hsla(158, 85%, 70%, 0.1);
+      0 4px 20px hsla(0, 75%, 35%, 0.2),
+      inset 0 1px 0 hsla(45, 90%, 60%, 0.1);
   }
 
   .ceara-card::before {
@@ -170,9 +193,9 @@ All colors MUST be HSL.
   .ceara-button {
     @apply relative overflow-hidden transition-all duration-300;
     background: linear-gradient(135deg, 
-      hsl(158, 85%, 45%) 0%, 
-      hsl(158, 85%, 35%) 100%);
-    box-shadow: var(--glow-green);
+      hsl(0, 75%, 35%) 0%, 
+      hsl(0, 75%, 25%) 100%);
+    box-shadow: var(--glow-red);
     color: white;
   }
 
@@ -184,10 +207,11 @@ All colors MUST be HSL.
   .ceara-button-pink {
     @apply relative overflow-hidden transition-all duration-300;
     background: linear-gradient(135deg, 
-      hsl(340, 85%, 55%) 0%, 
-      hsl(340, 85%, 45%) 100%);
-    box-shadow: var(--glow-pink);
-    color: white;
+      hsl(45, 90%, 60%) 0%, 
+      hsl(45, 90%, 50%) 100%);
+    box-shadow: var(--glow-gold);
+    color: hsl(0, 80%, 15%);
+    font-weight: 600;
   }
 
   .ceara-button-pink:hover {
@@ -196,45 +220,45 @@ All colors MUST be HSL.
   }
 
   .ceara-accent {
-    color: hsl(158, 85%, 45%);
-    text-shadow: 0 0 10px hsla(158, 85%, 70%, 0.5);
+    color: hsl(45, 90%, 60%);
+    text-shadow: 0 0 10px hsla(45, 90%, 70%, 0.5);
   }
 
   .ceara-text {
     background: linear-gradient(135deg, 
-      hsl(158, 85%, 45%) 0%, 
-      hsl(340, 85%, 55%) 50%, 
-      hsl(158, 85%, 35%) 100%);
+      hsl(0, 75%, 35%) 0%, 
+      hsl(45, 90%, 60%) 50%, 
+      hsl(0, 75%, 25%) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: float 3s ease-in-out infinite;
   }
 
-  /* Ceará Input Styles */
+  /* Inputs com cores oficiais */
   .ceara-input {
     background: white;
-    border: 2px solid hsl(158, 85%, 45%);
-    color: hsl(158, 60%, 15%);
+    border: 2px solid hsl(0, 75%, 35%);
+    color: hsl(0, 80%, 15%);
     transition: all 0.3s ease;
   }
 
   .ceara-input:focus {
-    border-color: hsl(340, 85%, 55%);
-    box-shadow: var(--glow-green);
+    border-color: hsl(45, 90%, 60%);
+    box-shadow: var(--glow-gold);
     outline: none;
   }
 
-  /* Ceará Select Styles */
+  /* Selects com cores oficiais */
   .ceara-select {
     background: white !important;
-    border: 2px solid hsl(158, 85%, 45%) !important;
-    color: hsl(158, 60%, 15%) !important;
+    border: 2px solid hsl(0, 75%, 35%) !important;
+    color: hsl(0, 80%, 15%) !important;
   }
 
   .ceara-select:focus {
-    border-color: hsl(340, 85%, 55%) !important;
-    box-shadow: var(--glow-green) !important;
+    border-color: hsl(45, 90%, 60%) !important;
+    box-shadow: var(--glow-gold) !important;
   }
 
   /* Magical Sparkles */
