@@ -88,17 +88,6 @@ export const HeroSection = () => {
           >
             Ver Programação
           </Button>
-          
-          <Button 
-            variant="secondary" 
-            size="lg"
-            className="px-8 py-3 text-lg"
-            onClick={() => {
-              window.location.href = '/auth';
-            }}
-          >
-            Painel Admin
-          </Button>
         </div>
       </div>
     </section>
