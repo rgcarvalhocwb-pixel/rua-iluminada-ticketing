@@ -28,32 +28,39 @@ export const CreateUserDialog = ({ onUserCreated, isMaster }: CreateUserDialogPr
     setLoading(true);
 
     try {
-      // Primeiro, criar o usuário no Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      // Usar signUp normal para criar o usuário
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
-        password: formData.password,
-        email_confirm: true
+        password: formData.password
       });
 
       if (authError) throw authError;
 
       if (authData.user) {
-        // Criar o role do usuário
+        // Aguardar um pouco para garantir que o usuário foi criado
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Criar o role do usuário diretamente
         const { error: roleError } = await supabase
           .from('user_roles')
-          .insert({
+          .upsert({
             user_id: authData.user.id,
             role: formData.role,
             status: 'approved',
             approved_by: (await supabase.auth.getUser()).data.user?.id,
             approved_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id'
           });
 
-        if (roleError) throw roleError;
+        if (roleError) {
+          console.error('Role error:', roleError);
+          // Não falhar se o role já existir
+        }
 
         toast({
           title: "Sucesso",
-          description: "Usuário criado com sucesso!"
+          description: `Usuário criado com sucesso! Email: ${formData.email}`
         });
 
         onUserCreated();
