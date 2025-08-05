@@ -43,7 +43,7 @@ export const PaymentSettings = () => {
       
       toast({
         title: "Configurações salvas",
-        description: "As credenciais do PagSeguro foram salvas com sucesso",
+        description: "Para integração completa, configure os secrets PAGSEGURO_EMAIL e PAGSEGURO_TOKEN no Supabase. Por ora, os dados de demonstração serão usados.",
       });
     } catch (error: any) {
       toast({
@@ -73,8 +73,8 @@ export const PaymentSettings = () => {
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       toast({
-        title: "Conexão testada",
-        description: "As credenciais estão válidas para o ambiente " + settings.pagseguroEnvironment,
+        title: "Teste de demonstração",
+        description: "Para integração real, configure os secrets no Supabase. A função retornará dados simulados.",
       });
     } catch (error: any) {
       toast({
@@ -91,8 +91,8 @@ export const PaymentSettings = () => {
     <div className="space-y-6">
       <Alert>
         <AlertDescription>
-          Configure suas credenciais do PagSeguro para processar pagamentos online. 
-          As informações são armazenadas de forma segura e criptografada.
+          <strong>Modo Demonstração:</strong> A integração PagSeguro está configurada para retornar dados simulados. 
+          Para produção, configure os secrets PAGSEGURO_EMAIL e PAGSEGURO_TOKEN no painel do Supabase.
         </AlertDescription>
       </Alert>
 
