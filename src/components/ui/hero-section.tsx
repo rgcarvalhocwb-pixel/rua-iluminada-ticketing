@@ -42,7 +42,7 @@ export const HeroSection = () => {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(/lovable-uploads/c2d39665-54d0-425c-8022-13fd43871e5f.png)` }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/80" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/70 to-background/90" />
       </div>
       
       {/* Floating lights animation */}
