@@ -313,10 +313,11 @@ VITE_SUPABASE_ANON_KEY=sua_chave_anonima
 ## 📞 Suporte
 
 Para suporte técnico, entre em contato:
-- **Rayzer Tecnologia**
-- **CNPJ:** 52.995.273/0001-00  
-- **Endereço:** Rua Florindo Francisco Rossetto, 456, Santa Catarina, Caxias do Sul - RS
-- **Telefone:** (54) 99195-2449
+- **Desenvolvido por:** Rodolpho Carvalho
+- **RAYZER SERVIÇOS E TECNOLOGIA LTDA**
+- **CNPJ:** 14.073.521/0001-83  
+- **Endereço:** Rua Cel. Hoche Pedra Pires n.º 337 Seminário – Curitiba – Paraná
+- **Telefone:** (41) 99937-2241
 
 ---
 
