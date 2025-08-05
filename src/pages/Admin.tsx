@@ -171,12 +171,12 @@ const Admin = () => {
     if (!currentTab) return null;
 
     return (
-      <Card className="h-[calc(100vh-8rem)] flex flex-col">
-        <CardHeader className="pb-4">
-          <CardTitle>{currentTab.title}</CardTitle>
-          <CardDescription>{currentTab.description}</CardDescription>
+      <Card className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)] flex flex-col">
+        <CardHeader className="pb-3 md:pb-4 px-3 md:px-6 pt-3 md:pt-6">
+          <CardTitle className="text-lg md:text-xl">{currentTab.title}</CardTitle>
+          <CardDescription className="text-sm md:text-base">{currentTab.description}</CardDescription>
         </CardHeader>
-        <CardContent className="flex-1 overflow-auto">
+        <CardContent className="flex-1 overflow-auto px-3 md:px-6 pb-3 md:pb-6">
           {currentTab.component}
         </CardContent>
       </Card>
@@ -185,10 +185,10 @@ const Admin = () => {
 
   if (loading || userPermissions.loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">Carregando painel administrativo...</p>
+          <div className="animate-spin rounded-full h-16 w-16 md:h-32 md:w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-sm md:text-base text-muted-foreground">Carregando painel administrativo...</p>
         </div>
       </div>
     );
@@ -197,11 +197,11 @@ const Admin = () => {
   // Se o usuário não tem papel aprovado, mostrar mensagem
   if (!userPermissions.role) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Acesso Negado</CardTitle>
-            <CardDescription>
+          <CardHeader className="text-center">
+            <CardTitle className="text-lg md:text-xl">Acesso Negado</CardTitle>
+            <CardDescription className="text-sm md:text-base">
               Seu usuário ainda não foi aprovado ou não possui permissões para acessar o painel administrativo.
             </CardDescription>
           </CardHeader>
@@ -216,7 +216,7 @@ const Admin = () => {
   }
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full bg-background">
         <AdminSidebar
           activeTab={activeTab}
@@ -227,26 +227,31 @@ const Admin = () => {
         />
         
         <SidebarInset className="flex-1">
-          {/* Header fixo */}
-          <header className="flex h-16 shrink-0 items-center gap-2 px-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+          {/* Header fixo responsivo */}
+          <header className="flex h-14 md:h-16 shrink-0 items-center gap-2 px-3 md:px-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <SidebarTrigger className="-ml-1" />
-            <div className="flex-1">
-              <h1 className="text-xl font-semibold">Painel Administrativo</h1>
-              <p className="text-sm text-muted-foreground">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg md:text-xl font-semibold truncate">Painel Administrativo</h1>
+              <p className="text-xs md:text-sm text-muted-foreground truncate">
                 Bem-vindo, {user?.email} ({userPermissions.role})
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-1 md:gap-2">
               {hasPermission(userPermissions, 'dashboard_view') && (
-                <Button onClick={() => window.open('/dashboard', '_blank')} variant="secondary" size="sm">
+                <Button 
+                  onClick={() => window.open('/dashboard', '_blank')} 
+                  variant="secondary" 
+                  size="sm"
+                  className="hidden sm:flex"
+                >
                   📊 Dashboard
                 </Button>
               )}
             </div>
           </header>
 
-          {/* Conteúdo principal */}
-          <main className="flex-1 p-4 overflow-auto">
+          {/* Conteúdo principal responsivo */}
+          <main className="flex-1 p-2 md:p-4 overflow-auto">
             {renderTabContent()}
           </main>
         </SidebarInset>

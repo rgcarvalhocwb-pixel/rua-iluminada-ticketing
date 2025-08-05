@@ -147,7 +147,7 @@ export const CustomerForm = ({ ticketData, onBack, onProceedToPayment }: Custome
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4">
+    <div className="max-w-4xl mx-auto py-4 md:py-8 px-2 md:px-4">
       <div className="mb-6">
         <Button
           variant="outline"
