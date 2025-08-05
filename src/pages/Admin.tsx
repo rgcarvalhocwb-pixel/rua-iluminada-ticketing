@@ -9,12 +9,13 @@ import { User } from '@supabase/supabase-js';
 import { EventsManager } from '@/components/admin/EventsManager';
 import { OrdersView } from '@/components/admin/OrdersView';
 import { CashRegister } from '@/components/admin/CashRegister';
+import { GeneralCashbox } from '@/components/admin/GeneralCashbox';
 import { PaymentSettings } from '@/components/admin/PaymentSettings';
 import { StoresManager } from '@/components/admin/StoresManager';
 import { OnlineSalesManager } from '@/components/admin/OnlineSalesManager';
 import { TicketTypesManager } from '@/components/admin/TicketTypesManager';
 import { UserManagement } from '@/components/admin/UserManagement';
-import { LogOut, Calendar, ShoppingCart, CreditCard, DollarSign, Store, Globe, Ticket, Users } from 'lucide-react';
+import { LogOut, Calendar, ShoppingCart, CreditCard, DollarSign, Store, Globe, Ticket, Users, Banknote } from 'lucide-react';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -88,7 +89,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="events" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Eventos
@@ -99,7 +100,11 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger value="cash-register" className="flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
-              Caixa
+              Caixa Diário
+            </TabsTrigger>
+            <TabsTrigger value="general-cash" className="flex items-center gap-2">
+              <Banknote className="w-4 h-4" />
+              Caixa Geral
             </TabsTrigger>
             <TabsTrigger value="stores" className="flex items-center gap-2">
               <Store className="w-4 h-4" />
@@ -135,7 +140,21 @@ const Admin = () => {
                 <EventsManager />
               </CardContent>
             </Card>
-          </TabsContent>
+            </TabsContent>
+
+            <TabsContent value="general-cash">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Caixa Geral</CardTitle>
+                  <CardDescription>
+                    Consolide informações diárias e gerencie repasses para a administração
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <GeneralCashbox />
+                </CardContent>
+              </Card>
+            </TabsContent>
 
           <TabsContent value="tickets">
             <Card>
@@ -154,7 +173,7 @@ const Admin = () => {
           <TabsContent value="cash-register">
             <Card>
               <CardHeader>
-                <CardTitle>Fechamento de Caixa</CardTitle>
+                <CardTitle>Caixa Diário</CardTitle>
                 <CardDescription>
                   Registre vendas presenciais e faça a conciliação financeira
                 </CardDescription>
