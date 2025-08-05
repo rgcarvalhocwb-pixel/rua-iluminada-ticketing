@@ -44,9 +44,29 @@ serve(async (req) => {
 
     console.log('Criando pagamento PagSeguro para pedido:', paymentData.orderId);
 
-    // Construir XML para API do PagSeguro
-    const checkoutXml = buildCheckoutXml(paymentData);
-    console.log('XML do checkout:', checkoutXml);
+    // Construir parâmetros para API do PagSeguro
+    const params = new URLSearchParams();
+    params.append('email', pagseguroEmail);
+    params.append('token', pagseguroToken);
+    params.append('currency', 'BRL');
+    params.append('reference', paymentData.orderId);
+    params.append('senderName', paymentData.customerName);
+    params.append('senderEmail', paymentData.customerEmail);
+    params.append('senderCPF', paymentData.customerCpf.replace(/\D/g, ''));
+    params.append('redirectURL', 'https://f8e882a1-3df0-405f-9761-156eb73300cf.lovableproject.com');
+    params.append('maxAge', '120');
+    params.append('maxUses', '1');
+
+    // Adicionar itens
+    paymentData.items.forEach((item, index) => {
+      const num = index + 1;
+      params.append(`itemId${num}`, num.toString());
+      params.append(`itemDescription${num}`, item.name);
+      params.append(`itemAmount${num}`, item.price.toFixed(2));
+      params.append(`itemQuantity${num}`, item.quantity.toString());
+    });
+
+    console.log('Parâmetros para PagSeguro:', Object.fromEntries(params));
 
     // Fazer requisição para API do PagSeguro
     const pagseguroUrl = 'https://ws.sandbox.pagseguro.uol.com.br/v2/checkout';
@@ -56,11 +76,7 @@ serve(async (req) => {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: new URLSearchParams({
-        email: pagseguroEmail,
-        token: pagseguroToken,
-        ...parseXmlToParams(checkoutXml)
-      })
+      body: params
     });
 
     if (!response.ok) {
@@ -120,87 +136,3 @@ serve(async (req) => {
     });
   }
 });
-
-function buildCheckoutXml(data: PaymentRequest): string {
-  const items = data.items.map((item, index) => 
-    `<item>
-      <id>${index + 1}</id>
-      <description>${item.name}</description>
-      <amount>${item.price.toFixed(2)}</amount>
-      <quantity>${item.quantity}</quantity>
-    </item>`
-  ).join('');
-
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<checkout>
-  <currency>BRL</currency>
-  <items>
-    ${items}
-  </items>
-  <reference>${data.orderId}</reference>
-  <sender>
-    <name>${data.customerName}</name>
-    <email>${data.customerEmail}</email>
-    <documents>
-      <document>
-        <type>CPF</type>
-        <value>${data.customerCpf}</value>
-      </document>
-    </documents>
-  </sender>
-  <redirectURL>https://f8e882a1-3df0-405f-9761-156eb73300cf.lovableproject.com</redirectURL>
-  <maxAge>120</maxAge>
-  <maxUses>1</maxUses>
-</checkout>`;
-}
-
-function parseXmlToParams(xml: string): Record<string, string> {
-  // Converter XML em parâmetros para PagSeguro
-  const params: Record<string, string> = {};
-  
-  // Currency
-  params.currency = 'BRL';
-  
-  // Reference
-  const refMatch = xml.match(/<reference>([^<]+)<\/reference>/);
-  if (refMatch) params.reference = refMatch[1];
-  
-  // Redirect URL
-  const urlMatch = xml.match(/<redirectURL>([^<]+)<\/redirectURL>/);
-  if (urlMatch) params.redirectURL = urlMatch[1];
-  
-  // MaxAge e MaxUses
-  params.maxAge = '120';
-  params.maxUses = '1';
-  
-  // Sender
-  const nameMatch = xml.match(/<name>([^<]+)<\/name>/);
-  if (nameMatch) params.senderName = nameMatch[1];
-  
-  const emailMatch = xml.match(/<email>([^<]+)<\/email>/);
-  if (emailMatch) params.senderEmail = emailMatch[1];
-  
-  const cpfMatch = xml.match(/<value>([^<]+)<\/value>/);
-  if (cpfMatch) params.senderCPF = cpfMatch[1];
-  
-  // Items
-  const itemMatches = xml.match(/<item>[\s\S]*?<\/item>/g);
-  if (itemMatches) {
-    itemMatches.forEach((item, index) => {
-      const num = index + 1;
-      
-      const descMatch = item.match(/<description>([^<]+)<\/description>/);
-      if (descMatch) params[`itemDescription${num}`] = descMatch[1];
-      
-      const amountMatch = item.match(/<amount>([^<]+)<\/amount>/);
-      if (amountMatch) params[`itemAmount${num}`] = amountMatch[1];
-      
-      const qtyMatch = item.match(/<quantity>([^<]+)<\/quantity>/);
-      if (qtyMatch) params[`itemQuantity${num}`] = qtyMatch[1];
-      
-      params[`itemId${num}`] = num.toString();
-    });
-  }
-  
-  return params;
-}

@@ -90,11 +90,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Verificar quais vendas já foram importadas hoje
+    // Verificar quais vendas já foram importadas (não apenas hoje, mas sempre)
     const { data: existingSales } = await supabaseClient
       .from('imported_sales')
       .select('reference')
-      .eq('import_date', initialDate.substring(0, 4) + '-' + initialDate.substring(4, 6) + '-' + initialDate.substring(6, 8))
       .eq('source', 'pagseguro');
 
     const existingReferences = new Set(existingSales?.map(sale => sale.reference) || []);
