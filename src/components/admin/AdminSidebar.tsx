@@ -190,15 +190,14 @@ export function AdminSidebar({
     <Sidebar collapsible="icon" className="border-r">
       <SidebarHeader className="border-b bg-gradient-to-r from-red-900 to-red-800 shadow-red-glow/20">
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white shadow-soft">
-            <Building2 className="h-4 w-4" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10 text-white shadow-soft">
+            <Building2 className="h-8 w-8" />
           </div>
           {state === "expanded" && (
             <div className="flex flex-col">
-              <span className="text-sm font-bold font-dancing text-white">
+              <span className="text-lg font-bold font-dancing text-white">
                 🎄 Rua Iluminada
               </span>
-              <span className="text-xs text-white/80 font-inter">Painel Natalino</span>
             </div>
           )}
         </div>
