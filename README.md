@@ -267,12 +267,6 @@ O painel administrativo é organizado em categorias:
 
 ## 🚀 Deploy
 
-### Lovable (Recomendado)
-1. Acesse o [projeto no Lovable](https://lovable.dev/projects/f8e882a1-3df0-405f-9761-156eb73300cf)
-2. Clique em "Share" → "Publish"
-3. Configure domínio personalizado se necessário
-
-### Outros Provedores
 - Vercel
 - Netlify  
 - AWS Amplify
