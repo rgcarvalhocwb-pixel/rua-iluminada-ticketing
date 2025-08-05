@@ -501,6 +501,7 @@ export type Database = {
       store_daily_sales: {
         Row: {
           commission_amount: number
+          commission_paid: boolean | null
           created_at: string
           event_id: string
           id: string
@@ -511,6 +512,7 @@ export type Database = {
         }
         Insert: {
           commission_amount: number
+          commission_paid?: boolean | null
           created_at?: string
           event_id: string
           id?: string
@@ -521,6 +523,7 @@ export type Database = {
         }
         Update: {
           commission_amount?: number
+          commission_paid?: boolean | null
           created_at?: string
           event_id?: string
           id?: string

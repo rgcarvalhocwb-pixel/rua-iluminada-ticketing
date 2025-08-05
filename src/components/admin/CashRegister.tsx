@@ -97,7 +97,8 @@ export const CashRegister = () => {
           *,
           stores(name)
         `)
-        .eq('sale_date', selectedDate);
+        .eq('sale_date', selectedDate)
+        .eq('commission_paid', false); // Apenas comissões não pagas
 
       if (error) throw error;
       setPendingCommissions(data || []);
@@ -395,7 +396,7 @@ export const CashRegister = () => {
 
   const totals = calculateTotals();
 
-  const addCommissionPayment = (commission: any) => {
+  const addCommissionPayment = async (commission: any) => {
     const commissionEntry: CashEntry = {
       id: Date.now().toString(),
       type: 'income', // CORRIGIDO: comissão é ENTRADA
@@ -405,11 +406,29 @@ export const CashRegister = () => {
     };
 
     setEntries([...entries, commissionEntry]);
-    
-    toast({
-      title: "Comissão adicionada",
-      description: `Pagamento de R$ ${commission.commission_amount.toFixed(2)} para ${commission.stores.name}`,
-    });
+
+    // Marcar comissão como paga no banco
+    try {
+      await supabase
+        .from('store_daily_sales')
+        .update({ commission_paid: true })
+        .eq('id', commission.id);
+      
+      // Recarregar comissões pendentes
+      fetchPendingCommissions();
+      
+      toast({
+        title: "Comissão registrada",
+        description: `Comissão de ${commission.stores.name} adicionada como entrada`,
+      });
+    } catch (error: any) {
+      console.error('Erro ao marcar comissão como paga:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar status da comissão",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
