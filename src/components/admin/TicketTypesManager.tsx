@@ -285,13 +285,13 @@ export const TicketTypesManager = () => {
           <div className="max-w-md">
             <Label>Evento</Label>
             <select 
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
               value={selectedEventId}
               onChange={(e) => setSelectedEventId(e.target.value)}
             >
-              <option value="">Selecione um evento</option>
+              <option value="" className="bg-background text-foreground">Selecione um evento</option>
               {events.map((event) => (
-                <option key={event.id} value={event.id}>
+                <option key={event.id} value={event.id} className="bg-background text-foreground">
                   {event.name}
                 </option>
               ))}
