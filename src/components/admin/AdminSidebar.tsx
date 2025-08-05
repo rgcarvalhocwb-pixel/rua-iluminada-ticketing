@@ -110,7 +110,7 @@ export function AdminSidebar({
     sidebarItems.push({
       id: "store-sales",
       title: "Vendas das Lojas",
-      icon: DollarSign,
+      icon: Building2,
       category: "operations",
     });
   }
@@ -174,6 +174,12 @@ export function AdminSidebar({
         title: "Analytics",
         icon: TrendingUp,
         category: "admin",
+      },
+      {
+        id: "system-health",
+        title: "Saúde do Sistema",
+        icon: Activity,
+        category: "admin",
       }
     );
   }
@@ -236,7 +242,7 @@ export function AdminSidebar({
                       `}
                     >
                        <item.icon className="h-4 w-4" />
-                       <span className="font-inter text-black">{item.title}</span>
+                       <span className={`font-inter ${isActive(item.id) ? "text-white" : "text-black"}`}>{item.title}</span>
                       {isActive(item.id) && (
                         <ChevronRight className="ml-auto h-4 w-4" />
                       )}
@@ -271,7 +277,7 @@ export function AdminSidebar({
                       `}
                     >
                        <item.icon className="h-4 w-4" />
-                       <span className="font-inter text-black">{item.title}</span>
+                       <span className={`font-inter ${isActive(item.id) ? "text-white" : "text-black"}`}>{item.title}</span>
                       {isActive(item.id) && (
                         <ChevronRight className="ml-auto h-4 w-4" />
                       )}
@@ -306,7 +312,7 @@ export function AdminSidebar({
                       `}
                     >
                        <item.icon className="h-4 w-4" />
-                       <span className="font-inter text-black">{item.title}</span>
+                       <span className={`font-inter ${isActive(item.id) ? "text-white" : "text-black"}`}>{item.title}</span>
                       {isActive(item.id) && (
                         <ChevronRight className="ml-auto h-4 w-4" />
                       )}
@@ -341,7 +347,7 @@ export function AdminSidebar({
                       `}
                     >
                        <item.icon className="h-4 w-4" />
-                       <span className="font-inter text-black">{item.title}</span>
+                       <span className={`font-inter ${isActive(item.id) ? "text-white" : "text-black"}`}>{item.title}</span>
                       {isActive(item.id) && (
                         <ChevronRight className="ml-auto h-4 w-4" />
                       )}

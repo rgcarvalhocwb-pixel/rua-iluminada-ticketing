@@ -23,6 +23,7 @@ import { BrandingSettings } from '@/components/admin/BrandingSettings';
 import { PerformanceMonitoring } from '@/components/admin/PerformanceMonitoring';
 import { AnalyticsIntegration } from '@/components/admin/AnalyticsIntegration';
 import { StoreDailySalesManager } from '@/components/admin/StoreDailySalesManager';
+import { SystemHealth } from '@/components/admin/SystemHealth';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -170,6 +171,11 @@ const Admin = () => {
         component: <UserManagement />,
         title: 'Gerenciamento de Usuários',
         description: 'Aprove novos usuários e gerencie permissões de acesso'
+      },
+      'system-health': {
+        component: <SystemHealth />,
+        title: 'Saúde do Sistema',
+        description: 'Verificações de integridade e status dos módulos'
       }
     };
 
