@@ -255,6 +255,14 @@ export const CashRegister = () => {
       if (error) throw error;
 
       if (data.success) {
+        if (data.count === 0) {
+          toast({
+            title: "Nenhuma venda nova encontrada",
+            description: "Todas as vendas do período já foram importadas anteriormente.",
+          });
+          return;
+        }
+
         // Adicionar as vendas PagSeguro ao livro caixa
         const newEntries = data.entries.map((entry: any) => ({
           id: Date.now().toString() + Math.random(),
@@ -268,7 +276,7 @@ export const CashRegister = () => {
 
         toast({
           title: "Vendas importadas com sucesso!",
-          description: `${data.count} vendas importadas totalizando R$ ${data.totalAmount.toFixed(2)}`,
+          description: `${data.count} vendas novas importadas totalizando R$ ${data.totalAmount.toFixed(2)}`,
         });
       } else {
         throw new Error(data.error);

@@ -200,6 +200,33 @@ export type Database = {
         }
         Relationships: []
       }
+      imported_sales: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          id: string
+          import_date: string
+          reference: string
+          source: string
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          import_date: string
+          reference: string
+          source?: string
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          id?: string
+          import_date?: string
+          reference?: string
+          source?: string
+        }
+        Relationships: []
+      }
       online_sales: {
         Row: {
           created_at: string

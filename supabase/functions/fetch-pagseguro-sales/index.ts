@@ -84,17 +84,50 @@ serve(async (req) => {
       }
     ];
 
+    // Criar cliente Supabase para verificar vendas já importadas
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Verificar quais vendas já foram importadas hoje
+    const { data: existingSales } = await supabaseClient
+      .from('imported_sales')
+      .select('reference')
+      .eq('import_date', initialDate.substring(0, 4) + '-' + initialDate.substring(4, 6) + '-' + initialDate.substring(6, 8))
+      .eq('source', 'pagseguro');
+
+    const existingReferences = new Set(existingSales?.map(sale => sale.reference) || []);
+
+    // Filtrar apenas vendas não importadas
+    const newTransactions = mockTransactions.filter(t => 
+      t.status === 'PAID' && !existingReferences.has(t.reference)
+    );
+
     // Transformar em formato para o livro caixa
-    const cashEntries = mockTransactions
-      .filter(t => t.status === 'PAID')
-      .map(transaction => ({
-        type: 'income' as const,
-        description: `Venda PagSeguro - ${transaction.reference}`,
-        amount: transaction.netAmount,
-        paymentMethod: getPaymentMethod(transaction.paymentMethod.type),
+    const cashEntries = newTransactions.map(transaction => ({
+      type: 'income' as const,
+      description: `Venda PagSeguro - ${transaction.reference}`,
+      amount: transaction.netAmount,
+      paymentMethod: getPaymentMethod(transaction.paymentMethod.type),
+      source: 'pagseguro',
+      reference: transaction.reference,
+      originalData: transaction
+    }));
+
+    // Registrar vendas importadas no banco
+    if (cashEntries.length > 0) {
+      const importedSalesData = cashEntries.map(entry => ({
+        reference: entry.reference,
+        import_date: initialDate.substring(0, 4) + '-' + initialDate.substring(4, 6) + '-' + initialDate.substring(6, 8),
         source: 'pagseguro',
-        originalData: transaction
+        amount: entry.amount
       }));
+
+      await supabaseClient
+        .from('imported_sales')
+        .insert(importedSalesData);
+    }
 
     console.log(`Simuladas ${cashEntries.length} transações para demonstração`);
 
