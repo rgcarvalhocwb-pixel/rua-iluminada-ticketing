@@ -13,22 +13,22 @@ All colors MUST be HSL.
     --background: 0 0% 0%;
     --foreground: 0 0% 98%;
 
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 25%;
+    --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 25%;
+    --popover-foreground: 0 0% 100%;
 
     /* Primary - Christmas Red */
     --primary: 0 84% 60%;
     --primary-foreground: 0 0% 98%;
 
-    /* Secondary - Warm cream/beige */
-    --secondary: 43 57% 94%;
-    --secondary-foreground: 0 84% 60%;
+    /* Secondary - Dark gray for visibility */
+    --secondary: 0 0% 30%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 43 57% 94%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 80%;
 
     /* Accent - Christmas Gold */
     --accent: 48 96% 53%;
@@ -37,8 +37,8 @@ All colors MUST be HSL.
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 15%;
+    --border: 0 0% 30%;
+    --input: 0 0% 20%;
     --ring: 0 84% 60%;
 
     --radius: 0.5rem;
