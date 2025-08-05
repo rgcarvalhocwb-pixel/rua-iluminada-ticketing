@@ -240,21 +240,21 @@ export const EditUserDialog = ({
           </div>
 
           {formData.role === 'user' && (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Label>Permissões Específicas</Label>
-              <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border rounded-md p-3">
+              <div className="grid grid-cols-1 gap-3 max-h-48 overflow-y-auto border rounded-md p-4 bg-muted/20">
                 {SYSTEM_PERMISSIONS.map((permission) => (
-                  <div key={permission.id} className="flex items-center space-x-2">
+                  <div key={permission.id} className="flex items-center space-x-3">
                     <Checkbox
-                      id={permission.id}
+                      id={`edit-${permission.id}`}
                       checked={formData.permissions.includes(permission.id)}
                       onCheckedChange={(checked) => 
                         handlePermissionChange(permission.id, checked as boolean)
                       }
                     />
                     <Label 
-                      htmlFor={permission.id}
-                      className="text-xs cursor-pointer"
+                      htmlFor={`edit-${permission.id}`}
+                      className="text-sm cursor-pointer flex-1"
                     >
                       {permission.label}
                     </Label>
@@ -262,8 +262,22 @@ export const EditUserDialog = ({
                 ))}
               </div>
               <p className="text-xs text-muted-foreground">
-                Admins e Masters têm acesso completo automaticamente
+                ✅ Admins e Masters têm acesso completo automaticamente
               </p>
+            </div>
+          )}
+
+          {(formData.role === 'admin' || formData.role === 'master') && (
+            <div className="space-y-2">
+              <Label>Permissões</Label>
+              <div className="p-3 bg-primary/10 border rounded-md">
+                <p className="text-sm text-primary font-medium">
+                  🔑 {formData.role === 'master' ? 'Master' : 'Administrador'} - Acesso Total
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Este usuário tem acesso completo a todos os módulos do sistema.
+                </p>
+              </div>
             </div>
           )}
 
