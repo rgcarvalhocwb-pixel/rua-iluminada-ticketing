@@ -47,6 +47,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useUserPermissions, hasPermission } from "@/hooks/useUserPermissions";
 import christmasAvatar from "@/assets/christmas-avatar.png";
+import logoRuaIluminada from "@/assets/logo-rua-iluminada.webp";
 
 interface AdminSidebarProps {
   activeTab: string;
@@ -214,8 +215,12 @@ export function AdminSidebar({
     <Sidebar collapsible="icon" className="border-r border-border/40">
       <SidebarHeader className="border-b border-border/40 p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Building2 className="h-6 w-6" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-lg overflow-hidden bg-white shadow-sm">
+            <img 
+              src={logoRuaIluminada} 
+              alt="Rua Iluminada" 
+              className="h-10 w-10 object-contain"
+            />
           </div>
           {state === "expanded" && (
             <div className="flex flex-col">
