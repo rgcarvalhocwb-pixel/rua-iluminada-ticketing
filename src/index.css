@@ -9,56 +9,56 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Rua Iluminada Original Theme - Light Mode */
+    /* Rua Iluminada - Christmas Theme (Based on official site) */
     --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    --foreground: 0 0% 9%;
 
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    --card-foreground: 0 0% 9%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 0 0% 9%;
 
-    /* Primary - Purple theme for Rua Iluminada */
-    --primary: 262.1 83.3% 57.8%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Christmas Red */
+    --primary: 0 84% 60%;
+    --primary-foreground: 0 0% 98%;
 
-    /* Secondary - Light Purple */
-    --secondary: 270 20% 98%;
-    --secondary-foreground: 262.1 83.3% 57.8%;
+    /* Secondary - Warm cream/beige */
+    --secondary: 43 57% 94%;
+    --secondary-foreground: 0 84% 60%;
 
-    --muted: 270 20% 98%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 43 57% 94%;
+    --muted-foreground: 0 0% 45%;
 
-    /* Accent - Gold accent for highlights */
-    --accent: 47.9 95.8% 53.1%;
-    --accent-foreground: 26.5 83.3% 14.1%;
+    /* Accent - Christmas Gold */
+    --accent: 48 96% 53%;
+    --accent-foreground: 0 0% 9%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 262.1 83.3% 57.8%;
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 0 84% 60%;
 
     --radius: 0.5rem;
 
-    /* Chart colors */
-    --chart-1: 262.1 83.3% 57.8%;
-    --chart-2: 47.9 95.8% 53.1%;
-    --chart-3: 197 37% 24%;
+    /* Chart colors - Christmas theme */
+    --chart-1: 0 84% 60%;
+    --chart-2: 48 96% 53%;
+    --chart-3: 120 60% 50%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
 
     /* Sidebar - Light theme */
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-foreground: 0 0% 20%;
+    --sidebar-primary: 0 84% 60%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 43 57% 94%;
+    --sidebar-accent-foreground: 0 84% 60%;
+    --sidebar-border: 20 5.9% 90%;
+    --sidebar-ring: 0 84% 60%;
   }
 
   /* Admin-specific theme with professional colors */
@@ -82,50 +82,54 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* Rua Iluminada Original Theme - Dark Mode */
-    --background: 20 14.3% 4.1%;
-    --foreground: 60 9.1% 97.8%;
+    /* Rua Iluminada - Christmas Dark Theme */
+    --background: 0 0% 5%;
+    --foreground: 0 0% 95%;
 
-    --card: 20 14.3% 4.1%;
-    --card-foreground: 60 9.1% 97.8%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 20 14.3% 4.1%;
-    --popover-foreground: 60 9.1% 97.8%;
+    --popover: 0 0% 5%;
+    --popover-foreground: 0 0% 95%;
 
-    --primary: 262.1 83.3% 57.8%;
-    --primary-foreground: 210 20% 98%;
+    /* Primary - Christmas Red (slightly muted for dark) */
+    --primary: 0 74% 55%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 12 6.5% 15.1%;
-    --secondary-foreground: 60 9.1% 97.8%;
+    /* Secondary - Dark warm tone */
+    --secondary: 15 25% 15%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 12 6.5% 15.1%;
-    --muted-foreground: 24 5.4% 63.9%;
+    --muted: 15 25% 15%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 47.9 95.8% 53.1%;
-    --accent-foreground: 26.5 83.3% 14.1%;
+    /* Accent - Christmas Gold (muted for dark) */
+    --accent: 48 86% 48%;
+    --accent-foreground: 0 0% 9%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 60 9.1% 97.8%;
+    --destructive: 0 74% 50%;
+    --destructive-foreground: 0 0% 95%;
 
-    --border: 12 6.5% 15.1%;
-    --input: 12 6.5% 15.1%;
-    --ring: 262.1 83.3% 57.8%;
+    --border: 15 25% 15%;
+    --input: 15 25% 15%;
+    --ring: 0 74% 55%;
 
-    --chart-1: 262.1 83.3% 67.8%;
-    --chart-2: 47.9 95.8% 63.1%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    /* Chart colors - Christmas dark theme */
+    --chart-1: 0 74% 65%;
+    --chart-2: 48 86% 58%;
+    --chart-3: 120 50% 45%;
+    --chart-4: 43 64% 56%;
+    --chart-5: 27 77% 57%;
 
     /* Sidebar - Dark theme */
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 0 74% 55%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 15 25% 15%;
+    --sidebar-accent-foreground: 0 0% 90%;
+    --sidebar-border: 15 25% 15%;
+    --sidebar-ring: 0 74% 55%;
   }
 
   /* Admin dark theme */
