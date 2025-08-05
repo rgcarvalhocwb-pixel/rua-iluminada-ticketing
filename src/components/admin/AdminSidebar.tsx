@@ -351,10 +351,10 @@ export function AdminSidebar({
             <div className="flex flex-col gap-2 p-2">
               {state === "expanded" && (
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium font-inter truncate text-white">
+                  <span className="text-sm font-medium font-inter truncate text-black">
                     {userEmail}
                   </span>
-                  <span className="text-xs text-white/80 capitalize font-inter">
+                  <span className="text-xs text-black/80 capitalize font-inter">
                     🎄 {userRole}
                   </span>
                 </div>
