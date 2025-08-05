@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, MapPin, Sparkles } from "lucide-react";
-import heroImage from "@/assets/hero-rua-iluminada.jpg";
 import logoRuaIluminada from "@/assets/logo-rua-iluminada.webp";
 
 export const HeroSection = () => {
@@ -41,7 +40,7 @@ export const HeroSection = () => {
       {/* Background Image with Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroImage})` }}
+        style={{ backgroundImage: `url(/lovable-uploads/c2d39665-54d0-425c-8022-13fd43871e5f.png)` }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background/80" />
       </div>
