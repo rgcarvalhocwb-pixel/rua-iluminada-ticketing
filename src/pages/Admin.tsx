@@ -80,10 +80,15 @@ const Admin = () => {
               Bem-vindo, {user?.email}
             </p>
           </div>
-          <Button onClick={handleSignOut} variant="outline" size="sm">
-            <LogOut className="w-4 h-4 mr-2" />
-            Sair
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => window.open('/dashboard', '_blank')} variant="secondary" size="sm">
+              📊 Dashboard
+            </Button>
+            <Button onClick={handleSignOut} variant="outline" size="sm">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </Button>
+          </div>
         </div>
       </header>
 

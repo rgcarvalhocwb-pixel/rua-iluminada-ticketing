@@ -1,60 +1,88 @@
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { UserCheck, UserX, Shield, User } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useToast } from '@/hooks/use-toast';
+import { Users, Check, X, Settings } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+
+interface UserPermission {
+  id: string;
+  permission: string;
+}
 
 interface UserRole {
   id: string;
   user_id: string;
-  role: 'admin' | 'user';
+  role: 'admin' | 'user' | 'moderator';
   status: 'pending' | 'approved' | 'rejected';
   approved_by?: string;
   approved_at?: string;
   created_at: string;
-  user_email?: string;
+  profiles?: any; // Simplified type for now
 }
 
+interface UserWithPermissions extends UserRole {
+  permissions: UserPermission[];
+}
+
+const SYSTEM_PERMISSIONS = [
+  { id: 'events_manage', label: 'Gerenciar Eventos' },
+  { id: 'tickets_manage', label: 'Gerenciar Ingressos' },
+  { id: 'cash_daily', label: 'Caixa Diário' },
+  { id: 'cash_general', label: 'Caixa Geral' },
+  { id: 'stores_manage', label: 'Gerenciar Lojas' },
+  { id: 'online_sales', label: 'Vendas Online' },
+  { id: 'orders_view', label: 'Visualizar Pedidos' },
+  { id: 'payments_config', label: 'Configurar Pagamentos' },
+  { id: 'users_manage', label: 'Gerenciar Usuários' },
+  { id: 'dashboard_view', label: 'Visualizar Dashboard' }
+];
+
 export const UserManagement = () => {
-  const [users, setUsers] = useState<UserRole[]>([]);
+  const [users, setUsers] = useState<UserWithPermissions[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentUser, setCurrentUser] = useState<any>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    loadUsers();
-    getCurrentUser();
+    fetchUsers();
   }, []);
 
-  const getCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setCurrentUser(user);
-  };
-
-  const loadUsers = async () => {
+  const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
+      // Buscar usuários com seus papéis
+      const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (email, display_name)
+        `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (rolesError) throw rolesError;
 
-      // Get user emails from auth metadata
-      const usersWithEmails = await Promise.all(
-        data.map(async (userRole) => {
-          const { data: userData } = await supabase.auth.admin.getUserById(userRole.user_id);
-          return {
-            ...userRole,
-            user_email: userData.user?.email || 'Email não disponível'
-          };
+      // Buscar permissões para cada usuário
+      const usersWithPermissions = await Promise.all(
+        (userRoles || []).map(async (userRole) => {
+          const { data: permissions, error: permError } = await supabase
+            .from('user_permissions')
+            .select('id, permission')
+            .eq('user_id', userRole.user_id);
+
+          if (permError) {
+            console.error('Erro ao buscar permissões:', permError);
+            return { ...userRole, permissions: [] };
+          }
+
+          return { ...userRole, permissions: permissions || [] };
         })
       );
 
-      setUsers(usersWithEmails);
+      setUsers(usersWithPermissions as UserWithPermissions[]);
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -72,19 +100,19 @@ export const UserManagement = () => {
         .from('user_roles')
         .update({
           status,
-          approved_by: currentUser?.id,
+          approved_by: (await supabase.auth.getUser()).data.user?.id,
           approved_at: new Date().toISOString()
         })
-        .eq('user_id', userId);
+        .eq('id', userId);
 
       if (error) throw error;
 
       toast({
         title: "Sucesso",
-        description: `Usuário ${status === 'approved' ? 'aprovado' : 'rejeitado'} com sucesso`,
+        description: `Usuário ${status === 'approved' ? 'aprovado' : 'rejeitado'} com sucesso!`
       });
 
-      loadUsers();
+      fetchUsers();
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -99,16 +127,16 @@ export const UserManagement = () => {
       const { error } = await supabase
         .from('user_roles')
         .update({ role: 'admin' })
-        .eq('user_id', userId);
+        .eq('id', userId);
 
       if (error) throw error;
 
       toast({
         title: "Sucesso",
-        description: "Usuário promovido a administrador",
+        description: "Usuário promovido a administrador com sucesso!"
       });
 
-      loadUsers();
+      fetchUsers();
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -118,119 +146,183 @@ export const UserManagement = () => {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-600">Pendente</Badge>;
-      case 'approved':
-        return <Badge variant="outline" className="text-green-600 border-green-600">Aprovado</Badge>;
-      case 'rejected':
-        return <Badge variant="outline" className="text-red-600 border-red-600">Rejeitado</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
+  const handlePermissionChange = async (userId: string, permission: string, checked: boolean) => {
+    try {
+      if (checked) {
+        // Adicionar permissão
+        const { error } = await supabase
+          .from('user_permissions')
+          .insert({
+            user_id: userId,
+            permission: permission as any, // Type assertion for enum
+            granted_by: (await supabase.auth.getUser()).data.user?.id
+          });
+
+        if (error) throw error;
+      } else {
+        // Remover permissão
+        const { error } = await supabase
+          .from('user_permissions')
+          .delete()
+          .eq('user_id', userId)
+          .eq('permission', permission as any); // Type assertion for enum
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Sucesso",
+        description: `Permissão ${checked ? 'concedida' : 'removida'} com sucesso!`
+      });
+
+      fetchUsers(); // Recarregar lista
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: "Erro ao alterar permissão: " + error.message,
+        variant: "destructive"
+      });
     }
   };
 
-  const getRoleBadge = (role: string) => {
-    return role === 'admin' ? (
-      <Badge className="bg-purple-100 text-purple-800 border-purple-300">
-        <Shield className="w-3 h-3 mr-1" />
-        Admin
-      </Badge>
-    ) : (
-      <Badge variant="outline">
-        <User className="w-3 h-3 mr-1" />
-        Usuário
-      </Badge>
-    );
+  const hasPermission = (user: UserWithPermissions, permission: string) => {
+    return user.permissions.some(p => p.permission === permission);
   };
 
   if (loading) {
-    return <div className="p-6">Carregando usuários...</div>;
+    return <div>Carregando...</div>;
   }
-
-  const pendingUsers = users.filter(u => u.status === 'pending');
 
   return (
     <div className="space-y-6">
-      {pendingUsers.length > 0 && (
-        <Alert>
-          <AlertDescription>
-            <strong>Atenção:</strong> Existem {pendingUsers.length} usuários aguardando aprovação.
-          </AlertDescription>
-        </Alert>
-      )}
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold flex items-center gap-2">
+          <Users className="w-6 h-6" />
+          Gerenciamento de Usuários
+        </h2>
+      </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Gerenciamento de Usuários</CardTitle>
-          <CardDescription>
-            Gerencie aprovações e permissões dos usuários do sistema
-          </CardDescription>
+          <CardTitle>Usuários e Permissões</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {users.map((user) => (
-              <div
-                key={user.id}
-                className="flex items-center justify-between p-4 border rounded-lg"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{user.user_email}</span>
-                    {getRoleBadge(user.role)}
-                    {getStatusBadge(user.status)}
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Cadastrado em: {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                    {user.approved_at && (
-                      <span> • Aprovado em: {new Date(user.approved_at).toLocaleDateString('pt-BR')}</span>
-                    )}
-                  </p>
-                </div>
-
-                <div className="flex gap-2">
-                  {user.status === 'pending' && (
-                    <>
-                      <Button
-                        size="sm"
-                        onClick={() => updateUserStatus(user.user_id, 'approved')}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        <UserCheck className="w-4 h-4 mr-1" />
-                        Aprovar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => updateUserStatus(user.user_id, 'rejected')}
-                      >
-                        <UserX className="w-4 h-4 mr-1" />
-                        Rejeitar
-                      </Button>
-                    </>
-                  )}
-
-                  {user.status === 'approved' && user.role === 'user' && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => promoteToAdmin(user.user_id)}
-                    >
-                      <Shield className="w-4 h-4 mr-1" />
-                      Promover a Admin
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {users.length === 0 && (
-              <p className="text-center text-muted-foreground py-8">
-                Nenhum usuário encontrado
-              </p>
-            )}
-          </div>
+          {users.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">
+              Nenhum usuário encontrado ainda.
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Usuário</TableHead>
+                  <TableHead>Papel</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Permissões do Sistema</TableHead>
+                  <TableHead>Data de Criação</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <div>
+                        <div className="font-medium">
+                          {user.profiles?.display_name || 'Nome não informado'}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {user.profiles?.email || user.user_id}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                        {user.role === 'admin' ? 'Administrador' : 
+                         user.role === 'moderator' ? 'Moderador' : 'Usuário'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={user.status === 'approved' ? 'default' : 'destructive'}>
+                        {user.status === 'approved' ? 'Aprovado' : 
+                         user.status === 'pending' ? 'Pendente' : 'Rejeitado'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium mb-2">Controle de Acesso:</div>
+                        <div className="grid grid-cols-2 gap-2 max-w-md">
+                          {SYSTEM_PERMISSIONS.map((permission) => (
+                            <div key={permission.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`${user.id}-${permission.id}`}
+                                checked={hasPermission(user, permission.id)}
+                                onCheckedChange={(checked) => 
+                                  handlePermissionChange(user.user_id, permission.id, checked as boolean)
+                                }
+                                disabled={user.role === 'admin' || user.status !== 'approved'} 
+                              />
+                              <label 
+                                htmlFor={`${user.id}-${permission.id}`}
+                                className="text-xs cursor-pointer"
+                              >
+                                {permission.label}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                        {user.role === 'admin' && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            * Administradores têm acesso total
+                          </div>
+                        )}
+                        {user.status !== 'approved' && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            * Usuário deve ser aprovado primeiro
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(user.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        {user.status === 'pending' && (
+                          <>
+                            <Button 
+                              size="sm" 
+                              onClick={() => updateUserStatus(user.id, 'approved')}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              <Check className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => updateUserStatus(user.id, 'rejected')}
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </>
+                        )}
+                        {user.status === 'approved' && user.role !== 'admin' && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => promoteToAdmin(user.id)}
+                          >
+                            <Settings className="w-4 h-4" />
+                            Promover
+                          </Button>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -565,6 +565,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_permissions: {
+        Row: {
+          created_at: string
+          granted_by: string | null
+          id: string
+          permission: Database["public"]["Enums"]["system_permission"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          permission: Database["public"]["Enums"]["system_permission"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          granted_by?: string | null
+          id?: string
+          permission?: Database["public"]["Enums"]["system_permission"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           approved_at: string | null
@@ -656,6 +683,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      has_permission: {
+        Args: {
+          _user_id: string
+          _permission: Database["public"]["Enums"]["system_permission"]
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -670,6 +704,17 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      system_permission:
+        | "events_manage"
+        | "tickets_manage"
+        | "cash_daily"
+        | "cash_general"
+        | "stores_manage"
+        | "online_sales"
+        | "orders_view"
+        | "payments_config"
+        | "users_manage"
+        | "dashboard_view"
       user_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -799,6 +844,18 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      system_permission: [
+        "events_manage",
+        "tickets_manage",
+        "cash_daily",
+        "cash_general",
+        "stores_manage",
+        "online_sales",
+        "orders_view",
+        "payments_config",
+        "users_manage",
+        "dashboard_view",
+      ],
       user_status: ["pending", "approved", "rejected"],
     },
   },
