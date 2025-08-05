@@ -71,6 +71,12 @@ verify_jwt = false
 [functions.create-pagseguro-payment]
 verify_jwt = false
 
+[functions.realtime-notifications]
+verify_jwt = false
+
+[functions.backup-export]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54332

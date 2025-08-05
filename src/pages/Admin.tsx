@@ -15,6 +15,8 @@ import { StoresManager } from '@/components/admin/StoresManager';
 import { OnlineSalesManager } from '@/components/admin/OnlineSalesManager';
 import { TicketTypesManager } from '@/components/admin/TicketTypesManager';
 import { UserManagement } from '@/components/admin/UserManagement';
+import { ReportsAnalytics } from '@/components/admin/ReportsAnalytics';
+import { BackupRecovery } from '@/components/admin/BackupRecovery';
 import { LogOut, Calendar, ShoppingCart, CreditCard, DollarSign, Store, Globe, Ticket, Users, Banknote } from 'lucide-react';
 
 const Admin = () => {
@@ -94,7 +96,7 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9">
+          <TabsList className="grid w-full grid-cols-11">
             <TabsTrigger value="events" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Eventos
@@ -126,6 +128,12 @@ const Admin = () => {
             <TabsTrigger value="payments" className="flex items-center gap-2">
               <CreditCard className="w-4 h-4" />
               Pagamentos
+            </TabsTrigger>
+            <TabsTrigger value="reports" className="flex items-center gap-2">
+              📊 Relatórios
+            </TabsTrigger>
+            <TabsTrigger value="backup" className="flex items-center gap-2">
+              💾 Backup
             </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
@@ -241,6 +249,34 @@ const Admin = () => {
               </CardHeader>
               <CardContent>
                 <PaymentSettings />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <Card>
+              <CardHeader>
+                <CardTitle>Relatórios e Analytics</CardTitle>
+                <CardDescription>
+                  Análise detalhada de vendas e performance por evento
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ReportsAnalytics />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="backup">
+            <Card>
+              <CardHeader>
+                <CardTitle>Backup e Recuperação</CardTitle>
+                <CardDescription>
+                  Gerencie backups automáticos e exportação de dados
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <BackupRecovery />
               </CardContent>
             </Card>
           </TabsContent>
