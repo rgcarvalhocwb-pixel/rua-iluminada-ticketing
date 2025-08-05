@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2, Calculator, DollarSign, Receipt, CreditCard, Banknote, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 interface Event {
   id: string;
@@ -178,7 +178,7 @@ export const CashRegister = () => {
       entry.ticketQuantity ? `I:${entry.ticketQuantity.inteira} M:${entry.ticketQuantity.meia}` : '-'
     ]);
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: [['Tipo', 'Descrição', 'Pagamento', 'Valor', 'Ingressos']],
       body: entriesData,
       startY: 55,
