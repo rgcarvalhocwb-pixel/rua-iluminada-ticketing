@@ -57,10 +57,7 @@ export const UserManagement = () => {
       // Buscar usuários com seus papéis
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select(`
-          *,
-          profiles:user_id (email, display_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (rolesError) throw rolesError;
@@ -229,10 +226,10 @@ export const UserManagement = () => {
                     <TableCell>
                       <div>
                         <div className="font-medium">
-                          {user.profiles?.display_name || 'Nome não informado'}
+                          Usuário
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {user.profiles?.email || user.user_id}
+                          {user.user_id}
                         </div>
                       </div>
                     </TableCell>
