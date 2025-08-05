@@ -2,162 +2,254 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Rua Iluminada Design System
-Inspirado na magia das ruas iluminadas, com tons noturnos sofisticados
+/* Rua Iluminada Design System - Christmas Magic
+Psicologia das Cores Natalinas:
+- Vermelho (355°): Paixão, amor, celebração, energia
+- Verde (145°): Natureza, esperança, renovação, harmonia  
+- Dourado (45°): Luxo, magia, prosperidade, alegria
+- Branco (0°): Pureza, paz, elegância, serenidade
+- Azul noturno (220°): Mistério, sofisticação, tranquilidade
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    /* Rua Iluminada - Christmas Theme (Based on official site) */
-    --background: 0 0% 0%;
-    --foreground: 0 0% 98%;
+    /* Christmas Night Theme - Magical and Warm */
+    --background: 220 30% 8%;  /* Deep Christmas night blue */
+    --foreground: 0 0% 98%;    /* Snow white text */
 
-    --card: 0 0% 25%;
-    --card-foreground: 0 0% 100%;
+    --card: 220 25% 15%;       /* Darker blue cards with warmth */
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 25%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 220 25% 12%;    /* Slightly darker for depth */
+    --popover-foreground: 0 0% 98%;
 
-    /* Primary - Christmas Red */
-    --primary: 0 84% 60%;
+    /* Christmas Red - Joy, Passion, Celebration */
+    --primary: 355 85% 55%;    /* Rich Christmas red */
     --primary-foreground: 0 0% 98%;
 
-    /* Secondary - Dark gray for visibility */
-    --secondary: 0 0% 30%;
-    --secondary-foreground: 0 0% 100%;
+    /* Christmas Gold - Luxury, Magic, Prosperity */
+    --secondary: 45 90% 60%;   /* Warm Christmas gold */
+    --secondary-foreground: 220 30% 15%;
 
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 80%;
+    /* Forest Green - Nature, Hope, Growth */
+    --muted: 145 40% 25%;      /* Deep forest green */
+    --muted-foreground: 0 0% 85%;
 
-    /* Accent - Christmas Gold */
-    --accent: 48 96% 53%;
-    --accent-foreground: 0 0% 9%;
+    /* Christmas Gold Accent */
+    --accent: 45 90% 65%;      /* Bright gold for highlights */
+    --accent-foreground: 220 30% 15%;
 
-    --destructive: 0 84.2% 60.2%;
+    /* Christmas Red for alerts */
+    --destructive: 355 85% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 30%;
-    --input: 0 0% 20%;
-    --ring: 0 84% 60%;
+    /* Warm amber warning */
+    --warning: 35 90% 55%;
+    --warning-foreground: 220 30% 15%;
 
-    --radius: 0.5rem;
+    /* Christmas Green success */
+    --success: 145 60% 45%;
+    --success-foreground: 0 0% 98%;
 
-    /* Chart colors - Christmas theme */
-    --chart-1: 0 84% 60%;
-    --chart-2: 48 96% 53%;
-    --chart-3: 120 60% 50%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    /* Subtle borders with warmth */
+    --border: 220 20% 25%;
+    --input: 220 25% 18%;
+    --ring: 45 90% 60%;        /* Gold focus ring */
 
-    /* Sidebar - Light theme */
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 20%;
-    --sidebar-primary: 0 84% 60%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 43 57% 94%;
-    --sidebar-accent-foreground: 0 84% 60%;
-    --sidebar-border: 20 5.9% 90%;
-    --sidebar-ring: 0 84% 60%;
+    --radius: 0.75rem;
+
+    /* Christmas Chart Colors */
+    --chart-1: 355 85% 55%;    /* Christmas Red */
+    --chart-2: 145 60% 45%;    /* Christmas Green */
+    --chart-3: 45 90% 60%;     /* Christmas Gold */
+    --chart-4: 280 60% 65%;    /* Christmas Purple */
+    --chart-5: 200 80% 60%;    /* Winter Blue */
+
+    /* Christmas Magic Effects */
+    --shimmer: linear-gradient(90deg, transparent 0%, hsla(45, 90%, 70%, 0.4) 50%, transparent 100%);
+    --sparkle: radial-gradient(circle, hsla(45, 90%, 80%, 0.8) 0%, transparent 70%);
+    --glow-red: 0 0 20px hsla(355, 85%, 55%, 0.5);
+    --glow-gold: 0 0 20px hsla(45, 90%, 60%, 0.4);
+    --glow-green: 0 0 15px hsla(145, 60%, 45%, 0.4);
+    
+    /* Snow animation */
+    --snow-1: 0 0 2px hsla(0, 0%, 100%, 0.8);
+    --snow-2: 0 0 4px hsla(0, 0%, 100%, 0.6);
+    --snow-3: 0 0 6px hsla(0, 0%, 100%, 0.4);
   }
 
   /* Admin-specific theme with professional colors */
   .admin-theme {
     /* Professional Blue-Gray palette for admin */
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
-
     --secondary: 210 40% 96%;
     --secondary-foreground: 222.2 84% 4.9%;
-
     --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
     --accent: 142 76% 36%;
     --accent-foreground: 355.7 100% 97.3%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
   }
 
-  .dark {
-    /* Rua Iluminada - Christmas Dark Theme */
-    --background: 0 0% 5%;
-    --foreground: 0 0% 95%;
-
-    --card: 0 0% 5%;
-    --card-foreground: 0 0% 95%;
-
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 95%;
-
-    /* Primary - Christmas Red (slightly muted for dark) */
-    --primary: 0 74% 55%;
-    --primary-foreground: 0 0% 98%;
-
-    /* Secondary - Dark warm tone */
-    --secondary: 15 25% 15%;
-    --secondary-foreground: 0 0% 95%;
-
-    --muted: 15 25% 15%;
-    --muted-foreground: 0 0% 65%;
-
-    /* Accent - Christmas Gold (muted for dark) */
-    --accent: 48 86% 48%;
-    --accent-foreground: 0 0% 9%;
-
-    --destructive: 0 74% 50%;
-    --destructive-foreground: 0 0% 95%;
-
-    --border: 15 25% 15%;
-    --input: 15 25% 15%;
-    --ring: 0 74% 55%;
-
-    /* Chart colors - Christmas dark theme */
-    --chart-1: 0 74% 65%;
-    --chart-2: 48 86% 58%;
-    --chart-3: 120 50% 45%;
-    --chart-4: 43 64% 56%;
-    --chart-5: 27 77% 57%;
-
-    /* Sidebar - Dark theme */
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 0 74% 55%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 15 25% 15%;
-    --sidebar-accent-foreground: 0 0% 90%;
-    --sidebar-border: 15 25% 15%;
-    --sidebar-ring: 0 74% 55%;
+  /* Christmas Animations */
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
   }
 
-  /* Admin dark theme */
-  .admin-theme.dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: var(--glow-gold); }
+    50% { box-shadow: var(--glow-red); }
+  }
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+  @keyframes sparkle {
+    0%, 100% { opacity: 0; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+  @keyframes snow-fall {
+    0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+  }
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+}
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+@layer components {
+  /* Christmas Magic Classes */
+  .christmas-card {
+    @apply relative overflow-hidden;
+    background: linear-gradient(135deg, 
+      hsla(220, 25%, 15%, 0.95) 0%, 
+      hsla(220, 30%, 18%, 0.95) 100%);
+    border: 1px solid hsla(45, 90%, 60%, 0.3);
+    box-shadow: 
+      0 4px 20px hsla(220, 30%, 5%, 0.5),
+      inset 0 1px 0 hsla(45, 90%, 70%, 0.1);
+  }
 
-    --accent: 142 70% 45%;
-    --accent-foreground: 210 40% 98%;
+  .christmas-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--shimmer);
+    animation: shimmer 3s infinite;
+  }
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+  .christmas-button {
+    @apply relative overflow-hidden transition-all duration-300;
+    background: linear-gradient(135deg, 
+      hsl(355, 85%, 55%) 0%, 
+      hsl(355, 85%, 45%) 100%);
+    box-shadow: var(--glow-red);
+  }
+
+  .christmas-button:hover {
+    animation: glow-pulse 1.5s infinite;
+    transform: translateY(-2px);
+  }
+
+  .gold-accent {
+    color: hsl(45, 90%, 65%);
+    text-shadow: 0 0 10px hsla(45, 90%, 70%, 0.5);
+  }
+
+  .christmas-text {
+    background: linear-gradient(135deg, 
+      hsl(45, 90%, 65%) 0%, 
+      hsl(355, 85%, 55%) 50%, 
+      hsl(145, 60%, 55%) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Christmas Input Styles */
+  .christmas-input {
+    background: hsla(220, 25%, 18%, 0.9);
+    border: 1px solid hsla(45, 90%, 60%, 0.3);
+    color: hsl(0, 0%, 98%);
+    transition: all 0.3s ease;
+  }
+
+  .christmas-input:focus {
+    border-color: hsl(45, 90%, 60%);
+    box-shadow: var(--glow-gold);
+    outline: none;
+  }
+
+  /* Christmas Select Styles */
+  .christmas-select {
+    background: hsla(220, 25%, 18%, 0.95) !important;
+    border: 1px solid hsla(45, 90%, 60%, 0.3) !important;
+    color: hsl(0, 0%, 98%) !important;
+  }
+
+  .christmas-select:focus {
+    border-color: hsl(45, 90%, 60%) !important;
+    box-shadow: var(--glow-gold) !important;
+  }
+
+  /* Magical Sparkles */
+  .sparkle::after {
+    content: '✨';
+    position: absolute;
+    animation: sparkle 2s infinite;
+    pointer-events: none;
+  }
+
+  /* Snow Effect */
+  .snow-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .snowflake {
+    position: absolute;
+    color: hsla(0, 0%, 100%, 0.8);
+    animation: snow-fall linear infinite;
+  }
+
+  /* Twinkling stars */
+  .stars::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      radial-gradient(2px 2px at 20px 30px, hsla(45, 90%, 80%, 0.8), transparent),
+      radial-gradient(2px 2px at 40px 70px, hsla(45, 90%, 80%, 0.6), transparent),
+      radial-gradient(1px 1px at 90px 40px, hsla(45, 90%, 80%, 0.9), transparent);
+    background-repeat: repeat;
+    background-size: 200px 100px;
+    animation: twinkle 3s ease-in-out infinite alternate;
   }
 }
 
@@ -168,5 +260,17 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    overflow-x: hidden;
+  }
+
+  /* Make sure dropdowns have proper background and z-index */
+  [data-radix-popper-content-wrapper] {
+    z-index: 50 !important;
+  }
+
+  [role="menu"], [role="listbox"] {
+    background-color: hsl(var(--popover)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
   }
 }

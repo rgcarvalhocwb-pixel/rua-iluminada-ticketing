@@ -3,12 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Clock, Users, Zap, Loader2 } from "lucide-react";
+import { CalendarIcon, Clock, Users, Zap, Loader2, ShoppingCart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { format, addDays, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface Event {
   id: string;
@@ -229,10 +230,10 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
     <section id="ticket-selector" className="py-16 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
+          <h2 className="text-4xl font-bold mb-4 christmas-text">
             {selectedEvent.name}
           </h2>
-          <p className="text-xl text-muted-foreground">
+          <p className="text-xl text-foreground/80">
             {selectedEvent.description || "Selecione a data, horário e ingressos para sua sessão mágica"}
           </p>
         </div>
@@ -241,22 +242,22 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
           {/* Date and Time Selection */}
           <div className="space-y-6">
             {/* Date Picker */}
-            <Card className="bg-card/50 backdrop-blur-sm border-border shadow-soft">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalendarIcon className="w-5 h-5 text-primary" />
+            <div className="christmas-card p-6 rounded-xl">
+              <div className="mb-4">
+                <h3 className="text-xl font-semibold gold-accent flex items-center gap-2">
+                  <CalendarIcon className="w-5 h-5" />
                   Escolha a Data
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-foreground/70 mt-1">
                   {format(new Date(selectedEvent.start_date), "dd 'de' MMMM", { locale: ptBR })} a {format(new Date(selectedEvent.end_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+                </p>
+              </div>
+              <div>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className="w-full justify-start text-left font-normal"
+                      className="w-full justify-start text-left font-normal christmas-input border-accent/30 text-foreground"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {selectedDate ? (
@@ -266,7 +267,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0 christmas-select">
                     <Calendar
                       mode="single"
                       selected={selectedDate}
@@ -279,62 +280,66 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                     />
                   </PopoverContent>
                 </Popover>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Time Selection */}
-            <Card className="bg-card/50 backdrop-blur-sm border-border shadow-soft">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-accent" />
+            <div className="christmas-card p-6 rounded-xl">
+              <div className="mb-4">
+                <h3 className="text-xl font-semibold gold-accent flex items-center gap-2">
+                  <Clock className="w-5 h-5" />
                   Horários Disponíveis
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-foreground/70 mt-1">
                   {showTimes.length} horários disponíveis
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-3">
-                  {showTimes.map((showTime) => {
-                    const status = getAvailabilityStatus(showTime.capacity);
-                    const isDisabled = false; // Por enquanto não há controle de estoque
-                    
-                    return (
-                      <Button
-                        key={showTime.id}
-                        variant={selectedTime === showTime.time_slot ? "default" : "outline"}
-                        disabled={isDisabled}
-                        onClick={() => setSelectedTime(showTime.time_slot)}
-                        className="h-auto p-4 flex flex-col items-center gap-2 relative"
-                      >
-                        <span className="text-lg font-semibold">{showTime.time_slot}</span>
-                        <Badge variant={status.variant} className="text-xs">
-                          {status.text}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {showTime.capacity} vagas
-                        </span>
-                      </Button>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {showTimes.map((showTime) => {
+                  const status = getAvailabilityStatus(showTime.capacity);
+                  const isDisabled = false; // Por enquanto não há controle de estoque
+                  
+                  return (
+                    <Button
+                      key={showTime.id}
+                      variant={selectedTime === showTime.time_slot ? "default" : "outline"}
+                      disabled={isDisabled}
+                      onClick={() => setSelectedTime(showTime.time_slot)}
+                      className={cn(
+                        "h-auto p-4 flex flex-col items-center gap-2 relative transition-all duration-300",
+                        selectedTime === showTime.time_slot 
+                          ? "christmas-button" 
+                          : "christmas-input border-accent/30 hover:border-accent/60"
+                      )}
+                    >
+                      <span className="text-lg font-semibold">{showTime.time_slot}</span>
+                      <Badge variant={status.variant} className="text-xs">
+                        {status.text}
+                      </Badge>
+                      <span className="text-xs text-foreground/60">
+                        {showTime.capacity} vagas
+                      </span>
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Ticket Selection */}
           <div className="space-y-6">
-            <Card className="bg-card/50 backdrop-blur-sm border-border shadow-soft">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-secondary" />
+            <div className="christmas-card p-6 rounded-xl">
+              <div className="mb-6">
+                <h3 className="text-xl font-semibold gold-accent flex items-center gap-2">
+                  <Users className="w-5 h-5" />
                   Tipos de Ingresso
-                </CardTitle>
-                <CardDescription>
+                </h3>
+                <p className="text-foreground/70 mt-1">
                   Escolha a quantidade de cada tipo
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                </p>
+              </div>
+              
+              <div className="space-y-4">
                 {ticketTypes.map((ticket) => {
                   const Icon = ticket.name.toLowerCase().includes('meia') ? Zap : Users;
                   const quantity = ticketQuantities[ticket.id] || 0;
@@ -342,18 +347,18 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                   return (
                     <div
                       key={ticket.id}
-                      className="flex items-center justify-between p-4 border border-border rounded-lg bg-muted/20"
+                      className="flex items-center justify-between p-4 rounded-lg bg-muted/30 border border-accent/20"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/20 rounded-lg">
-                          <Icon className="w-5 h-5 text-primary" />
+                        <div className="p-2 bg-accent/20 rounded-lg">
+                          <Icon className="w-5 h-5 text-accent" />
                         </div>
                         <div>
-                          <p className="font-semibold">{ticket.name}</p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="font-semibold text-foreground">{ticket.name}</p>
+                          <p className="text-sm text-foreground/60">
                             {ticket.description || "Ingresso para o evento"}
                           </p>
-                          <p className="text-lg font-bold text-primary">
+                          <p className="text-lg font-bold text-accent">
                             R$ {ticket.price.toFixed(2)}
                           </p>
                         </div>
@@ -365,10 +370,11 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                           size="sm"
                           onClick={() => updateQuantity(ticket.id, -1)}
                           disabled={quantity === 0}
+                          className="christmas-input border-accent/30 w-8 h-8 p-0"
                         >
                           -
                         </Button>
-                        <span className="w-8 text-center font-semibold">
+                        <span className="w-8 text-center font-semibold text-foreground">
                           {quantity}
                         </span>
                         <Button
@@ -376,6 +382,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                           size="sm"
                           onClick={() => updateQuantity(ticket.id, 1)}
                           disabled={quantity >= 10}
+                          className="christmas-input border-accent/30 w-8 h-8 p-0"
                         >
                           +
                         </Button>
@@ -383,60 +390,59 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                     </div>
                   );
                 })}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Summary and Checkout */}
             {getTotalTickets() > 0 && (
-              <Card className="bg-gradient-secondary border-border shadow-magic">
-                <CardContent className="p-6">
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold">Total de Ingressos:</span>
-                      <span className="text-lg font-bold">{getTotalTickets()}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <span className="text-xl font-semibold">Valor Total:</span>
-                      <span className="text-2xl font-bold text-primary">
-                        R$ {getTotalPrice().toFixed(2)}
-                      </span>
-                    </div>
-                    
-                    {selectedDate && selectedTime && (
-                      <div className="pt-4 border-t border-border">
-                        <p className="text-sm text-muted-foreground mb-2">
-                          Data: {format(selectedDate, "PPP", { locale: ptBR })}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          Horário: {selectedTime}
-                        </p>
-                      </div>
-                    )}
-                    
-                    <Button 
-                      className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300 text-lg py-6"
-                      disabled={!selectedDate || !selectedTime || getTotalTickets() === 0}
-                      onClick={() => {
-                        if (selectedDate && selectedTime && getTotalTickets() > 0 && selectedEvent) {
-                          const ticketData = {
-                            selectedDate,
-                            selectedTime,
-                            ticketQuantities,
-                            totalPrice: getTotalPrice(),
-                            totalTickets: getTotalTickets(),
-                            eventId: selectedEvent.id,
-                            eventName: selectedEvent.name
-                          };
-                          onProceedToCheckout?.(ticketData);
-                        }
-                      }}
-                    >
-                      Continuar para Pagamento
-                    </Button>
+              <div className="christmas-card p-6 rounded-xl border-accent/40">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-lg font-semibold text-foreground">Total de Ingressos:</span>
+                    <span className="text-lg font-bold text-accent">{getTotalTickets()}</span>
                   </div>
-                </CardContent>
-              </Card>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-xl font-semibold text-foreground">Valor Total:</span>
+                    <span className="text-2xl font-bold gold-accent">
+                      R$ {getTotalPrice().toFixed(2)}
+                    </span>
+                  </div>
+                  
+                  {selectedDate && selectedTime && (
+                    <div className="pt-4 border-t border-accent/20">
+                      <p className="text-sm text-foreground/70 mb-2">
+                        Data: {format(selectedDate, "PPP", { locale: ptBR })}
+                      </p>
+                      <p className="text-sm text-foreground/70">
+                        Horário: {selectedTime}
+                      </p>
+                    </div>
+                  )}
+                  
+                  <Button 
+                    className="w-full christmas-button text-lg py-6 font-semibold"
+                    disabled={!selectedDate || !selectedTime || getTotalTickets() === 0}
+                    onClick={() => {
+                      if (selectedDate && selectedTime && getTotalTickets() > 0 && selectedEvent) {
+                        const ticketData = {
+                          selectedDate,
+                          selectedTime,
+                          ticketQuantities,
+                          totalPrice: getTotalPrice(),
+                          totalTickets: getTotalTickets(),
+                          eventId: selectedEvent.id,
+                          eventName: selectedEvent.name
+                        };
+                        onProceedToCheckout?.(ticketData);
+                      }
+                    }}
+                  >
+                    <ShoppingCart className="w-5 h-5 mr-2" />
+                    Continuar para Pagamento
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
         </div>
