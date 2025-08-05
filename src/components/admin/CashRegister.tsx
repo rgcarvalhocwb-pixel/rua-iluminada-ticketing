@@ -398,8 +398,8 @@ export const CashRegister = () => {
   const addCommissionPayment = (commission: any) => {
     const commissionEntry: CashEntry = {
       id: Date.now().toString(),
-      type: 'expense',
-      description: `Pagamento comissão - ${commission.stores.name}`,
+      type: 'income', // CORRIGIDO: comissão é ENTRADA
+      description: `Comissão recebida - ${commission.stores.name}`,
       amount: commission.commission_amount,
       paymentMethod: 'cash'
     };
@@ -490,7 +490,7 @@ export const CashRegister = () => {
                     variant="outline"
                     onClick={() => addCommissionPayment(commission)}
                   >
-                    Pagar Comissão
+                    Receber Comissão
                   </Button>
                 </div>
               ))}
