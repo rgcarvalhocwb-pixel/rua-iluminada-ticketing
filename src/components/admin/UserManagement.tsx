@@ -77,10 +77,13 @@ export const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      // Buscar usuários com seus papéis
+      // Buscar usuários com seus papéis e perfis
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select('*')
+        .select(`
+          *,
+          profiles!inner(nickname, email, phone)
+        `)
         .order('created_at', { ascending: false });
 
       if (rolesError) throw rolesError;
@@ -222,7 +225,7 @@ export const UserManagement = () => {
         </h2>
         <CreateUserDialog 
           onUserCreated={fetchUsers} 
-          isMaster={currentUserRole === 'master'} 
+          isMaster={['master', 'admin'].includes(currentUserRole)} 
         />
       </div>
 
@@ -250,16 +253,21 @@ export const UserManagement = () => {
               <TableBody>
                 {users.map((user) => (
                   <TableRow key={user.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">
-                          Usuário
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {user.user_id}
-                        </div>
-                      </div>
-                    </TableCell>
+                     <TableCell>
+                       <div>
+                         <div className="font-medium">
+                           {user.profiles?.nickname || 'Nome não informado'}
+                         </div>
+                         <div className="text-sm text-muted-foreground">
+                           {user.profiles?.email || user.user_id}
+                         </div>
+                         {user.profiles?.phone && (
+                           <div className="text-xs text-muted-foreground">
+                             {user.profiles.phone}
+                           </div>
+                         )}
+                       </div>
+                     </TableCell>
                      <TableCell>
                        <Badge variant={user.role === 'admin' || user.role === 'master' ? 'default' : 'secondary'}>
                          {user.role === 'admin' ? 'Administrador' : 
