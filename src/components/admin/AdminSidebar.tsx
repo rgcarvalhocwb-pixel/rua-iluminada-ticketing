@@ -208,7 +208,7 @@ export function AdminSidebar({
         {/* Operações */}
         {operationsItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-white font-semibold font-inter text-xs">
+            <SidebarGroupLabel className="text-red-900 font-bold font-inter text-xs">
               🎅 Operações
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -243,7 +243,7 @@ export function AdminSidebar({
         {/* Vendas */}
         {salesItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-white font-semibold font-inter text-xs">
+            <SidebarGroupLabel className="text-red-900 font-bold font-inter text-xs">
               🛷 Vendas
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -278,7 +278,7 @@ export function AdminSidebar({
         {/* Financeiro */}
         {financialItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-white font-semibold font-inter text-xs">
+            <SidebarGroupLabel className="text-red-900 font-bold font-inter text-xs">
               💰 Financeiro
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -313,7 +313,7 @@ export function AdminSidebar({
         {/* Administração */}
         {adminItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-white font-semibold font-inter text-xs">
+            <SidebarGroupLabel className="text-red-900 font-bold font-inter text-xs">
               ⭐ Administração
             </SidebarGroupLabel>
             <SidebarGroupContent>
