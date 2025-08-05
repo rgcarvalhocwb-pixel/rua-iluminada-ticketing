@@ -31,12 +31,13 @@ interface StoreDailySale {
   sale_date: string;
   total_sales: number;
   commission_amount: number;
-  stores: { name: string; commission_percentage: number };
-  events: { name: string };
+  created_at: string;
+  updated_at: string;
 }
 
 export const StoreDailySalesManager = () => {
   const [sales, setSales] = useState<StoreDailySale[]>([]);
+  const [salesWithDetails, setSalesWithDetails] = useState<any[]>([]);
   const [stores, setStores] = useState<Store[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,17 +57,30 @@ export const StoreDailySalesManager = () => {
 
   const fetchData = async () => {
     try {
-      // Buscar vendas com joins
+      // Buscar vendas simples
       const { data: salesData, error: salesError } = await supabase
         .from('store_daily_sales')
-        .select(`
-          *,
-          stores(name, commission_percentage),
-          events(name)
-        `)
+        .select('*')
         .order('sale_date', { ascending: false });
 
       if (salesError) throw salesError;
+
+      // Buscar vendas com detalhes para exibição
+      const salesWithStoreAndEvent = await Promise.all(
+        (salesData || []).map(async (sale) => {
+          const [storeResult, eventResult] = await Promise.all([
+            supabase.from('stores').select('name, commission_percentage').eq('id', sale.store_id).single(),
+            supabase.from('events').select('name').eq('id', sale.event_id).single()
+          ]);
+          
+          return {
+            ...sale,
+            store_name: storeResult.data?.name || 'Loja não encontrada',
+            store_commission: storeResult.data?.commission_percentage || 0,
+            event_name: eventResult.data?.name || 'Evento não encontrado'
+          };
+        })
+      );
 
       // Buscar lojas
       const { data: storesData, error: storesError } = await supabase
@@ -85,6 +99,7 @@ export const StoreDailySalesManager = () => {
       if (eventsError) throw eventsError;
 
       setSales(salesData || []);
+      setSalesWithDetails(salesWithStoreAndEvent);
       setStores(storesData || []);
       setEvents(eventsData || []);
     } catch (error: any) {
@@ -164,7 +179,7 @@ export const StoreDailySalesManager = () => {
     }
   };
 
-  const handleEdit = (sale: StoreDailySale) => {
+  const handleEdit = (sale: any) => {
     setEditingSale(sale);
     setFormData({
       store_id: sale.store_id,
@@ -390,15 +405,15 @@ export const StoreDailySalesManager = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sales.map((sale) => (
+                {salesWithDetails.map((sale) => (
                   <TableRow key={sale.id}>
                     <TableCell>
                       {format(new Date(sale.sale_date), 'dd/MM/yyyy', { locale: ptBR })}
                     </TableCell>
-                    <TableCell className="font-medium">{sale.stores.name}</TableCell>
-                    <TableCell>{sale.events.name}</TableCell>
+                    <TableCell className="font-medium">{sale.store_name}</TableCell>
+                    <TableCell>{sale.event_name}</TableCell>
                     <TableCell>R$ {sale.total_sales.toFixed(2)}</TableCell>
-                    <TableCell>{sale.stores.commission_percentage}%</TableCell>
+                    <TableCell>{sale.store_commission}%</TableCell>
                     <TableCell className="font-bold text-green-600">
                       R$ {sale.commission_amount.toFixed(2)}
                     </TableCell>
