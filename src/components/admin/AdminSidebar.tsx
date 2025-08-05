@@ -195,10 +195,10 @@ export function AdminSidebar({
           </div>
           {state === "expanded" && (
             <div className="flex flex-col">
-              <span className="text-sm font-semibold bg-gradient-primary bg-clip-text text-transparent">
+              <span className="text-sm font-bold font-dancing bg-gradient-primary bg-clip-text text-transparent">
                 🎄 Rua Iluminada
               </span>
-              <span className="text-xs text-secondary/80">Painel Natalino</span>
+              <span className="text-xs text-secondary/80 font-inter">Painel Natalino</span>
             </div>
           )}
         </div>
@@ -208,7 +208,7 @@ export function AdminSidebar({
         {/* Operações */}
         {operationsItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-primary font-semibold">
+            <SidebarGroupLabel className="text-primary font-semibold font-inter text-xs">
               🎅 Operações
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -227,8 +227,8 @@ export function AdminSidebar({
                         }
                       `}
                     >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                       <item.icon className="h-4 w-4" />
+                       <span className="font-inter font-medium">{item.title}</span>
                       {isActive(item.id) && (
                         <ChevronRight className="ml-auto h-4 w-4" />
                       )}
@@ -243,7 +243,7 @@ export function AdminSidebar({
         {/* Vendas */}
         {salesItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-secondary font-semibold">
+            <SidebarGroupLabel className="text-secondary font-semibold font-inter text-xs">
               🛷 Vendas
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -262,8 +262,8 @@ export function AdminSidebar({
                         }
                       `}
                     >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                       <item.icon className="h-4 w-4" />
+                       <span className="font-inter font-medium">{item.title}</span>
                       {isActive(item.id) && (
                         <ChevronRight className="ml-auto h-4 w-4" />
                       )}
@@ -278,7 +278,7 @@ export function AdminSidebar({
         {/* Financeiro */}
         {financialItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-accent font-semibold">
+            <SidebarGroupLabel className="text-accent font-semibold font-inter text-xs">
               💰 Financeiro
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -297,8 +297,8 @@ export function AdminSidebar({
                         }
                       `}
                     >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                       <item.icon className="h-4 w-4" />
+                       <span className="font-inter font-medium">{item.title}</span>
                       {isActive(item.id) && (
                         <ChevronRight className="ml-auto h-4 w-4" />
                       )}
@@ -313,7 +313,7 @@ export function AdminSidebar({
         {/* Administração */}
         {adminItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-primary font-semibold">
+            <SidebarGroupLabel className="text-primary font-semibold font-inter text-xs">
               ⭐ Administração
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -332,8 +332,8 @@ export function AdminSidebar({
                         }
                       `}
                     >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
+                       <item.icon className="h-4 w-4" />
+                       <span className="font-inter font-medium">{item.title}</span>
                       {isActive(item.id) && (
                         <ChevronRight className="ml-auto h-4 w-4" />
                       )}
@@ -352,10 +352,10 @@ export function AdminSidebar({
             <div className="flex flex-col gap-2 p-2">
               {state === "expanded" && (
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium truncate bg-gradient-primary bg-clip-text text-transparent">
+                  <span className="text-sm font-medium font-inter truncate bg-gradient-primary bg-clip-text text-transparent">
                     {userEmail}
                   </span>
-                  <span className="text-xs text-secondary/80 capitalize">
+                  <span className="text-xs text-secondary/80 capitalize font-inter">
                     🎄 {userRole}
                   </span>
                 </div>
@@ -367,7 +367,7 @@ export function AdminSidebar({
                 className="justify-start gap-2 hover:bg-gradient-secondary hover:text-secondary-foreground hover:shadow-red-glow/50 transition-all duration-300"
               >
                 <LogOut className="h-4 w-4" />
-                {state === "expanded" && <span>🎅 Sair</span>}
+                {state === "expanded" && <span className="font-inter font-medium">🎅 Sair</span>}
               </Button>
             </div>
           </SidebarMenuItem>
