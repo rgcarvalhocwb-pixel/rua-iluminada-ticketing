@@ -3,6 +3,7 @@ import { HeroSection } from "@/components/ui/hero-section";
 import { TicketSelector } from "@/components/ui/ticket-selector";
 import { CustomerForm } from "@/components/ui/customer-form";
 import { HalfPriceInfo } from "@/components/ui/half-price-info";
+import { ChristmasEffects } from "@/components/ui/christmas-effects";
 import { useTicketFlow } from "@/hooks/use-ticket-flow";
 
 const Index = () => {
@@ -40,12 +41,15 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
+      {/* Christmas Effects */}
+      <ChristmasEffects />
+      
       {/* Header responsivo com botão admin */}
       <header className="absolute top-0 right-0 z-20 p-3 md:p-6">
         <Link 
           to="/admin" 
-          className="px-3 md:px-4 py-2 text-sm md:text-base bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+          className="ceara-button-pink px-3 md:px-4 py-2 text-sm md:text-base rounded-lg transition-colors"
         >
           Área Restrita
         </Link>

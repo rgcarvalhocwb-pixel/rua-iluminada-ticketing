@@ -2,81 +2,81 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Rua Iluminada Design System - Christmas Magic
-Psicologia das Cores Natalinas:
-- Vermelho (355°): Paixão, amor, celebração, energia
-- Verde (145°): Natureza, esperança, renovação, harmonia  
-- Dourado (45°): Luxo, magia, prosperidade, alegria
-- Branco (0°): Pureza, paz, elegância, serenidade
-- Azul noturno (220°): Mistério, sofisticação, tranquilidade
+/* Ceará Natal de Luz 2024 - Paleta Oficial
+Psicologia das Cores Natalinas Cearenses:
+- Verde vibrante (158°): Natureza tropical, esperança, renovação, harmonia
+- Vermelho/Rosa (340°): Paixão, amor, celebração, energia nordestina
+- Bege/Creme (45°): Calor humano, acolhimento, tradição
+- Branco (0°): Pureza, paz, luz divina
+- Verde escuro (158°): Profundidade, estabilidade, confiança
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    /* Christmas Night Theme - Magical and Warm */
-    --background: 220 30% 8%;  /* Deep Christmas night blue */
-    --foreground: 0 0% 98%;    /* Snow white text */
+    /* Ceará Natal de Luz Theme - Tropical Christmas */
+    --background: 45 40% 92%;     /* Warm cream background */
+    --foreground: 158 60% 15%;    /* Deep green text */
 
-    --card: 220 25% 15%;       /* Darker blue cards with warmth */
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;            /* Pure white cards */
+    --card-foreground: 158 60% 15%;
 
-    --popover: 220 25% 12%;    /* Slightly darker for depth */
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;         /* White popovers */
+    --popover-foreground: 158 60% 15%;
 
-    /* Christmas Red - Joy, Passion, Celebration */
-    --primary: 355 85% 55%;    /* Rich Christmas red */
+    /* Ceará Green - Nature, Hope, Tropical Christmas */
+    --primary: 158 85% 45%;       /* Vibrant Ceará green */
     --primary-foreground: 0 0% 98%;
 
-    /* Christmas Gold - Luxury, Magic, Prosperity */
-    --secondary: 45 90% 60%;   /* Warm Christmas gold */
-    --secondary-foreground: 220 30% 15%;
+    /* Warm Pink/Red - Joy, Celebration */
+    --secondary: 340 85% 55%;     /* Warm Christmas pink */
+    --secondary-foreground: 0 0% 98%;
 
-    /* Forest Green - Nature, Hope, Growth */
-    --muted: 145 40% 25%;      /* Deep forest green */
-    --muted-foreground: 0 0% 85%;
+    /* Deep Green - Stability, Trust */
+    --muted: 158 30% 85%;         /* Light green muted */
+    --muted-foreground: 158 60% 25%;
 
-    /* Christmas Gold Accent */
-    --accent: 45 90% 65%;      /* Bright gold for highlights */
-    --accent-foreground: 220 30% 15%;
+    /* Bright Pink Accent */
+    --accent: 340 85% 60%;        /* Bright pink for highlights */
+    --accent-foreground: 0 0% 98%;
 
-    /* Christmas Red for alerts */
-    --destructive: 355 85% 55%;
+    /* Pink/Red for alerts */
+    --destructive: 340 85% 55%;
     --destructive-foreground: 0 0% 98%;
 
     /* Warm amber warning */
     --warning: 35 90% 55%;
-    --warning-foreground: 220 30% 15%;
+    --warning-foreground: 158 60% 15%;
 
-    /* Christmas Green success */
-    --success: 145 60% 45%;
+    /* Ceará Green success */
+    --success: 158 85% 45%;
     --success-foreground: 0 0% 98%;
 
-    /* Subtle borders with warmth */
-    --border: 220 20% 25%;
-    --input: 220 25% 18%;
-    --ring: 45 90% 60%;        /* Gold focus ring */
+    /* Subtle borders */
+    --border: 158 20% 80%;
+    --input: 0 0% 100%;
+    --ring: 158 85% 45%;          /* Green focus ring */
 
     --radius: 0.75rem;
 
-    /* Christmas Chart Colors */
-    --chart-1: 355 85% 55%;    /* Christmas Red */
-    --chart-2: 145 60% 45%;    /* Christmas Green */
-    --chart-3: 45 90% 60%;     /* Christmas Gold */
-    --chart-4: 280 60% 65%;    /* Christmas Purple */
-    --chart-5: 200 80% 60%;    /* Winter Blue */
+    /* Ceará Chart Colors */
+    --chart-1: 158 85% 45%;       /* Ceará Green */
+    --chart-2: 340 85% 55%;       /* Ceará Pink */
+    --chart-3: 45 70% 70%;        /* Warm Cream */
+    --chart-4: 158 60% 25%;       /* Deep Green */
+    --chart-5: 340 70% 35%;       /* Deep Pink */
 
-    /* Christmas Magic Effects */
-    --shimmer: linear-gradient(90deg, transparent 0%, hsla(45, 90%, 70%, 0.4) 50%, transparent 100%);
-    --sparkle: radial-gradient(circle, hsla(45, 90%, 80%, 0.8) 0%, transparent 70%);
-    --glow-red: 0 0 20px hsla(355, 85%, 55%, 0.5);
-    --glow-gold: 0 0 20px hsla(45, 90%, 60%, 0.4);
-    --glow-green: 0 0 15px hsla(145, 60%, 45%, 0.4);
+    /* Ceará Magic Effects */
+    --shimmer: linear-gradient(90deg, transparent 0%, hsla(158, 85%, 70%, 0.4) 50%, transparent 100%);
+    --sparkle: radial-gradient(circle, hsla(158, 85%, 80%, 0.8) 0%, transparent 70%);
+    --glow-green: 0 0 20px hsla(158, 85%, 45%, 0.5);
+    --glow-pink: 0 0 20px hsla(340, 85%, 55%, 0.4);
+    --glow-cream: 0 0 15px hsla(45, 70%, 70%, 0.4);
     
     /* Snow animation */
-    --snow-1: 0 0 2px hsla(0, 0%, 100%, 0.8);
-    --snow-2: 0 0 4px hsla(0, 0%, 100%, 0.6);
-    --snow-3: 0 0 6px hsla(0, 0%, 100%, 0.4);
+    --snow-1: 0 0 2px hsla(0, 0%, 100%, 0.9);
+    --snow-2: 0 0 4px hsla(0, 0%, 100%, 0.7);
+    --snow-3: 0 0 6px hsla(0, 0%, 100%, 0.5);
   }
 
   /* Admin-specific theme with professional colors */
@@ -99,15 +99,15 @@ All colors MUST be HSL.
     --ring: 221.2 83.2% 53.3%;
   }
 
-  /* Christmas Animations */
+  /* Ceará Christmas Animations */
   @keyframes shimmer {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
   }
 
   @keyframes glow-pulse {
-    0%, 100% { box-shadow: var(--glow-gold); }
-    50% { box-shadow: var(--glow-red); }
+    0%, 100% { box-shadow: var(--glow-green); }
+    50% { box-shadow: var(--glow-pink); }
   }
 
   @keyframes sparkle {
@@ -121,30 +121,42 @@ All colors MUST be HSL.
   }
 
   @keyframes snow-fall {
-    0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    0% { 
+      transform: translateY(-100vh) translateX(0) rotate(0deg); 
+      opacity: 0; 
+    }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { 
+      transform: translateY(100vh) translateX(100px) rotate(360deg); 
+      opacity: 0; 
+    }
   }
 
   @keyframes twinkle {
     0%, 100% { opacity: 0.3; }
     50% { opacity: 1; }
   }
+
+  @keyframes santa-walk {
+    0%, 100% { transform: translateY(0px) scaleX(1); }
+    25% { transform: translateY(-5px) scaleX(1); }
+    50% { transform: translateY(0px) scaleX(-1); }
+    75% { transform: translateY(-5px) scaleX(-1); }
+  }
 }
 
 @layer components {
-  /* Christmas Magic Classes */
-  .christmas-card {
-    @apply relative overflow-hidden;
-    background: linear-gradient(135deg, 
-      hsla(220, 25%, 15%, 0.95) 0%, 
-      hsla(220, 30%, 18%, 0.95) 100%);
-    border: 1px solid hsla(45, 90%, 60%, 0.3);
+  /* Ceará Natal de Luz Magic Classes */
+  .ceara-card {
+    @apply relative overflow-hidden bg-white shadow-lg;
+    border: 2px solid hsl(158, 85%, 45%);
     box-shadow: 
-      0 4px 20px hsla(220, 30%, 5%, 0.5),
-      inset 0 1px 0 hsla(45, 90%, 70%, 0.1);
+      0 4px 20px hsla(158, 85%, 45%, 0.2),
+      inset 0 1px 0 hsla(158, 85%, 70%, 0.1);
   }
 
-  .christmas-card::before {
+  .ceara-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -152,62 +164,77 @@ All colors MUST be HSL.
     width: 100%;
     height: 100%;
     background: var(--shimmer);
-    animation: shimmer 3s infinite;
+    animation: shimmer 4s infinite;
   }
 
-  .christmas-button {
+  .ceara-button {
     @apply relative overflow-hidden transition-all duration-300;
     background: linear-gradient(135deg, 
-      hsl(355, 85%, 55%) 0%, 
-      hsl(355, 85%, 45%) 100%);
-    box-shadow: var(--glow-red);
+      hsl(158, 85%, 45%) 0%, 
+      hsl(158, 85%, 35%) 100%);
+    box-shadow: var(--glow-green);
+    color: white;
   }
 
-  .christmas-button:hover {
-    animation: glow-pulse 1.5s infinite;
+  .ceara-button:hover {
+    animation: glow-pulse 2s infinite;
     transform: translateY(-2px);
   }
 
-  .gold-accent {
-    color: hsl(45, 90%, 65%);
-    text-shadow: 0 0 10px hsla(45, 90%, 70%, 0.5);
+  .ceara-button-pink {
+    @apply relative overflow-hidden transition-all duration-300;
+    background: linear-gradient(135deg, 
+      hsl(340, 85%, 55%) 0%, 
+      hsl(340, 85%, 45%) 100%);
+    box-shadow: var(--glow-pink);
+    color: white;
   }
 
-  .christmas-text {
+  .ceara-button-pink:hover {
+    animation: glow-pulse 2s infinite;
+    transform: translateY(-2px);
+  }
+
+  .ceara-accent {
+    color: hsl(158, 85%, 45%);
+    text-shadow: 0 0 10px hsla(158, 85%, 70%, 0.5);
+  }
+
+  .ceara-text {
     background: linear-gradient(135deg, 
-      hsl(45, 90%, 65%) 0%, 
-      hsl(355, 85%, 55%) 50%, 
-      hsl(145, 60%, 55%) 100%);
+      hsl(158, 85%, 45%) 0%, 
+      hsl(340, 85%, 55%) 50%, 
+      hsl(158, 85%, 35%) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: float 3s ease-in-out infinite;
   }
 
-  /* Christmas Input Styles */
-  .christmas-input {
-    background: hsla(220, 25%, 18%, 0.9);
-    border: 1px solid hsla(45, 90%, 60%, 0.3);
-    color: hsl(0, 0%, 98%);
+  /* Ceará Input Styles */
+  .ceara-input {
+    background: white;
+    border: 2px solid hsl(158, 85%, 45%);
+    color: hsl(158, 60%, 15%);
     transition: all 0.3s ease;
   }
 
-  .christmas-input:focus {
-    border-color: hsl(45, 90%, 60%);
-    box-shadow: var(--glow-gold);
+  .ceara-input:focus {
+    border-color: hsl(340, 85%, 55%);
+    box-shadow: var(--glow-green);
     outline: none;
   }
 
-  /* Christmas Select Styles */
-  .christmas-select {
-    background: hsla(220, 25%, 18%, 0.95) !important;
-    border: 1px solid hsla(45, 90%, 60%, 0.3) !important;
-    color: hsl(0, 0%, 98%) !important;
+  /* Ceará Select Styles */
+  .ceara-select {
+    background: white !important;
+    border: 2px solid hsl(158, 85%, 45%) !important;
+    color: hsl(158, 60%, 15%) !important;
   }
 
-  .christmas-select:focus {
-    border-color: hsl(45, 90%, 60%) !important;
-    box-shadow: var(--glow-gold) !important;
+  .ceara-select:focus {
+    border-color: hsl(340, 85%, 55%) !important;
+    box-shadow: var(--glow-green) !important;
   }
 
   /* Magical Sparkles */
@@ -226,13 +253,34 @@ All colors MUST be HSL.
     width: 100vw;
     height: 100vh;
     pointer-events: none;
-    z-index: 1;
+    z-index: 1000;
+    overflow: hidden;
   }
 
   .snowflake {
     position: absolute;
-    color: hsla(0, 0%, 100%, 0.8);
+    color: hsla(0, 0%, 100%, 0.9);
+    font-size: 12px;
     animation: snow-fall linear infinite;
+    user-select: none;
+  }
+
+  /* Santa Following Mouse */
+  .santa-follower {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    pointer-events: none;
+    z-index: 999;
+    transition: all 0.3s ease-out;
+    animation: santa-walk 2s infinite;
+  }
+
+  .santa-follower img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
   }
 
   /* Twinkling stars */

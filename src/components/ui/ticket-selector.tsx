@@ -230,7 +230,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
     <section id="ticket-selector" className="py-16 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 christmas-text">
+          <h2 className="text-4xl font-bold mb-4 ceara-text">
             {selectedEvent.name}
           </h2>
           <p className="text-xl text-foreground/80">
@@ -242,9 +242,9 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
           {/* Date and Time Selection */}
           <div className="space-y-6">
             {/* Date Picker */}
-            <div className="christmas-card p-6 rounded-xl">
+            <div className="ceara-card p-6 rounded-xl">
               <div className="mb-4">
-                <h3 className="text-xl font-semibold gold-accent flex items-center gap-2">
+                <h3 className="text-xl font-semibold ceara-accent flex items-center gap-2">
                   <CalendarIcon className="w-5 h-5" />
                   Escolha a Data
                 </h3>
@@ -257,7 +257,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                   <PopoverTrigger asChild>
                     <Button
                       variant="outline"
-                      className="w-full justify-start text-left font-normal christmas-input border-accent/30 text-foreground"
+                      className="w-full justify-start text-left font-normal ceara-input"
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {selectedDate ? (
@@ -267,7 +267,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                       )}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 christmas-select">
+                  <PopoverContent className="w-auto p-0 ceara-select">
                     <Calendar
                       mode="single"
                       selected={selectedDate}
@@ -284,9 +284,9 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
             </div>
 
             {/* Time Selection */}
-            <div className="christmas-card p-6 rounded-xl">
+            <div className="ceara-card p-6 rounded-xl">
               <div className="mb-4">
-                <h3 className="text-xl font-semibold gold-accent flex items-center gap-2">
+                <h3 className="text-xl font-semibold ceara-accent flex items-center gap-2">
                   <Clock className="w-5 h-5" />
                   Horários Disponíveis
                 </h3>
@@ -308,8 +308,8 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                       className={cn(
                         "h-auto p-4 flex flex-col items-center gap-2 relative transition-all duration-300",
                         selectedTime === showTime.time_slot 
-                          ? "christmas-button" 
-                          : "christmas-input border-accent/30 hover:border-accent/60"
+                          ? "ceara-button" 
+                          : "ceara-input hover:border-accent/60"
                       )}
                     >
                       <span className="text-lg font-semibold">{showTime.time_slot}</span>
@@ -328,9 +328,9 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
 
           {/* Ticket Selection */}
           <div className="space-y-6">
-            <div className="christmas-card p-6 rounded-xl">
+            <div className="ceara-card p-6 rounded-xl">
               <div className="mb-6">
-                <h3 className="text-xl font-semibold gold-accent flex items-center gap-2">
+                <h3 className="text-xl font-semibold ceara-accent flex items-center gap-2">
                   <Users className="w-5 h-5" />
                   Tipos de Ingresso
                 </h3>
@@ -370,7 +370,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                           size="sm"
                           onClick={() => updateQuantity(ticket.id, -1)}
                           disabled={quantity === 0}
-                          className="christmas-input border-accent/30 w-8 h-8 p-0"
+                          className="ceara-input w-8 h-8 p-0"
                         >
                           -
                         </Button>
@@ -382,7 +382,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                           size="sm"
                           onClick={() => updateQuantity(ticket.id, 1)}
                           disabled={quantity >= 10}
-                          className="christmas-input border-accent/30 w-8 h-8 p-0"
+                          className="ceara-input w-8 h-8 p-0"
                         >
                           +
                         </Button>
@@ -395,7 +395,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
 
             {/* Summary and Checkout */}
             {getTotalTickets() > 0 && (
-              <div className="christmas-card p-6 rounded-xl border-accent/40">
+              <div className="ceara-card p-6 rounded-xl border-accent/40">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-semibold text-foreground">Total de Ingressos:</span>
@@ -404,7 +404,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                   
                   <div className="flex justify-between items-center">
                     <span className="text-xl font-semibold text-foreground">Valor Total:</span>
-                    <span className="text-2xl font-bold gold-accent">
+                    <span className="text-2xl font-bold ceara-accent">
                       R$ {getTotalPrice().toFixed(2)}
                     </span>
                   </div>
@@ -421,7 +421,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                   )}
                   
                   <Button 
-                    className="w-full christmas-button text-lg py-6 font-semibold"
+                    className="w-full ceara-button text-lg py-6 font-semibold"
                     disabled={!selectedDate || !selectedTime || getTotalTickets() === 0}
                     onClick={() => {
                       if (selectedDate && selectedTime && getTotalTickets() > 0 && selectedEvent) {

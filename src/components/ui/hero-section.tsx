@@ -78,19 +78,19 @@ export const HeroSection = () => {
         
         {/* Event Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-6 md:mb-8 animate-in slide-in-from-bottom-8 duration-1000 delay-400">
-          <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-3 md:p-4 shadow-soft">
+          <div className="ceara-card backdrop-blur-sm p-3 md:p-4">
             <CalendarDays className="w-5 h-5 md:w-6 md:h-6 text-primary mx-auto mb-2" />
             <p className="text-xs md:text-sm text-muted-foreground">Período</p>
             <p className="font-semibold text-sm md:text-base">48 Dias Consecutivos</p>
           </div>
           
-          <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-3 md:p-4 shadow-soft">
+          <div className="ceara-card backdrop-blur-sm p-3 md:p-4">
             <Clock className="w-5 h-5 md:w-6 md:h-6 text-accent mx-auto mb-2" />
             <p className="text-xs md:text-sm text-muted-foreground">Horários</p>
             <p className="font-semibold text-sm md:text-base">19h às 23h30</p>
           </div>
           
-          <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-3 md:p-4 shadow-soft">
+          <div className="ceara-card backdrop-blur-sm p-3 md:p-4">
             <MapPin className="w-5 h-5 md:w-6 md:h-6 text-secondary mx-auto mb-2" />
             <p className="text-xs md:text-sm text-muted-foreground">Shows</p>
             <p className="font-semibold text-sm md:text-base">
@@ -103,7 +103,7 @@ export const HeroSection = () => {
         <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center animate-in slide-in-from-bottom-8 duration-1000 delay-600">
           <Button 
             size="lg" 
-            className="bg-gradient-primary hover:shadow-glow transition-all duration-300 transform hover:scale-105 px-6 md:px-8 py-3 text-base md:text-lg font-semibold"
+            className="ceara-button px-6 md:px-8 py-3 text-base md:text-lg font-semibold"
             onClick={() => {
               document.getElementById('ticket-selector')?.scrollIntoView({ behavior: 'smooth' });
             }}
@@ -114,7 +114,7 @@ export const HeroSection = () => {
           <Button 
             variant="outline" 
             size="lg"
-            className="border-2 border-accent text-accent hover:bg-accent hover:text-accent-foreground transition-all duration-300 px-6 md:px-8 py-3 text-base md:text-lg"
+            className="ceara-button-pink px-6 md:px-8 py-3 text-base md:text-lg"
             onClick={() => {
               window.open('https://ruailuminada.com.br/#programacao', '_blank');
             }}
