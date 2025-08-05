@@ -1,9 +1,41 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, MapPin, Sparkles } from "lucide-react";
 import heroImage from "@/assets/hero-rua-iluminada.jpg";
 import logoRuaIluminada from "@/assets/logo-rua-iluminada.webp";
 
 export const HeroSection = () => {
+  const [totalShowTimes, setTotalShowTimes] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchShowTimes = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('show_times')
+          .select('id');
+
+        if (error) throw error;
+        setTotalShowTimes(data?.length || 0);
+      } catch (error) {
+        console.error('Erro ao buscar horários:', error);
+        setTotalShowTimes(6); // Fallback para 6 se houver erro
+      }
+    };
+
+    fetchShowTimes();
+
+    // Escutar mudanças nos horários
+    const handleShowTimesUpdate = () => {
+      fetchShowTimes();
+    };
+
+    window.addEventListener('eventsUpdated', handleShowTimesUpdate);
+
+    return () => {
+      window.removeEventListener('eventsUpdated', handleShowTimesUpdate);
+    };
+  }, []);
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image with Overlay */}
@@ -62,7 +94,9 @@ export const HeroSection = () => {
           <div className="bg-card/50 backdrop-blur-sm border border-border rounded-xl p-4 shadow-soft">
             <MapPin className="w-6 h-6 text-secondary mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Shows</p>
-            <p className="font-semibold">6 Sessões Diárias</p>
+            <p className="font-semibold">
+              {totalShowTimes} {totalShowTimes === 1 ? 'Sessão Diária' : 'Sessões Diárias'}
+            </p>
           </div>
         </div>
         
