@@ -39,7 +39,10 @@ O sistema Rua Iluminada é uma plataforma completa de venda de ingressos que per
 - **Gestão de Eventos**: Criação e edição de eventos e horários
 - **Controle de Ingressos**: Gerenciamento de tipos, preços e disponibilidade
 - **Vendas Presenciais**: Sistema de caixa para vendas físicas
-- **Relatórios**: Analytics detalhados de vendas e performance
+- **Gestão de Lojas**: Cadastro e controle de pontos de venda físicos
+- **Vendas das Lojas**: Registro diário de vendas das lojas com cálculo automático de comissões
+- **Controle de Comissões**: Pagamento de comissões das lojas através do livro caixa
+- **Relatórios Avançados**: Analytics detalhados incluindo performance das lojas
 - **Gestão de Usuários**: Controle de permissões e aprovação de usuários
 - **Configurações**: Personalização de marca, cores e integrações
 
@@ -72,6 +75,9 @@ src/
 │   ├── admin/           # Componentes do painel admin
 │   │   ├── AdminSidebar.tsx
 │   │   ├── EventsManager.tsx
+│   │   ├── StoresManager.tsx
+│   │   ├── StoreDailySalesManager.tsx
+│   │   ├── ReportsAnalytics.tsx
 │   │   ├── UserManagement.tsx
 │   │   └── ...
 │   └── ui/              # Componentes de interface
@@ -160,6 +166,14 @@ VITE_SUPABASE_ANON_KEY=sua_chave_anonima
 4. **Vendas**: Acompanhamento em tempo real
 5. **Relatórios**: Análise de performance
 
+### Sistema de Lojas e Comissões
+
+1. **Cadastro de Lojas**: Registre lojas físicas com percentual de comissão
+2. **Vendas Diárias**: Registre vendas diárias de cada loja
+3. **Cálculo Automático**: Sistema calcula comissões automaticamente
+4. **Pagamento de Comissões**: Pague comissões através do livro caixa diário
+5. **Relatórios**: Acompanhe performance e valores devidos por loja
+
 ## 🎛 Painel Administrativo
 
 O painel administrativo é organizado em categorias:
@@ -167,19 +181,20 @@ O painel administrativo é organizado em categorias:
 ### 🎅 Operações
 - **Eventos**: Criação e gestão de eventos
 - **Ingressos**: Configuração de tipos e preços
-- **Gestão de Lojas**: Cadastro de pontos de venda
+- **Gestão de Lojas**: Cadastro de pontos de venda físicos com percentuais de comissão
 
 ### 🛷 Vendas  
 - **Vendas Online**: Gerenciamento de plataformas externas
+- **Vendas das Lojas**: Registro diário de vendas das lojas com cálculo automático de comissões
 - **Pedidos**: Visualização de todas as vendas
 
 ### 💰 Financeiro
-- **Caixa Diário**: Registro de vendas presenciais
-- **Caixa Geral**: Consolidação financeira
+- **Caixa Diário**: Registro de vendas presenciais e pagamento de comissões pendentes
+- **Caixa Geral**: Consolidação financeira com controle de transferências
 - **Pagamentos**: Configurações do PagSeguro
 
 ### ⭐ Administração
-- **Relatórios**: Analytics e métricas
+- **Relatórios**: Analytics e métricas incluindo performance das lojas
 - **Backup**: Exportação e recuperação de dados
 - **Marca**: Personalização visual
 - **Performance**: Monitoramento do sistema
@@ -231,9 +246,12 @@ O painel administrativo é organizado em categorias:
 - `events`: Eventos e programação
 - `show_times`: Horários disponíveis
 - `ticket_types`: Tipos de ingressos
-- `sales`: Vendas realizadas
-- `users`: Usuários do sistema
-- `user_permissions`: Controle de acesso
+- `stores`: Lojas físicas e percentuais de comissão
+- `store_daily_sales`: Vendas diárias das lojas com comissões
+- `orders`: Pedidos e vendas realizadas
+- `tickets`: Ingressos gerados
+- `user_roles`: Roles dos usuários
+- `user_permissions`: Controle detalhado de acesso
 
 ### Edge Functions
 - `create-pagseguro-payment`: Criação de pagamentos
