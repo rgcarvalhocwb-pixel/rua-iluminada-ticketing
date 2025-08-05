@@ -188,15 +188,17 @@ export function AdminSidebar({
 
   return (
     <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className="border-b bg-gradient-to-r from-primary/5 to-primary/10">
+      <SidebarHeader className="border-b bg-gradient-christmas shadow-green-glow/20">
         <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary text-primary-foreground shadow-glow">
             <Building2 className="h-4 w-4" />
           </div>
           {state === "expanded" && (
             <div className="flex flex-col">
-              <span className="text-sm font-semibold">Rua Iluminada</span>
-              <span className="text-xs text-muted-foreground">Admin Panel</span>
+              <span className="text-sm font-semibold bg-gradient-primary bg-clip-text text-transparent">
+                🎄 Rua Iluminada
+              </span>
+              <span className="text-xs text-secondary/80">Painel Natalino</span>
             </div>
           )}
         </div>
@@ -206,7 +208,9 @@ export function AdminSidebar({
         {/* Operações */}
         {operationsItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel>Operações</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-primary font-semibold">
+              🎅 Operações
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {operationsItems.map((item) => (
@@ -216,10 +220,10 @@ export function AdminSidebar({
                       isActive={isActive(item.id)}
                       tooltip={state === "collapsed" ? item.title : undefined}
                       className={`
-                        transition-all duration-200 
+                        transition-all duration-300 
                         ${isActive(item.id) 
-                          ? "bg-primary text-primary-foreground shadow-md" 
-                          : "hover:bg-accent hover:text-accent-foreground"
+                          ? "bg-gradient-primary text-primary-foreground shadow-glow border border-primary/20" 
+                          : "hover:bg-gradient-accent hover:text-accent-foreground hover:shadow-green-glow/30"
                         }
                       `}
                     >
@@ -239,7 +243,9 @@ export function AdminSidebar({
         {/* Vendas */}
         {salesItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel>Vendas</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-secondary font-semibold">
+              🛷 Vendas
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {salesItems.map((item) => (
@@ -249,10 +255,10 @@ export function AdminSidebar({
                       isActive={isActive(item.id)}
                       tooltip={state === "collapsed" ? item.title : undefined}
                       className={`
-                        transition-all duration-200 
+                        transition-all duration-300 
                         ${isActive(item.id) 
-                          ? "bg-primary text-primary-foreground shadow-md" 
-                          : "hover:bg-accent hover:text-accent-foreground"
+                          ? "bg-gradient-secondary text-secondary-foreground shadow-red-glow border border-secondary/20" 
+                          : "hover:bg-gradient-accent hover:text-accent-foreground hover:shadow-green-glow/30"
                         }
                       `}
                     >
@@ -272,7 +278,9 @@ export function AdminSidebar({
         {/* Financeiro */}
         {financialItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel>Financeiro</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-accent font-semibold">
+              💰 Financeiro
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {financialItems.map((item) => (
@@ -282,10 +290,10 @@ export function AdminSidebar({
                       isActive={isActive(item.id)}
                       tooltip={state === "collapsed" ? item.title : undefined}
                       className={`
-                        transition-all duration-200 
+                        transition-all duration-300 
                         ${isActive(item.id) 
-                          ? "bg-primary text-primary-foreground shadow-md" 
-                          : "hover:bg-accent hover:text-accent-foreground"
+                          ? "bg-gradient-accent text-accent-foreground shadow-green-glow border border-accent/20" 
+                          : "hover:bg-gradient-primary hover:text-primary-foreground hover:shadow-glow/30"
                         }
                       `}
                     >
@@ -305,7 +313,9 @@ export function AdminSidebar({
         {/* Administração */}
         {adminItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel>Administração</SidebarGroupLabel>
+            <SidebarGroupLabel className="text-primary font-semibold">
+              ⭐ Administração
+            </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems.map((item) => (
@@ -315,10 +325,10 @@ export function AdminSidebar({
                       isActive={isActive(item.id)}
                       tooltip={state === "collapsed" ? item.title : undefined}
                       className={`
-                        transition-all duration-200 
+                        transition-all duration-300 
                         ${isActive(item.id) 
-                          ? "bg-primary text-primary-foreground shadow-md" 
-                          : "hover:bg-accent hover:text-accent-foreground"
+                          ? "bg-gradient-christmas text-primary-foreground shadow-glow border border-primary/20" 
+                          : "hover:bg-gradient-primary hover:text-primary-foreground hover:shadow-glow/30"
                         }
                       `}
                     >
@@ -336,15 +346,17 @@ export function AdminSidebar({
         )}
       </SidebarContent>
 
-      <SidebarFooter className="border-t bg-gradient-to-r from-muted/50 to-muted/20">
+      <SidebarFooter className="border-t bg-gradient-christmas/20 shadow-soft">
         <SidebarMenu>
           <SidebarMenuItem>
             <div className="flex flex-col gap-2 p-2">
               {state === "expanded" && (
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium truncate">{userEmail}</span>
-                  <span className="text-xs text-muted-foreground capitalize">
-                    {userRole}
+                  <span className="text-sm font-medium truncate bg-gradient-primary bg-clip-text text-transparent">
+                    {userEmail}
+                  </span>
+                  <span className="text-xs text-secondary/80 capitalize">
+                    🎄 {userRole}
                   </span>
                 </div>
               )}
@@ -352,10 +364,10 @@ export function AdminSidebar({
                 variant="ghost"
                 size="sm"
                 onClick={onSignOut}
-                className="justify-start gap-2 hover:bg-destructive hover:text-destructive-foreground"
+                className="justify-start gap-2 hover:bg-gradient-secondary hover:text-secondary-foreground hover:shadow-red-glow/50 transition-all duration-300"
               >
                 <LogOut className="h-4 w-4" />
-                {state === "expanded" && <span>Sair</span>}
+                {state === "expanded" && <span>🎅 Sair</span>}
               </Button>
             </div>
           </SidebarMenuItem>
