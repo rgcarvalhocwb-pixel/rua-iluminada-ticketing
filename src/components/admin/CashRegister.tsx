@@ -271,16 +271,40 @@ export const CashRegister = () => {
     try {
       const totals = calculateTotals();
       
-      // Salvar fechamento no banco
-      const { error } = await supabase
+      // Verificar se já existe fechamento para este evento e data
+      const { data: existingClosure } = await supabase
         .from('daily_closures')
-        .insert({
-          event_id: selectedEventId,
-          closure_date: selectedDate,
-          total_income: totals.incomeTotal,
-          total_expense: totals.expenseTotal,
-          final_balance: totals.incomeTotal - totals.expenseTotal
-        });
+        .select('id')
+        .eq('event_id', selectedEventId)
+        .eq('closure_date', selectedDate)
+        .single();
+
+      let error;
+      if (existingClosure) {
+        // Atualizar fechamento existente
+        const result = await supabase
+          .from('daily_closures')
+          .update({
+            total_income: totals.incomeTotal,
+            total_expense: totals.expenseTotal,
+            final_balance: totals.incomeTotal - totals.expenseTotal,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingClosure.id);
+        error = result.error;
+      } else {
+        // Criar novo fechamento
+        const result = await supabase
+          .from('daily_closures')
+          .insert({
+            event_id: selectedEventId,
+            closure_date: selectedDate,
+            total_income: totals.incomeTotal,
+            total_expense: totals.expenseTotal,
+            final_balance: totals.incomeTotal - totals.expenseTotal
+          });
+        error = result.error;
+      }
 
       if (error) throw error;
 
