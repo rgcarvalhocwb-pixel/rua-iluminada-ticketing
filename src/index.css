@@ -89,11 +89,14 @@ All colors MUST be HSL.
     --primary: 0 75% 35%;             /* VERMELHO BORDÔ para módulos */
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%; /* LETRAS PRETAS */
+    --secondary-foreground: 222.2 84% 4.9%; /* LETRAS PRETAS para itens secundários */
     --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%; /* Texto muted preto */
+    --muted-foreground: 115 10% 40%;  /* Texto muted ESCURO para seções */
     --accent: 0 75% 35%;              /* VERMELHO BORDÔ para destaques */
-    --accent-foreground: 355.7 100% 97.3%;
+    --accent-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
