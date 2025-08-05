@@ -312,10 +312,14 @@ VITE_SUPABASE_ANON_KEY=sua_chave_anonima
 
 ## 📞 Suporte
 
-Para suporte técnico, entre em contato através dos canais oficiais ou abra uma issue no repositório.
+Para suporte técnico, entre em contato:
+- **Rayzer Tecnologia**
+- **CNPJ:** 52.995.273/0001-00  
+- **Endereço:** Rua Florindo Francisco Rossetto, 456, Santa Catarina, Caxias do Sul - RS
+- **Telefone:** (54) 99195-2449
 
 ---
 
-**Desenvolvido com ❤️ para a Família Moletta**
+**Desenvolvido com ❤️ por Rayzer Tecnologia**
 
 *Sistema de Ingressos Rua Iluminada - Versão 2025*
