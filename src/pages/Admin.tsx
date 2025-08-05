@@ -231,8 +231,9 @@ const Admin = () => {
   }
 
   return (
-    <SidebarProvider defaultOpen={false}>
-      <div className="min-h-screen flex w-full bg-background">
+    <div className="admin-theme">
+      <SidebarProvider defaultOpen={false}>
+        <div className="min-h-screen flex w-full bg-background">
         <AdminSidebar
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -272,6 +273,7 @@ const Admin = () => {
         </SidebarInset>
       </div>
     </SidebarProvider>
+    </div>
   );
 };
 
