@@ -77,20 +77,29 @@ export const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      // Buscar usuários com seus papéis e perfis
+      // Buscar usuários com seus papéis
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
-        .select(`
-          *,
-          profiles!inner(nickname, email, phone)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (rolesError) throw rolesError;
 
-      // Buscar permissões para cada usuário
+      // Buscar perfis e permissões para cada usuário
       const usersWithPermissions = await Promise.all(
         (userRoles || []).map(async (userRole) => {
+          // Buscar perfil do usuário
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('nickname, email, phone')
+            .eq('user_id', userRole.user_id)
+            .single();
+
+          if (profileError) {
+            console.error('Erro ao buscar perfil:', profileError);
+          }
+
+          // Buscar permissões do usuário
           const { data: permissions, error: permError } = await supabase
             .from('user_permissions')
             .select('id, permission')
@@ -98,10 +107,14 @@ export const UserManagement = () => {
 
           if (permError) {
             console.error('Erro ao buscar permissões:', permError);
-            return { ...userRole, permissions: [] };
+            return { ...userRole, permissions: [], profiles: null };
           }
 
-          return { ...userRole, permissions: permissions || [] };
+          return { 
+            ...userRole, 
+            permissions: permissions || [], 
+            profiles: profile 
+          };
         })
       );
 
