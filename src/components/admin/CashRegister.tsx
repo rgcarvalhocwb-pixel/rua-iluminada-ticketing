@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Trash2, Calculator, DollarSign, Receipt, CreditCard, Banknote } from 'lucide-react';
+import { Plus, Trash2, Calculator, DollarSign, Receipt, CreditCard, Banknote, Download } from 'lucide-react';
 
 interface Event {
   id: string;
@@ -58,6 +58,7 @@ export const CashRegister = () => {
   });
   
   const [isClosingRegister, setIsClosingRegister] = useState(false);
+  const [isImportingPagSeguro, setIsImportingPagSeguro] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -210,6 +211,58 @@ export const CashRegister = () => {
     }
   };
 
+  const importPagSeguroSales = async () => {
+    if (!selectedDate) {
+      toast({
+        title: "Erro",
+        description: "Selecione uma data para importar as vendas",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsImportingPagSeguro(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-pagseguro-sales', {
+        body: {
+          startDate: selectedDate,
+          endDate: selectedDate
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        // Adicionar as vendas PagSeguro ao livro caixa
+        const newEntries = data.entries.map((entry: any) => ({
+          id: Date.now().toString() + Math.random(),
+          type: entry.type,
+          description: entry.description,
+          amount: entry.amount,
+          paymentMethod: entry.paymentMethod
+        }));
+
+        setEntries(prev => [...prev, ...newEntries]);
+
+        toast({
+          title: "Vendas importadas com sucesso!",
+          description: `${data.count} vendas importadas totalizando R$ ${data.totalAmount.toFixed(2)}`,
+        });
+      } else {
+        throw new Error(data.error);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro ao importar vendas",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsImportingPagSeguro(false);
+    }
+  };
+
   const totals = calculateTotals();
 
   return (
@@ -352,10 +405,21 @@ export const CashRegister = () => {
             </div>
           )}
 
-          <Button onClick={addEntry} className="w-full">
-            <Plus className="w-4 h-4 mr-2" />
-            Adicionar Lançamento
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={addEntry} className="flex-1">
+              <Plus className="w-4 h-4 mr-2" />
+              Adicionar Lançamento
+            </Button>
+            <Button 
+              onClick={importPagSeguroSales} 
+              disabled={isImportingPagSeguro || !selectedDate}
+              variant="outline"
+              className="flex-1"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              {isImportingPagSeguro ? 'Importando...' : 'Importar PagSeguro'}
+            </Button>
+          </div>
 
           {entries.length > 0 && (
             <Table>
