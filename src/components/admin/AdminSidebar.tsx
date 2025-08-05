@@ -21,7 +21,8 @@ import {
   Sun,
   Moon,
   Monitor,
-  FileText
+  FileText,
+  Shield
 } from "lucide-react";
 
 import {
@@ -209,6 +210,15 @@ export function AdminSidebar({
       id: "users",
       title: "Usuários",
       icon: Users,
+      category: "admin",
+    });
+  }
+
+  if (hasPermission(userPermissions, "users_manage")) {
+    sidebarItems.push({
+      id: "audit",
+      title: "Auditoria",
+      icon: Shield,
       category: "admin",
     });
   }

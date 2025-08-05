@@ -25,6 +25,7 @@ import { PerformanceMonitoring } from '@/components/admin/PerformanceMonitoring'
 import { AnalyticsIntegration } from '@/components/admin/AnalyticsIntegration';
 import { StoreDailySalesManager } from '@/components/admin/StoreDailySalesManager';
 import { SystemHealth } from '@/components/admin/SystemHealth';
+import { AuditLogs } from '@/components/admin/AuditLogs';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -83,7 +84,7 @@ const Admin = () => {
         availableTabs.push('reports', 'backup', 'branding', 'performance', 'analytics', 'system-health');
       }
       
-      if (hasPermission(userPermissions, 'users_manage')) availableTabs.push('users');
+      if (hasPermission(userPermissions, 'users_manage')) availableTabs.push('users', 'audit');
       
       if (availableTabs.length > 0 && !availableTabs.includes(activeTab)) {
         setActiveTab(availableTabs[0]);
@@ -181,6 +182,11 @@ const Admin = () => {
         component: <UserManagement />,
         title: 'Gerenciamento de Usuários',
         description: 'Aprove novos usuários e gerencie permissões de acesso'
+      },
+      audit: {
+        component: <AuditLogs />,
+        title: 'Auditoria do Sistema',
+        description: 'Visualize logs de ações e monitore atividades dos usuários'
       },
       'system-health': {
         component: <SystemHealth />,

@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { useAuditLog } from '@/hooks/useAuditLog';
 import { Plus, Trash2, Calculator, DollarSign, Receipt, CreditCard, Banknote, Download } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -63,6 +64,7 @@ export const CashRegister = () => {
   const [isImportingPagSeguro, setIsImportingPagSeguro] = useState(false);
   const [pendingCommissions, setPendingCommissions] = useState<any[]>([]);
   const { toast } = useToast();
+  const { logAction } = useAuditLog();
 
   useEffect(() => {
     fetchEvents();
@@ -308,9 +310,24 @@ export const CashRegister = () => {
       }
 
       if (error) throw error;
-
+      
       // Gerar e imprimir relatório
       generateCashClosureReport(totals);
+      
+      // Log da auditoria
+      await logAction({
+        action: 'cash_register_closed',
+        entityType: 'daily_closure',
+        entityId: selectedEventId,
+        details: {
+          event_id: selectedEventId,
+          date: selectedDate,
+          total_income: totals.incomeTotal,
+          total_expense: totals.expenseTotal,
+          final_balance: totals.incomeTotal - totals.expenseTotal,
+          difference: totals.difference
+        }
+      });
       
       toast({
         title: "Livro Caixa fechado com sucesso!",
@@ -420,6 +437,18 @@ export const CashRegister = () => {
       toast({
         title: "Comissão registrada",
         description: `Comissão de ${commission.stores.name} adicionada como entrada`,
+      });
+
+      // Log da auditoria
+      await logAction({
+        action: 'cash_commission_received',
+        entityType: 'commission',
+        entityId: commission.id,
+        details: {
+          store_name: commission.stores.name,
+          amount: commission.commission_amount,
+          date: selectedDate
+        }
       });
     } catch (error: any) {
       console.error('Erro ao marcar comissão como paga:', error);
