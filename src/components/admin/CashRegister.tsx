@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Trash2, Calculator, DollarSign, Receipt, CreditCard, Banknote, Download } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 interface Event {
   id: string;
@@ -153,6 +155,67 @@ export const CashRegister = () => {
     setEntries(entries.filter(e => e.id !== id));
   };
 
+  const generateCashClosureReport = (totals: any) => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(20);
+    doc.text('RELATÓRIO DE FECHAMENTO DE CAIXA', 20, 20);
+    
+    doc.setFontSize(12);
+    const selectedEvent = events.find(e => e.id === selectedEventId);
+    doc.text(`Evento: ${selectedEvent?.name || ''}`, 20, 35);
+    doc.text(`Data: ${new Date(selectedDate).toLocaleDateString('pt-BR')}`, 20, 45);
+    
+    // Entries table
+    const entriesData = entries.map(entry => [
+      entry.type === 'income' ? 'Entrada' : 'Saída',
+      entry.description,
+      entry.paymentMethod === 'cash' ? 'Dinheiro' : 
+      entry.paymentMethod === 'credit' ? 'Cartão Crédito' :
+      entry.paymentMethod === 'debit' ? 'Cartão Débito' : 'PIX',
+      `R$ ${entry.amount.toFixed(2)}`,
+      entry.ticketQuantity ? `I:${entry.ticketQuantity.inteira} M:${entry.ticketQuantity.meia}` : '-'
+    ]);
+
+    (doc as any).autoTable({
+      head: [['Tipo', 'Descrição', 'Pagamento', 'Valor', 'Ingressos']],
+      body: entriesData,
+      startY: 55,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [75, 85, 99] },
+    });
+
+    // Summary
+    const finalY = (doc as any).lastAutoTable.finalY + 20;
+    doc.setFontSize(14);
+    doc.text('RESUMO FINANCEIRO:', 20, finalY);
+    
+    doc.setFontSize(11);
+    doc.text(`Total de Receitas: R$ ${totals.incomeTotal.toFixed(2)}`, 20, finalY + 15);
+    doc.text(`Total de Despesas: R$ ${totals.expenseTotal.toFixed(2)}`, 20, finalY + 25);
+    doc.text(`Saldo Final: R$ ${(totals.incomeTotal - totals.expenseTotal).toFixed(2)}`, 20, finalY + 35);
+    
+    doc.text(`Troco Inicial: R$ ${parseFloat(initialCash || '0').toFixed(2)}`, 20, finalY + 50);
+    doc.text(`Valor Esperado em Caixa: R$ ${totals.expectedCash.toFixed(2)}`, 20, finalY + 60);
+    doc.text(`Valor Contado: R$ ${parseFloat(finalCash || '0').toFixed(2)}`, 20, finalY + 70);
+    doc.text(`Diferença: R$ ${totals.difference.toFixed(2)}`, 20, finalY + 80);
+
+    // Tickets reconciliation
+    doc.text('CONCILIAÇÃO DE INGRESSOS:', 20, finalY + 100);
+    doc.text(`Vendidos - Inteira: ${totals.ticketsSold.inteira} | Meia: ${totals.ticketsSold.meia}`, 20, finalY + 110);
+    doc.text(`Catraca - Inteira: ${conciliation.turnstileInteira} | Meia: ${conciliation.turnstileMeia}`, 20, finalY + 120);
+    
+    // Signature area
+    doc.text('_________________________________', 20, finalY + 150);
+    doc.text('Responsável pelo Fechamento', 20, finalY + 160);
+    doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 20, finalY + 170);
+
+    // Print
+    doc.autoPrint();
+    window.open(doc.output('bloburl'), '_blank');
+  };
+
   const calculateTotals = () => {
     const incomeTotal = entries
       .filter(e => e.type === 'income')
@@ -208,12 +271,26 @@ export const CashRegister = () => {
     try {
       const totals = calculateTotals();
       
+      // Salvar fechamento no banco
+      const { error } = await supabase
+        .from('daily_closures')
+        .insert({
+          event_id: selectedEventId,
+          closure_date: selectedDate,
+          total_income: totals.incomeTotal,
+          total_expense: totals.expenseTotal,
+          final_balance: totals.incomeTotal - totals.expenseTotal
+        });
+
+      if (error) throw error;
+
+      // Gerar e imprimir relatório
+      generateCashClosureReport(totals);
+      
       toast({
         title: "Livro Caixa fechado com sucesso!",
         description: `Diferença no dinheiro: ${totals.difference >= 0 ? '+' : ''}R$ ${totals.difference.toFixed(2)}`,
       });
-
-      // Aqui poderia salvar o fechamento no banco se necessário
 
       // Reset form
       setEntries([]);

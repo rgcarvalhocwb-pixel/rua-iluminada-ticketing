@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { BarChart3, Download, TrendingUp, Calendar, DollarSign, Store } from 'lucide-react';
+import { BarChart3, Download, TrendingUp, Calendar, DollarSign, Store, FileText, Printer } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -258,6 +260,47 @@ export const ReportsAnalytics = () => {
     document.body.removeChild(link);
   };
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(20);
+    doc.text('Relatório de Vendas e Analytics', 20, 20);
+    
+    doc.setFontSize(12);
+    doc.text(`Período: Últimos ${selectedPeriod} dias`, 20, 35);
+    doc.text(`Data de geração: ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}`, 20, 45);
+
+    // Sales data table
+    const tableData = salesData.map(item => [
+      format(new Date(item.date), 'dd/MM/yyyy', { locale: ptBR }),
+      `R$ ${item.revenue.toFixed(2)}`,
+      item.tickets.toString(),
+      item.orders.toString()
+    ]);
+
+    (doc as any).autoTable({
+      head: [['Data', 'Receita', 'Ingressos', 'Pedidos']],
+      body: tableData,
+      startY: 55,
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [75, 85, 99] },
+    });
+
+    // Summary
+    const finalY = (doc as any).lastAutoTable.finalY + 20;
+    doc.setFontSize(14);
+    doc.text('RESUMO GERAL:', 20, finalY);
+    
+    doc.setFontSize(11);
+    doc.text(`Receita Total: R$ ${totalRevenue.toFixed(2)}`, 20, finalY + 15);
+    doc.text(`Ingressos Vendidos: ${totalTickets}`, 20, finalY + 25);
+    doc.text(`Total de Pedidos: ${totalOrders}`, 20, finalY + 35);
+    doc.text(`Média Diária: R$ ${(totalRevenue / parseInt(selectedPeriod)).toFixed(2)}`, 20, finalY + 45);
+
+    doc.save(`relatorio-vendas-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+  };
+
   const maxRevenue = Math.max(...salesData.map(d => d.revenue));
   const totalRevenue = salesData.reduce((sum, d) => sum + d.revenue, 0);
   const totalTickets = salesData.reduce((sum, d) => sum + d.tickets, 0);
@@ -274,10 +317,16 @@ export const ReportsAnalytics = () => {
           <BarChart3 className="w-6 h-6" />
           Relatórios e Analytics
         </h2>
-        <Button onClick={exportToCSV} variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          Exportar CSV
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={exportToPDF} variant="outline">
+            <FileText className="w-4 h-4 mr-2" />
+            PDF
+          </Button>
+          <Button onClick={exportToCSV} variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            CSV
+          </Button>
+        </div>
       </div>
 
       {/* Filtros */}

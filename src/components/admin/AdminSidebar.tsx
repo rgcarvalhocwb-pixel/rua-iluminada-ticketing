@@ -20,7 +20,8 @@ import {
   Building2,
   Sun,
   Moon,
-  Monitor
+  Monitor,
+  FileText
 } from "lucide-react";
 
 import {
@@ -103,6 +104,15 @@ export function AdminSidebar({
       id: "general-cash",
       title: "Caixa Geral",
       icon: Banknote,
+      category: "financial",
+    });
+  }
+
+  if (hasPermission(userPermissions, "cash_daily")) {
+    sidebarItems.push({
+      id: "cash-closures",
+      title: "Fechamentos",
+      icon: FileText,
       category: "financial",
     });
   }

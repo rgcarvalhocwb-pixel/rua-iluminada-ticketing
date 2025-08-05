@@ -12,6 +12,7 @@ import { EventsManager } from '@/components/admin/EventsManager';
 import { OrdersView } from '@/components/admin/OrdersView';
 import { CashRegister } from '@/components/admin/CashRegister';
 import { GeneralCashbox } from '@/components/admin/GeneralCashbox';
+import { CashClosureReport } from '@/components/admin/CashClosureReport';
 import { PaymentSettings } from '@/components/admin/PaymentSettings';
 import { StoresManager } from '@/components/admin/StoresManager';
 import { OnlineSalesManager } from '@/components/admin/OnlineSalesManager';
@@ -69,6 +70,7 @@ const Admin = () => {
       if (hasPermission(userPermissions, 'tickets_manage')) availableTabs.push('tickets');
       if (hasPermission(userPermissions, 'cash_daily')) availableTabs.push('cash-register');
       if (hasPermission(userPermissions, 'cash_general')) availableTabs.push('general-cash');
+      if (hasPermission(userPermissions, 'cash_daily')) availableTabs.push('cash-closures');
       if (hasPermission(userPermissions, 'stores_manage')) {
         availableTabs.push('stores');
         availableTabs.push('store-sales');
@@ -119,6 +121,11 @@ const Admin = () => {
         component: <GeneralCashbox />,
         title: 'Caixa Geral',
         description: 'Consolide informações diárias e gerencie repasses para a administração'
+      },
+      'cash-closures': {
+        component: <CashClosureReport />,
+        title: 'Relatório de Fechamentos',
+        description: 'Visualize e exporte relatórios de fechamentos de caixa'
       },
       stores: {
         component: <StoresManager />,
