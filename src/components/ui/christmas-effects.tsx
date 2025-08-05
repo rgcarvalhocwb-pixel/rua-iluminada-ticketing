@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
-import santaImage from '@/assets/santa-claus.png';
 
 export const ChristmasEffects = () => {
   const [snowflakes, setSnowflakes] = useState<Array<{ id: number; left: number; delay: number; duration: number; size: number }>>([]);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   // Generate snowflakes
   useEffect(() => {
@@ -24,19 +22,6 @@ export const ChristmasEffects = () => {
     generateSnowflakes();
   }, []);
 
-  // Track mouse position for Santa
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: e.clientX - 30, // Center Santa on cursor
-        y: e.clientY - 30
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
-
   return (
     <>
       {/* Snow Effect */}
@@ -55,21 +40,6 @@ export const ChristmasEffects = () => {
             ❄
           </div>
         ))}
-      </div>
-
-      {/* Santa Following Mouse */}
-      <div
-        className="santa-follower"
-        style={{
-          left: `${mousePosition.x}px`,
-          top: `${mousePosition.y}px`,
-        }}
-      >
-        <img 
-          src={santaImage} 
-          alt="Papai Noel" 
-          draggable={false}
-        />
       </div>
     </>
   );
