@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useTheme } from "next-themes";
 import {
   Calendar,
   Ticket,
@@ -17,7 +17,10 @@ import {
   TrendingUp,
   LogOut,
   ChevronRight,
-  Building2
+  Building2,
+  Sun,
+  Moon,
+  Monitor
 } from "lucide-react";
 
 import {
@@ -35,9 +38,15 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useUserPermissions, hasPermission } from "@/hooks/useUserPermissions";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import christmasAvatar from "@/assets/christmas-avatar.png";
 
 interface AdminSidebarProps {
   activeTab: string;
@@ -55,8 +64,8 @@ export function AdminSidebar({
   userRole,
 }: AdminSidebarProps) {
   const { state } = useSidebar();
+  const { theme, setTheme } = useTheme();
   const userPermissions = useUserPermissions();
-  const { toast } = useToast();
 
   const sidebarItems = [];
 
@@ -363,22 +372,69 @@ export function AdminSidebar({
       <SidebarFooter className="border-t bg-gradient-christmas/20 shadow-soft">
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex flex-col gap-2 p-2">
+            <div className="flex flex-col gap-3 p-3">
+              {/* User Profile Section */}
+              <div className="flex items-center gap-3">
+                <Avatar className="h-10 w-10 border-2 border-primary/20">
+                  <AvatarImage src={christmasAvatar} alt="Avatar" />
+                  <AvatarFallback className="bg-gradient-christmas text-white font-bold">
+                    🎅
+                  </AvatarFallback>
+                </Avatar>
+                {state === "expanded" && (
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium font-inter truncate">
+                      {userEmail}
+                    </span>
+                    <span className="text-xs text-muted-foreground capitalize font-inter">
+                      🎄 {userRole}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Theme Toggle */}
               {state === "expanded" && (
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium font-inter truncate text-black">
-                    {userEmail}
-                  </span>
-                  <span className="text-xs text-black/80 capitalize font-inter">
-                    🎄 {userRole}
-                  </span>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="justify-start gap-2 hover:bg-accent transition-all duration-300"
+                    >
+                      {theme === "light" ? (
+                        <Sun className="h-4 w-4" />
+                      ) : theme === "dark" ? (
+                        <Moon className="h-4 w-4" />
+                      ) : (
+                        <Monitor className="h-4 w-4" />
+                      )}
+                      <span className="font-inter">Tema</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuItem onClick={() => setTheme("light")}>
+                      <Sun className="mr-2 h-4 w-4" />
+                      Claro
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTheme("dark")}>
+                      <Moon className="mr-2 h-4 w-4" />
+                      Escuro
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setTheme("system")}>
+                      <Monitor className="mr-2 h-4 w-4" />
+                      Sistema
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
+
+              {/* Logout Button */}
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onSignOut}
-                className="justify-start gap-2 hover:bg-gradient-secondary hover:text-secondary-foreground hover:shadow-red-glow/50 transition-all duration-300"
+                className="justify-start gap-2 hover:bg-destructive hover:text-destructive-foreground transition-all duration-300"
               >
                 <LogOut className="h-4 w-4" />
                 {state === "expanded" && <span className="font-inter font-medium">🎅 Sair</span>}
