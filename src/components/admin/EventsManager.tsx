@@ -92,6 +92,10 @@ export const EventsManager = () => {
       setDialogOpen(false);
       resetForm();
       fetchEvents();
+      
+      // Forçar atualização da página principal (se necessário)
+      // Isso pode ser melhorado com um estado global ou context
+      window.dispatchEvent(new CustomEvent('eventsUpdated'));
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -131,6 +135,9 @@ export const EventsManager = () => {
       });
       
       fetchEvents();
+      
+      // Notificar a página principal sobre a exclusão
+      window.dispatchEvent(new CustomEvent('eventsUpdated'));
     } catch (error: any) {
       toast({
         title: "Erro",

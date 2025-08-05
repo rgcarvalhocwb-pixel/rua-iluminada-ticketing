@@ -98,6 +98,9 @@ export const TicketTypeManager = ({ eventId }: TicketTypeManagerProps) => {
 
       resetForm();
       fetchTicketTypes();
+      
+      // Notificar sobre mudanças nos tipos de ingresso
+      window.dispatchEvent(new CustomEvent('eventsUpdated'));
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -135,6 +138,9 @@ export const TicketTypeManager = ({ eventId }: TicketTypeManagerProps) => {
       });
       
       fetchTicketTypes();
+      
+      // Notificar sobre exclusão de tipo de ingresso
+      window.dispatchEvent(new CustomEvent('eventsUpdated'));
     } catch (error: any) {
       toast({
         title: "Erro",

@@ -14,6 +14,8 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -119,6 +121,82 @@ const Auth = () => {
     }
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+
+      if (error) {
+        toast({
+          title: "Erro",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "E-mail enviado",
+          description: "Verifique sua caixa de entrada para redefinir sua senha.",
+        });
+        setShowResetPassword(false);
+        setResetEmail('');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: "Erro inesperado. Tente novamente.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (showResetPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Recuperar Senha</CardTitle>
+            <CardDescription>
+              Digite seu e-mail para receber o link de recuperação
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordReset} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">E-mail</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" className="flex-1" disabled={loading}>
+                  {loading ? 'Enviando...' : 'Enviar E-mail'}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowResetPassword(false)}
+                  disabled={loading}
+                >
+                  Voltar
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <Card className="w-full max-w-md">
@@ -160,6 +238,16 @@ const Auth = () => {
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Entrando...' : 'Entrar'}
                 </Button>
+                <div className="text-center mt-4">
+                  <Button 
+                    type="button" 
+                    variant="link" 
+                    className="text-sm"
+                    onClick={() => setShowResetPassword(true)}
+                  >
+                    Esqueci minha senha
+                  </Button>
+                </div>
               </form>
             </TabsContent>
 

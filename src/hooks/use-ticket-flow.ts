@@ -11,6 +11,8 @@ export interface TicketData {
   ticketQuantities: Record<string, number>;
   totalPrice: number;
   totalTickets: number;
+  eventId: string;
+  eventName: string;
 }
 
 export const useTicketFlow = () => {
@@ -39,53 +41,60 @@ export const useTicketFlow = () => {
     setIsProcessing(true);
 
     try {
-      // Criar pedido no banco de dados
-      const { data: events } = await supabase
+      // Validar se o evento existe
+      const { data: event, error: eventError } = await supabase
         .from('events')
-        .select('id')
-        .eq('name', 'Rua Iluminada - Família Moletta 2025')
+        .select('id, name')
+        .eq('id', ticketData.eventId)
         .single();
 
-      if (!events) {
-        throw new Error('Evento não encontrado');
+      if (eventError || !event) {
+        throw new Error('Evento não encontrado. Verifique se o evento ainda está disponível.');
       }
 
-      const { data: showTimes } = await supabase
+      // Buscar o horário selecionado
+      const { data: showTime, error: showTimeError } = await supabase
         .from('show_times')
-        .select('id')
-        .eq('event_id', events.id)
+        .select('id, time_slot, capacity')
+        .eq('event_id', event.id)
         .eq('time_slot', ticketData.selectedTime)
         .single();
 
-      if (!showTimes) {
-        throw new Error('Horário não encontrado');
+      if (showTimeError || !showTime) {
+        throw new Error('Horário não encontrado. O horário selecionado pode não estar mais disponível.');
       }
 
       // Buscar ou criar sessão do evento
       const sessionDate = ticketData.selectedDate.toISOString().split('T')[0];
-      let { data: session } = await supabase
+      let { data: session, error: sessionError } = await supabase
         .from('event_sessions')
-        .select('id')
-        .eq('event_id', events.id)
-        .eq('show_time_id', showTimes.id)
+        .select('id, available_tickets')
+        .eq('event_id', event.id)
+        .eq('show_time_id', showTime.id)
         .eq('session_date', sessionDate)
-        .single();
+        .maybeSingle();
+
+      if (sessionError) {
+        throw new Error('Erro ao buscar sessão: ' + sessionError.message);
+      }
 
       if (!session) {
-        // Criar nova sessão
-        const { data: newSession, error: sessionError } = await supabase
+        // Criar nova sessão com a capacidade do horário
+        const { data: newSession, error: createSessionError } = await supabase
           .from('event_sessions')
           .insert({
-            event_id: events.id,
-            show_time_id: showTimes.id,
+            event_id: event.id,
+            show_time_id: showTime.id,
             session_date: sessionDate,
-            capacity: 100,
-            available_tickets: 100
+            capacity: showTime.capacity,
+            available_tickets: showTime.capacity
           })
-          .select('id')
+          .select('id, available_tickets')
           .single();
 
-        if (sessionError) throw sessionError;
+        if (createSessionError) {
+          throw new Error('Erro ao criar sessão: ' + createSessionError.message);
+        }
         session = newSession;
       }
 
@@ -105,38 +114,47 @@ export const useTicketFlow = () => {
 
       if (orderError) throw orderError;
 
-      // Criar itens do pedido
-      const { data: ticketTypes } = await supabase
+      // Buscar tipos de ingresso para validação
+      const { data: ticketTypes, error: ticketTypesError } = await supabase
         .from('ticket_types')
         .select('*')
-        .eq('event_id', events.id);
+        .eq('event_id', event.id);
 
-      if (!ticketTypes) throw new Error('Tipos de ingresso não encontrados');
+      if (ticketTypesError || !ticketTypes || ticketTypes.length === 0) {
+        throw new Error('Tipos de ingresso não encontrados para este evento.');
+      }
 
+      // Criar itens do pedido
       const orderItems = [];
-      for (const [type, quantity] of Object.entries(ticketData.ticketQuantities)) {
+      for (const [ticketTypeId, quantity] of Object.entries(ticketData.ticketQuantities)) {
         if (quantity === 0) continue;
         
-        const ticketType = ticketTypes.find(t => 
-          t.name.toLowerCase() === (type === 'inteira' ? 'inteira' : 'meia-entrada')
-        );
+        const ticketType = ticketTypes.find(t => t.id === ticketTypeId);
         
-        if (ticketType) {
-          orderItems.push({
-            order_id: order.id,
-            ticket_type_id: ticketType.id,
-            quantity,
-            unit_price: ticketType.price,
-            subtotal: ticketType.price * quantity
-          });
+        if (!ticketType) {
+          throw new Error(`Tipo de ingresso não encontrado: ${ticketTypeId}`);
         }
+        
+        orderItems.push({
+          order_id: order.id,
+          ticket_type_id: ticketType.id,
+          quantity,
+          unit_price: ticketType.price,
+          subtotal: ticketType.price * quantity
+        });
+      }
+
+      if (orderItems.length === 0) {
+        throw new Error('Nenhum item foi selecionado para o pedido.');
       }
 
       const { error: itemsError } = await supabase
         .from('order_items')
         .insert(orderItems);
 
-      if (itemsError) throw itemsError;
+      if (itemsError) {
+        throw new Error('Erro ao criar itens do pedido: ' + itemsError.message);
+      }
 
       // Processar pagamento via PagSeguro
       await processPayment(order.id, customer, ticketData);

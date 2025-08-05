@@ -3,36 +3,35 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
-import { CalendarIcon, Clock, Users, Zap } from "lucide-react";
-import { useState } from "react";
+import { CalendarIcon, Clock, Users, Zap, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { format, addDays, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-const timeSlots = [
-  { time: "19:00", available: 45, total: 100 },
-  { time: "20:00", available: 12, total: 100 },
-  { time: "21:00", available: 0, total: 100 },
-  { time: "22:00", available: 67, total: 100 },
-  { time: "23:00", available: 89, total: 100 },
-  { time: "23:30", available: 23, total: 100 },
-];
+interface Event {
+  id: string;
+  name: string;
+  description: string | null;
+  start_date: string;
+  end_date: string;
+}
 
-const ticketTypes = [
-  { 
-    id: "inteira", 
-    name: "Inteira", 
-    price: 30.00, 
-    description: "Ingresso padrão para o evento",
-    icon: Users 
-  },
-  { 
-    id: "meia", 
-    name: "Meia-entrada", 
-    price: 15.00, 
-    description: "Para estudantes, idosos e pessoas com deficiência",
-    icon: Zap 
-  },
-];
+interface TicketType {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  event_id: string;
+}
+
+interface ShowTime {
+  id: string;
+  time_slot: string;
+  capacity: number;
+  event_id: string;
+}
 
 interface TicketSelectorProps {
   onProceedToCheckout?: (ticketData: {
@@ -41,42 +40,155 @@ interface TicketSelectorProps {
     ticketQuantities: Record<string, number>;
     totalPrice: number;
     totalTickets: number;
+    eventId: string;
+    eventName: string;
   }) => void;
 }
 
 export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => {
-  // Datas do evento: 14 de novembro a 31 de dezembro de 2025
-  const eventStartDate = new Date(2025, 10, 14); // November is month 10
-  const eventEndDate = new Date(2025, 11, 31); // December is month 11
+  const { toast } = useToast();
   
+  // Estado para dados dinâmicos
+  const [events, setEvents] = useState<Event[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
+  const [showTimes, setShowTimes] = useState<ShowTime[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Estado para seleções do usuário
   const [selectedDate, setSelectedDate] = useState<Date>();
   const [selectedTime, setSelectedTime] = useState<string>("");
-  const [ticketQuantities, setTicketQuantities] = useState<Record<string, number>>({
-    inteira: 0,
-    meia: 0,
-  });
+  const [ticketQuantities, setTicketQuantities] = useState<Record<string, number>>({});
 
-  const isDateInEventRange = (date: Date) => {
-    return isWithinInterval(date, { start: eventStartDate, end: eventEndDate });
+  // Buscar eventos e dados relacionados
+  useEffect(() => {
+    fetchEventData();
+    
+    // Listener para atualizações de eventos vindas do admin
+    const handleEventsUpdate = () => {
+      fetchEventData();
+    };
+    
+    window.addEventListener('eventsUpdated', handleEventsUpdate);
+    
+    return () => {
+      window.removeEventListener('eventsUpdated', handleEventsUpdate);
+    };
+  }, []);
+
+  // Atualizar tipos de ticket quando evento muda
+  useEffect(() => {
+    if (selectedEvent) {
+      fetchTicketTypes();
+      fetchShowTimes();
+    }
+  }, [selectedEvent]);
+
+  const fetchEventData = async () => {
+    try {
+      setLoading(true);
+      const { data: eventsData, error } = await supabase
+        .from('events')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      setEvents(eventsData || []);
+      
+      // Selecionar o primeiro evento por padrão
+      if (eventsData && eventsData.length > 0) {
+        setSelectedEvent(eventsData[0]);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar eventos: " + error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const getAvailabilityStatus = (available: number, total: number) => {
-    const percentage = (available / total) * 100;
+  const fetchTicketTypes = async () => {
+    if (!selectedEvent) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('ticket_types')
+        .select('*')
+        .eq('event_id', selectedEvent.id)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      
+      setTicketTypes(data || []);
+      
+      // Inicializar quantidades
+      const initialQuantities: Record<string, number> = {};
+      data?.forEach(type => {
+        initialQuantities[type.id] = 0;
+      });
+      setTicketQuantities(initialQuantities);
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar tipos de ingresso: " + error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const fetchShowTimes = async () => {
+    if (!selectedEvent) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('show_times')
+        .select('*')
+        .eq('event_id', selectedEvent.id)
+        .order('time_slot', { ascending: true });
+
+      if (error) throw error;
+      setShowTimes(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar horários: " + error.message,
+        variant: "destructive"
+      });
+    }
+  };
+
+  const isDateInEventRange = (date: Date) => {
+    if (!selectedEvent) return false;
+    const eventStart = new Date(selectedEvent.start_date);
+    const eventEnd = new Date(selectedEvent.end_date);
+    return isWithinInterval(date, { start: eventStart, end: eventEnd });
+  };
+
+  const getAvailabilityStatus = (capacity: number) => {
+    // Por enquanto assumimos disponibilidade total, mas isso pode ser calculado
+    // baseado nas vendas quando implementarmos o controle de estoque
+    const available = capacity;
+    const percentage = 100; // (available / capacity) * 100;
+    
     if (available === 0) return { text: "Esgotado", variant: "destructive" as const };
     if (percentage <= 20) return { text: "Últimos ingressos", variant: "secondary" as const };
     return { text: "Disponível", variant: "default" as const };
   };
 
-  const updateQuantity = (type: string, change: number) => {
+  const updateQuantity = (typeId: string, change: number) => {
     setTicketQuantities(prev => ({
       ...prev,
-      [type]: Math.max(0, Math.min(10, prev[type] + change))
+      [typeId]: Math.max(0, Math.min(10, (prev[typeId] || 0) + change))
     }));
   };
 
   const getTotalPrice = () => {
-    return Object.entries(ticketQuantities).reduce((total, [type, quantity]) => {
-      const ticketType = ticketTypes.find(t => t.id === type);
+    return Object.entries(ticketQuantities).reduce((total, [typeId, quantity]) => {
+      const ticketType = ticketTypes.find(t => t.id === typeId);
       return total + (ticketType?.price || 0) * quantity;
     }, 0);
   };
@@ -85,15 +197,42 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
     return Object.values(ticketQuantities).reduce((sum, qty) => sum + qty, 0);
   };
 
+  if (loading) {
+    return (
+      <section id="ticket-selector" className="py-16 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-center">
+            <Loader2 className="w-8 h-8 animate-spin mr-2" />
+            <span>Carregando eventos...</span>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (!selectedEvent) {
+    return (
+      <section id="ticket-selector" className="py-16 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center">
+            <p className="text-xl text-muted-foreground">
+              Nenhum evento disponível no momento.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="ticket-selector" className="py-16 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-4 bg-gradient-primary bg-clip-text text-transparent">
-            Escolha sua Experiência
+            {selectedEvent.name}
           </h2>
           <p className="text-xl text-muted-foreground">
-            Selecione a data, horário e ingressos para sua sessão mágica
+            {selectedEvent.description || "Selecione a data, horário e ingressos para sua sessão mágica"}
           </p>
         </div>
 
@@ -108,7 +247,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                   Escolha a Data
                 </CardTitle>
                 <CardDescription>
-                  14 de novembro a 31 de dezembro de 2025
+                  {format(new Date(selectedEvent.start_date), "dd 'de' MMMM", { locale: ptBR })} a {format(new Date(selectedEvent.end_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -132,8 +271,8 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                       selected={selectedDate}
                       onSelect={setSelectedDate}
                       disabled={(date) => !isDateInEventRange(date)}
-                      fromDate={eventStartDate}
-                      toDate={eventEndDate}
+                      fromDate={new Date(selectedEvent.start_date)}
+                      toDate={new Date(selectedEvent.end_date)}
                       initialFocus
                       className="p-3 pointer-events-auto"
                     />
@@ -150,32 +289,30 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                   Horários Disponíveis
                 </CardTitle>
                 <CardDescription>
-                  6 sessões especiais todos os dias
+                  {showTimes.length} horários disponíveis
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 gap-3">
-                  {timeSlots.map((slot) => {
-                    const status = getAvailabilityStatus(slot.available, slot.total);
-                    const isDisabled = slot.available === 0;
+                  {showTimes.map((showTime) => {
+                    const status = getAvailabilityStatus(showTime.capacity);
+                    const isDisabled = false; // Por enquanto não há controle de estoque
                     
                     return (
                       <Button
-                        key={slot.time}
-                        variant={selectedTime === slot.time ? "default" : "outline"}
+                        key={showTime.id}
+                        variant={selectedTime === showTime.time_slot ? "default" : "outline"}
                         disabled={isDisabled}
-                        onClick={() => setSelectedTime(slot.time)}
+                        onClick={() => setSelectedTime(showTime.time_slot)}
                         className="h-auto p-4 flex flex-col items-center gap-2 relative"
                       >
-                        <span className="text-lg font-semibold">{slot.time}</span>
+                        <span className="text-lg font-semibold">{showTime.time_slot}</span>
                         <Badge variant={status.variant} className="text-xs">
                           {status.text}
                         </Badge>
-                        {!isDisabled && (
-                          <span className="text-xs text-muted-foreground">
-                            {slot.available} vagas
-                          </span>
-                        )}
+                        <span className="text-xs text-muted-foreground">
+                          {showTime.capacity} vagas
+                        </span>
                       </Button>
                     );
                   })}
@@ -198,8 +335,8 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
               </CardHeader>
               <CardContent className="space-y-4">
                 {ticketTypes.map((ticket) => {
-                  const Icon = ticket.icon;
-                  const quantity = ticketQuantities[ticket.id];
+                  const Icon = ticket.name.toLowerCase().includes('meia') ? Zap : Users;
+                  const quantity = ticketQuantities[ticket.id] || 0;
                   
                   return (
                     <div
@@ -213,7 +350,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                         <div>
                           <p className="font-semibold">{ticket.name}</p>
                           <p className="text-sm text-muted-foreground">
-                            {ticket.description}
+                            {ticket.description || "Ingresso para o evento"}
                           </p>
                           <p className="text-lg font-bold text-primary">
                             R$ {ticket.price.toFixed(2)}
@@ -278,17 +415,18 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                     
                     <Button 
                       className="w-full bg-gradient-primary hover:shadow-glow transition-all duration-300 text-lg py-6"
-                      disabled={!selectedDate || !selectedTime}
+                      disabled={!selectedDate || !selectedTime || getTotalTickets() === 0}
                       onClick={() => {
-                        if (selectedDate && selectedTime && getTotalTickets() > 0) {
+                        if (selectedDate && selectedTime && getTotalTickets() > 0 && selectedEvent) {
                           const ticketData = {
                             selectedDate,
                             selectedTime,
                             ticketQuantities,
                             totalPrice: getTotalPrice(),
-                            totalTickets: getTotalTickets()
+                            totalTickets: getTotalTickets(),
+                            eventId: selectedEvent.id,
+                            eventName: selectedEvent.name
                           };
-                          // Esta função será passada via props
                           onProceedToCheckout?.(ticketData);
                         }
                       }}

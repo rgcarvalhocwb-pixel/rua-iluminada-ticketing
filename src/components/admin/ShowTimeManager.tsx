@@ -94,6 +94,9 @@ export const ShowTimeManager = ({ eventId }: ShowTimeManagerProps) => {
 
       resetForm();
       fetchShowTimes();
+      
+      // Notificar sobre mudanças nos horários
+      window.dispatchEvent(new CustomEvent('eventsUpdated'));
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -130,6 +133,9 @@ export const ShowTimeManager = ({ eventId }: ShowTimeManagerProps) => {
       });
       
       fetchShowTimes();
+      
+      // Notificar sobre exclusão de horário
+      window.dispatchEvent(new CustomEvent('eventsUpdated'));
     } catch (error: any) {
       toast({
         title: "Erro",
