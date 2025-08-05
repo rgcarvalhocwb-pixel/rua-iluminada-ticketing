@@ -19,15 +19,49 @@ interface BrandingConfig {
   social_instagram?: string;
   social_whatsapp?: string;
   email_footer: string;
+  purchase_email_subject: string;
+  purchase_email_template: string;
+  welcome_email_subject: string;
+  welcome_email_template: string;
 }
 
 export const BrandingSettings = () => {
   const [config, setConfig] = useState<BrandingConfig>({
-    primary_color: '#9333ea',
-    secondary_color: '#7c3aed',
+    primary_color: '#DC2626',
+    secondary_color: '#EAB308',
     company_name: 'Rua Iluminada',
     company_description: 'Sistema de vendas de ingressos',
-    email_footer: 'Obrigado por escolher nossos eventos!'
+    email_footer: 'Obrigado por escolher nossos eventos!',
+    purchase_email_subject: 'Confirmação da sua compra - Rua Iluminada',
+    purchase_email_template: `Olá {customer_name},
+
+Obrigado pela sua compra! Seus ingressos estão prontos.
+
+Detalhes da compra:
+- Evento: {event_name}
+- Data: {event_date}
+- Horário: {event_time}
+- Quantidade: {ticket_quantity}
+- Total: {total_amount}
+
+Seus ingressos estão em anexo com QR codes para entrada.
+
+Atenciosamente,
+Equipe Rua Iluminada`,
+    welcome_email_subject: 'Bem-vindo à Rua Iluminada!',
+    welcome_email_template: `Olá {customer_name},
+
+Bem-vindo à Rua Iluminada!
+
+Sua conta foi criada com sucesso. Agora você pode:
+- Comprar ingressos online
+- Acompanhar seus pedidos
+- Receber promoções exclusivas
+
+Para qualquer dúvida, entre em contato conosco.
+
+Atenciosamente,
+Equipe Rua Iluminada`
   });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -38,24 +72,36 @@ export const BrandingSettings = () => {
 
   const fetchBrandingConfig = async () => {
     try {
-      // Usar localStorage temporariamente até os tipos serem atualizados
-      const saved = localStorage.getItem('branding_config');
-      if (saved) {
-        setConfig(JSON.parse(saved));
+      const { data, error } = await supabase
+        .from('branding_config')
+        .select('*')
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+
+      if (data) {
+        setConfig(data);
       }
     } catch (error) {
-      // Configuração ainda não existe, usar padrões
+      console.error('Erro ao carregar configurações:', error);
+      // Usar configurações padrão
     }
   };
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      // Salvar no localStorage temporariamente até os tipos serem atualizados
-      localStorage.setItem('branding_config', JSON.stringify(config));
+      const { data, error } = await supabase
+        .from('branding_config')
+        .upsert(config)
+        .select()
+        .single();
 
-      // Aplicar cores ao CSS customizado
-      applyCustomColors();
+      if (error) throw error;
+
+      setConfig(data);
 
       toast({
         title: "Sucesso",
@@ -241,6 +287,72 @@ export const BrandingSettings = () => {
                 onChange={(e) => setConfig({ ...config, social_whatsapp: e.target.value })}
                 placeholder="5511999999999"
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Configurações de Email */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle>Personalização de E-mails</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Email de Compra */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-lg">E-mail de Confirmação de Compra</h4>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="purchase-subject">Assunto do E-mail</Label>
+                  <Input
+                    id="purchase-subject"
+                    value={config.purchase_email_subject}
+                    onChange={(e) => setConfig({ ...config, purchase_email_subject: e.target.value })}
+                    placeholder="Confirmação da sua compra - Rua Iluminada"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="purchase-template">Modelo do E-mail</Label>
+                  <Textarea
+                    id="purchase-template"
+                    value={config.purchase_email_template}
+                    onChange={(e) => setConfig({ ...config, purchase_email_template: e.target.value })}
+                    rows={8}
+                    placeholder="Use {customer_name}, {event_name}, {event_date}, {event_time}, {ticket_quantity}, {total_amount} como variáveis"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Variáveis disponíveis: {'{customer_name}, {event_name}, {event_date}, {event_time}, {ticket_quantity}, {total_amount}'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Email de Boas-vindas */}
+            <div className="space-y-4">
+              <h4 className="font-semibold text-lg">E-mail de Boas-vindas</h4>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="welcome-subject">Assunto do E-mail</Label>
+                  <Input
+                    id="welcome-subject"
+                    value={config.welcome_email_subject}
+                    onChange={(e) => setConfig({ ...config, welcome_email_subject: e.target.value })}
+                    placeholder="Bem-vindo à Rua Iluminada!"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="welcome-template">Modelo do E-mail</Label>
+                  <Textarea
+                    id="welcome-template"
+                    value={config.welcome_email_template}
+                    onChange={(e) => setConfig({ ...config, welcome_email_template: e.target.value })}
+                    rows={8}
+                    placeholder="Use {customer_name} como variável para personalizar"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Variáveis disponíveis: {'{customer_name}'}
+                  </p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>

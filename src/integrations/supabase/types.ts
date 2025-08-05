@@ -50,11 +50,15 @@ export type Database = {
           id: string
           logo_url: string | null
           primary_color: string
+          purchase_email_subject: string | null
+          purchase_email_template: string | null
           secondary_color: string
           social_facebook: string | null
           social_instagram: string | null
           social_whatsapp: string | null
           updated_at: string
+          welcome_email_subject: string | null
+          welcome_email_template: string | null
         }
         Insert: {
           company_description?: string | null
@@ -64,11 +68,15 @@ export type Database = {
           id?: string
           logo_url?: string | null
           primary_color?: string
+          purchase_email_subject?: string | null
+          purchase_email_template?: string | null
           secondary_color?: string
           social_facebook?: string | null
           social_instagram?: string | null
           social_whatsapp?: string | null
           updated_at?: string
+          welcome_email_subject?: string | null
+          welcome_email_template?: string | null
         }
         Update: {
           company_description?: string | null
@@ -78,11 +86,15 @@ export type Database = {
           id?: string
           logo_url?: string | null
           primary_color?: string
+          purchase_email_subject?: string | null
+          purchase_email_template?: string | null
           secondary_color?: string
           social_facebook?: string | null
           social_instagram?: string | null
           social_whatsapp?: string | null
           updated_at?: string
+          welcome_email_subject?: string | null
+          welcome_email_template?: string | null
         }
         Relationships: []
       }
