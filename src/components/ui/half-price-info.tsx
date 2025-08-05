@@ -102,7 +102,7 @@ export const HalfPriceInfo = () => {
           ))}
         </div>
 
-        <Card className="bg-gradient-to-r from-red-900/20 to-yellow-900/20 border-yellow-400/30">
+        <Card className="bg-gradient-to-r from-red-600/20 to-yellow-500/20 border-yellow-400/50">
           <CardHeader>
             <CardTitle className="flex items-center text-white">
               <Shield className="mr-3 h-6 w-6 text-yellow-400" />
