@@ -80,19 +80,19 @@ All colors MUST be HSL.
   }
 
   .dark {
-    /* Tema escuro - fundo ainda mais escuro */
+    /* Tema escuro - fundo escuro com letras claras */
     --background: 240 30% 4%;
-    --foreground: 45 80% 90%;
+    --foreground: 210 40% 95%;        /* Letras claras no escuro */
     --card: 240 20% 8%;
-    --card-foreground: 45 80% 85%;
+    --card-foreground: 210 40% 92%;   /* Letras claras em cards */
     --popover: 240 20% 8%;
-    --popover-foreground: 45 80% 85%;
+    --popover-foreground: 210 40% 92%;
     --primary: 0 75% 40%;
     --primary-foreground: 0 0% 98%;
     --secondary: 45 90% 55%;
     --secondary-foreground: 240 30% 15%;
     --muted: 240 20% 10%;
-    --muted-foreground: 45 60% 60%;
+    --muted-foreground: 210 40% 70%;  /* Texto muted claro */
     --accent: 45 90% 55%;
     --accent-foreground: 240 30% 15%;
     --destructive: 0 75% 55%;
@@ -102,24 +102,44 @@ All colors MUST be HSL.
     --ring: 0 75% 40%;
   }
 
-  /* Admin-specific theme with professional colors */
+  /* Admin theme - garante harmonia em ambos os temas */
   .admin-theme {
-    /* Professional Blue-Gray palette for admin */
+    /* Cores profissionais para admin - tema claro */
     --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 222.2 84% 4.9%;     /* Letras escuras no claro */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222.2 84% 4.9%; /* Letras escuras em cards */
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    --secondary-foreground: 222.2 84% 4.9%; /* Letras escuras */
     --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted-foreground: 215.4 16.3% 46.9%; /* Texto muted escuro */
     --accent: 142 76% 36%;
     --accent-foreground: 355.7 100% 97.3%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
+  }
+
+  /* Admin theme no modo escuro */
+  .dark .admin-theme {
+    /* Cores profissionais para admin - tema escuro */
+    --background: 240 30% 4%;
+    --foreground: 210 40% 95%;        /* Letras claras no escuro */
+    --card: 240 20% 8%;
+    --card-foreground: 210 40% 92%;   /* Letras claras em cards */
+    --primary: 221.2 83.2% 63.3%;
+    --primary-foreground: 240 30% 4%;
+    --secondary: 240 20% 10%;
+    --secondary-foreground: 210 40% 92%; /* Letras claras */
+    --muted: 240 20% 10%;
+    --muted-foreground: 210 40% 70%;  /* Texto muted claro */
+    --accent: 142 76% 46%;
+    --accent-foreground: 240 30% 4%;
+    --border: 240 20% 15%;
+    --input: 240 20% 10%;
+    --ring: 221.2 83.2% 63.3%;
   }
 
   /* Ceará Christmas Animations */
