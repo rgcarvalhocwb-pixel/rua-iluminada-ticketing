@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
+import { useUserPermissions, hasPermission } from '@/hooks/useUserPermissions';
 import { EventsManager } from '@/components/admin/EventsManager';
 import { OrdersView } from '@/components/admin/OrdersView';
 import { CashRegister } from '@/components/admin/CashRegister';
@@ -20,13 +21,30 @@ import { BackupRecovery } from '@/components/admin/BackupRecovery';
 import { BrandingSettings } from '@/components/admin/BrandingSettings';
 import { PerformanceMonitoring } from '@/components/admin/PerformanceMonitoring';
 import { AnalyticsIntegration } from '@/components/admin/AnalyticsIntegration';
-import { LogOut, Calendar, ShoppingCart, CreditCard, DollarSign, Store, Globe, Ticket, Users, Banknote } from 'lucide-react';
+import { 
+  LogOut, 
+  Calendar, 
+  ShoppingCart, 
+  CreditCard, 
+  DollarSign, 
+  Store, 
+  Globe, 
+  Ticket, 
+  Users, 
+  Banknote,
+  BarChart3,
+  Database,
+  Palette,
+  Activity,
+  TrendingUp
+} from 'lucide-react';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const userPermissions = useUserPermissions();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -64,13 +82,205 @@ const Admin = () => {
     navigate('/auth');
   };
 
-  if (loading) {
+  if (loading || userPermissions.loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-muted-foreground">Carregando painel administrativo...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Se o usuário não tem papel aprovado, mostrar mensagem
+  if (!userPermissions.role) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Acesso Negado</CardTitle>
+            <CardDescription>
+              Seu usuário ainda não foi aprovado ou não possui permissões para acessar o painel administrativo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleSignOut} variant="outline" className="w-full">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Definir abas com base nas permissões
+  const availableTabs = [];
+
+  if (hasPermission(userPermissions, 'events_manage')) {
+    availableTabs.push({
+      id: 'events',
+      label: 'Eventos',
+      icon: <Calendar className="w-4 h-4" />,
+      component: <EventsManager />,
+      title: 'Gerenciar Eventos',
+      description: 'Crie e gerencie eventos, configure tipos de ingressos e preços'
+    });
+  }
+
+  if (hasPermission(userPermissions, 'tickets_manage')) {
+    availableTabs.push({
+      id: 'tickets',
+      label: 'Ingressos',
+      icon: <Ticket className="w-4 h-4" />,
+      component: <TicketTypesManager />,
+      title: 'Gerenciar Tipos de Ingresso',
+      description: 'Configure tipos de ingressos, preços e visibilidade'
+    });
+  }
+
+  if (hasPermission(userPermissions, 'cash_daily')) {
+    availableTabs.push({
+      id: 'cash-register',
+      label: 'Caixa',
+      icon: <DollarSign className="w-4 h-4" />,
+      component: <CashRegister />,
+      title: 'Caixa Diário',
+      description: 'Registre vendas presenciais e faça a conciliação financeira'
+    });
+  }
+
+  if (hasPermission(userPermissions, 'cash_general')) {
+    availableTabs.push({
+      id: 'general-cash',
+      label: 'Geral',
+      icon: <Banknote className="w-4 h-4" />,
+      component: <GeneralCashbox />,
+      title: 'Caixa Geral',
+      description: 'Consolide informações diárias e gerencie repasses para a administração'
+    });
+  }
+
+  if (hasPermission(userPermissions, 'stores_manage')) {
+    availableTabs.push({
+      id: 'stores',
+      label: 'Lojas',
+      icon: <Store className="w-4 h-4" />,
+      component: <StoresManager />,
+      title: 'Gestão de Lojas',
+      description: 'Cadastre lojas, registre vendas e gerencie comissões'
+    });
+  }
+
+  if (hasPermission(userPermissions, 'online_sales')) {
+    availableTabs.push({
+      id: 'online',
+      label: 'Online',
+      icon: <Globe className="w-4 h-4" />,
+      component: <OnlineSalesManager />,
+      title: 'Vendas Online de Terceiros',
+      description: 'Gerencie vendas de plataformas externas e repasses'
+    });
+  }
+
+  if (hasPermission(userPermissions, 'orders_view')) {
+    availableTabs.push({
+      id: 'orders',
+      label: 'Pedidos',
+      icon: <ShoppingCart className="w-4 h-4" />,
+      component: <OrdersView />,
+      title: 'Visualizar Pedidos',
+      description: 'Acompanhe todas as vendas online e presenciais'
+    });
+  }
+
+  if (hasPermission(userPermissions, 'payments_config')) {
+    availableTabs.push({
+      id: 'payments',
+      label: 'Pagtos',
+      icon: <CreditCard className="w-4 h-4" />,
+      component: <PaymentSettings />,
+      title: 'Configurações de Pagamento',
+      description: 'Configure as credenciais do PagSeguro para processar pagamentos online'
+    });
+  }
+
+  // Abas exclusivas para Masters e Admins
+  if (userPermissions.role === 'master' || userPermissions.role === 'admin') {
+    availableTabs.push(
+      {
+        id: 'reports',
+        label: 'Reports',
+        icon: <BarChart3 className="w-4 h-4" />,
+        component: <ReportsAnalytics />,
+        title: 'Relatórios e Analytics',
+        description: 'Análise detalhada de vendas e performance por evento'
+      },
+      {
+        id: 'backup',
+        label: 'Backup',
+        icon: <Database className="w-4 h-4" />,
+        component: <BackupRecovery />,
+        title: 'Backup e Recuperação',
+        description: 'Gerencie backups automáticos e exportação de dados'
+      },
+      {
+        id: 'branding',
+        label: 'Marca',
+        icon: <Palette className="w-4 h-4" />,
+        component: <BrandingSettings />,
+        title: 'Configurações de Marca',
+        description: 'Personalize logo, cores e identidade visual da empresa'
+      },
+      {
+        id: 'performance',
+        label: 'Perf.',
+        icon: <Activity className="w-4 h-4" />,
+        component: <PerformanceMonitoring />,
+        title: 'Monitoramento de Performance',
+        description: 'Acompanhe métricas de performance e logs de erro'
+      },
+      {
+        id: 'analytics',
+        label: 'Analytics',
+        icon: <TrendingUp className="w-4 h-4" />,
+        component: <AnalyticsIntegration />,
+        title: 'Integrações de Analytics',
+        description: 'Configure Google Analytics, Facebook Pixel e outras integrações'
+      }
+    );
+  }
+
+  if (hasPermission(userPermissions, 'users_manage')) {
+    availableTabs.push({
+      id: 'users',
+      label: 'Users',
+      icon: <Users className="w-4 h-4" />,
+      component: <UserManagement />,
+      title: 'Gerenciamento de Usuários',
+      description: 'Aprove novos usuários e gerencie permissões de acesso'
+    });
+  }
+
+  // Se não tem nenhuma aba disponível
+  if (availableTabs.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Sem Permissões</CardTitle>
+            <CardDescription>
+              Você não possui permissões para acessar nenhum módulo do sistema.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleSignOut} variant="outline" className="w-full">
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -82,13 +292,15 @@ const Admin = () => {
           <div>
             <h1 className="text-2xl font-bold">Painel Administrativo</h1>
             <p className="text-sm text-muted-foreground">
-              Bem-vindo, {user?.email}
+              Bem-vindo, {user?.email} ({userPermissions.role})
             </p>
           </div>
           <div className="flex gap-2">
-            <Button onClick={() => window.open('/dashboard', '_blank')} variant="secondary" size="sm">
-              📊 Dashboard
-            </Button>
+            {hasPermission(userPermissions, 'dashboard_view') && (
+              <Button onClick={() => window.open('/dashboard', '_blank')} variant="secondary" size="sm">
+                📊 Dashboard
+              </Button>
+            )}
             <Button onClick={handleSignOut} variant="outline" size="sm">
               <LogOut className="w-4 h-4 mr-2" />
               Sair
@@ -98,256 +310,31 @@ const Admin = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-12">
-            <TabsTrigger value="events" className="flex items-center gap-1 text-xs">
-              <Calendar className="w-4 h-4" />
-              Eventos
-            </TabsTrigger>
-            <TabsTrigger value="tickets" className="flex items-center gap-1 text-xs">
-              <Ticket className="w-4 h-4" />
-              Ingressos
-            </TabsTrigger>
-            <TabsTrigger value="cash-register" className="flex items-center gap-1 text-xs">
-              <DollarSign className="w-4 h-4" />
-              Caixa
-            </TabsTrigger>
-            <TabsTrigger value="general-cash" className="flex items-center gap-1 text-xs">
-              <Banknote className="w-4 h-4" />
-              Geral
-            </TabsTrigger>
-            <TabsTrigger value="stores" className="flex items-center gap-1 text-xs">
-              <Store className="w-4 h-4" />
-              Lojas
-            </TabsTrigger>
-            <TabsTrigger value="online" className="flex items-center gap-1 text-xs">
-              <Globe className="w-4 h-4" />
-              Online
-            </TabsTrigger>
-            <TabsTrigger value="orders" className="flex items-center gap-1 text-xs">
-              <ShoppingCart className="w-4 h-4" />
-              Pedidos
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="flex items-center gap-1 text-xs">
-              <CreditCard className="w-4 h-4" />
-              Pagtos
-            </TabsTrigger>
-            <TabsTrigger value="reports" className="flex items-center gap-1 text-xs">
-              📊 Reports
-            </TabsTrigger>
-            <TabsTrigger value="backup" className="flex items-center gap-1 text-xs">
-              💾 Backup
-            </TabsTrigger>
-            <TabsTrigger value="branding" className="flex items-center gap-1 text-xs">
-              🎨 Marca
-            </TabsTrigger>
-            <TabsTrigger value="performance" className="flex items-center gap-1 text-xs">
-              ⚡ Perf.
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-1 text-xs">
-              📈 Analytics
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-1 text-xs">
-              <Users className="w-4 h-4" />
-              Users
-            </TabsTrigger>
+        <Tabs defaultValue={availableTabs[0]?.id} className="space-y-6">
+          <TabsList className={`grid w-full grid-cols-${Math.min(availableTabs.length, 12)}`}>
+            {availableTabs.map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="flex items-center gap-1 text-xs"
+              >
+                {tab.icon}
+                {tab.label}
+              </TabsTrigger>
+            ))}
           </TabsList>
 
-          <TabsContent value="events">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gerenciar Eventos</CardTitle>
-                <CardDescription>
-                  Crie e gerencie eventos, configure tipos de ingressos e preços
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <EventsManager />
-              </CardContent>
-            </Card>
-            </TabsContent>
-
-            <TabsContent value="general-cash">
+          {availableTabs.map((tab) => (
+            <TabsContent key={tab.id} value={tab.id}>
               <Card>
                 <CardHeader>
-                  <CardTitle>Caixa Geral</CardTitle>
-                  <CardDescription>
-                    Consolide informações diárias e gerencie repasses para a administração
-                  </CardDescription>
+                  <CardTitle>{tab.title}</CardTitle>
+                  <CardDescription>{tab.description}</CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <GeneralCashbox />
-                </CardContent>
+                <CardContent>{tab.component}</CardContent>
               </Card>
             </TabsContent>
-
-          <TabsContent value="tickets">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gerenciar Tipos de Ingresso</CardTitle>
-                <CardDescription>
-                  Configure tipos de ingressos, preços e visibilidade
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <TicketTypesManager />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="cash-register">
-            <Card>
-              <CardHeader>
-                <CardTitle>Caixa Diário</CardTitle>
-                <CardDescription>
-                  Registre vendas presenciais e faça a conciliação financeira
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <CashRegister />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="stores">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gestão de Lojas</CardTitle>
-                <CardDescription>
-                  Cadastre lojas, registre vendas e gerencie comissões
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <StoresManager />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="online">
-            <Card>
-              <CardHeader>
-                <CardTitle>Vendas Online de Terceiros</CardTitle>
-                <CardDescription>
-                  Gerencie vendas de plataformas externas e repasses
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <OnlineSalesManager />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="orders">
-            <Card>
-              <CardHeader>
-                <CardTitle>Visualizar Pedidos</CardTitle>
-                <CardDescription>
-                  Acompanhe todas as vendas online e presenciais
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <OrdersView />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="payments">
-            <Card>
-              <CardHeader>
-                <CardTitle>Configurações de Pagamento</CardTitle>
-                <CardDescription>
-                  Configure as credenciais do PagSeguro para processar pagamentos online
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PaymentSettings />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="reports">
-            <Card>
-              <CardHeader>
-                <CardTitle>Relatórios e Analytics</CardTitle>
-                <CardDescription>
-                  Análise detalhada de vendas e performance por evento
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ReportsAnalytics />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="backup">
-            <Card>
-              <CardHeader>
-                <CardTitle>Backup e Recuperação</CardTitle>
-                <CardDescription>
-                  Gerencie backups automáticos e exportação de dados
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <BackupRecovery />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="branding">
-            <Card>
-              <CardHeader>
-                <CardTitle>Configurações de Marca</CardTitle>
-                <CardDescription>
-                  Personalize logo, cores e identidade visual da empresa
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <BrandingSettings />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="performance">
-            <Card>
-              <CardHeader>
-                <CardTitle>Monitoramento de Performance</CardTitle>
-                <CardDescription>
-                  Acompanhe métricas de performance e logs de erro
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <PerformanceMonitoring />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <Card>
-              <CardHeader>
-                <CardTitle>Integrações de Analytics</CardTitle>
-                <CardDescription>
-                  Configure Google Analytics, Facebook Pixel e outras integrações
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <AnalyticsIntegration />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="users">
-            <Card>
-              <CardHeader>
-                <CardTitle>Gerenciamento de Usuários</CardTitle>
-                <CardDescription>
-                  Aprove novos usuários e gerencie permissões de acesso
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <UserManagement />
-              </CardContent>
-            </Card>
-          </TabsContent>
+          ))}
         </Tabs>
       </main>
     </div>
