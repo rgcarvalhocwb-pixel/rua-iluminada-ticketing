@@ -211,28 +211,31 @@ export function AdminSidebar({
   const isActive = (id: string) => activeTab === id;
 
   return (
-    <Sidebar collapsible="icon" className="border-r">
-      <SidebarHeader className="border-b bg-gradient-to-r from-red-900 to-red-800 shadow-red-glow/20">
-        <div className="flex items-center gap-2 px-2 py-2">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-white/10 text-white shadow-soft">
-            <Building2 className="h-8 w-8" />
+    <Sidebar collapsible="icon" className="border-r border-border/40">
+      <SidebarHeader className="border-b border-border/40 p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Building2 className="h-6 w-6" />
           </div>
           {state === "expanded" && (
             <div className="flex flex-col">
-              <span className="text-lg font-bold font-dancing text-white">
-                🎄 Rua Iluminada
+              <span className="text-lg font-semibold text-foreground">
+                Rua Iluminada
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Sistema de Gestão
               </span>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="py-2">
+      <SidebarContent className="py-4">
         {/* Operações */}
         {operationsItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-red-900 font-bold font-inter text-xs">
-              🎅 Operações
+            <SidebarGroupLabel className="px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Operações
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -243,18 +246,15 @@ export function AdminSidebar({
                       isActive={isActive(item.id)}
                       tooltip={state === "collapsed" ? item.title : undefined}
                       className={`
-                        transition-all duration-300 
+                        mx-2 rounded-lg transition-all duration-200
                         ${isActive(item.id) 
-                          ? "bg-red-800 text-white shadow-red-glow border border-red-700/50" 
-                          : "hover:bg-accent hover:text-accent-foreground hover:shadow-green-glow/30"
+                          ? "bg-primary text-primary-foreground shadow-sm" 
+                          : "hover:bg-accent hover:text-accent-foreground"
                         }
                       `}
                     >
-                       <item.icon className="h-4 w-4" />
-                       <span className={`font-inter ${isActive(item.id) ? "text-white" : "text-black"}`}>{item.title}</span>
-                      {isActive(item.id) && (
-                        <ChevronRight className="ml-auto h-4 w-4" />
-                      )}
+                       <item.icon className="h-5 w-5" />
+                       <span className="font-medium">{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -266,8 +266,8 @@ export function AdminSidebar({
         {/* Vendas */}
         {salesItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-red-900 font-bold font-inter text-xs">
-              🛷 Vendas
+            <SidebarGroupLabel className="px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Vendas
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -278,18 +278,15 @@ export function AdminSidebar({
                       isActive={isActive(item.id)}
                       tooltip={state === "collapsed" ? item.title : undefined}
                       className={`
-                        transition-all duration-300 
+                        mx-2 rounded-lg transition-all duration-200
                         ${isActive(item.id) 
-                          ? "bg-gradient-secondary text-secondary-foreground shadow-red-glow border border-secondary/20" 
-                          : "hover:bg-gradient-accent hover:text-accent-foreground hover:shadow-green-glow/30"
+                          ? "bg-primary text-primary-foreground shadow-sm" 
+                          : "hover:bg-accent hover:text-accent-foreground"
                         }
                       `}
                     >
-                       <item.icon className="h-4 w-4" />
-                       <span className={`font-inter ${isActive(item.id) ? "text-white" : "text-black"}`}>{item.title}</span>
-                      {isActive(item.id) && (
-                        <ChevronRight className="ml-auto h-4 w-4" />
-                      )}
+                       <item.icon className="h-5 w-5" />
+                       <span className="font-medium">{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -301,8 +298,8 @@ export function AdminSidebar({
         {/* Financeiro */}
         {financialItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-red-900 font-bold font-inter text-xs">
-              💰 Financeiro
+            <SidebarGroupLabel className="px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Financeiro
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -313,18 +310,15 @@ export function AdminSidebar({
                       isActive={isActive(item.id)}
                       tooltip={state === "collapsed" ? item.title : undefined}
                       className={`
-                        transition-all duration-300 
+                        mx-2 rounded-lg transition-all duration-200
                         ${isActive(item.id) 
-                          ? "bg-gradient-accent text-accent-foreground shadow-green-glow border border-accent/20" 
-                          : "hover:bg-gradient-primary hover:text-primary-foreground hover:shadow-glow/30"
+                          ? "bg-primary text-primary-foreground shadow-sm" 
+                          : "hover:bg-accent hover:text-accent-foreground"
                         }
                       `}
                     >
-                       <item.icon className="h-4 w-4" />
-                       <span className={`font-inter ${isActive(item.id) ? "text-white" : "text-black"}`}>{item.title}</span>
-                      {isActive(item.id) && (
-                        <ChevronRight className="ml-auto h-4 w-4" />
-                      )}
+                       <item.icon className="h-5 w-5" />
+                       <span className="font-medium">{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -336,8 +330,8 @@ export function AdminSidebar({
         {/* Administração */}
         {adminItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-red-900 font-bold font-inter text-xs">
-              ⭐ Administração
+            <SidebarGroupLabel className="px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Administração
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
@@ -348,18 +342,15 @@ export function AdminSidebar({
                       isActive={isActive(item.id)}
                       tooltip={state === "collapsed" ? item.title : undefined}
                       className={`
-                        transition-all duration-300 
+                        mx-2 rounded-lg transition-all duration-200
                         ${isActive(item.id) 
-                          ? "bg-gradient-christmas text-primary-foreground shadow-glow border border-primary/20" 
-                          : "hover:bg-gradient-primary hover:text-primary-foreground hover:shadow-glow/30"
+                          ? "bg-primary text-primary-foreground shadow-sm" 
+                          : "hover:bg-accent hover:text-accent-foreground"
                         }
                       `}
                     >
-                       <item.icon className="h-4 w-4" />
-                       <span className={`font-inter ${isActive(item.id) ? "text-white" : "text-black"}`}>{item.title}</span>
-                      {isActive(item.id) && (
-                        <ChevronRight className="ml-auto h-4 w-4" />
-                      )}
+                       <item.icon className="h-5 w-5" />
+                       <span className="font-medium">{item.title}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 ))}
@@ -369,25 +360,25 @@ export function AdminSidebar({
         )}
       </SidebarContent>
 
-      <SidebarFooter className="border-t bg-gradient-christmas/20 shadow-soft">
+      <SidebarFooter className="border-t border-border/40 p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <div className="flex flex-col gap-3 p-3">
+            <div className="flex flex-col gap-3">
               {/* User Profile Section */}
               <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10 border-2 border-primary/20">
+                <Avatar className="h-9 w-9">
                   <AvatarImage src={christmasAvatar} alt="Avatar" />
-                  <AvatarFallback className="bg-gradient-christmas text-white font-bold">
-                    🎅
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
+                    {userEmail?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 {state === "expanded" && (
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium font-inter truncate">
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-medium truncate">
                       {userEmail}
                     </span>
-                    <span className="text-xs text-muted-foreground capitalize font-inter">
-                      🎄 {userRole}
+                    <span className="text-xs text-muted-foreground capitalize">
+                      {userRole}
                     </span>
                   </div>
                 )}
@@ -400,7 +391,7 @@ export function AdminSidebar({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="justify-start gap-2 hover:bg-accent transition-all duration-300"
+                      className="justify-start gap-2 w-full"
                     >
                       {theme === "light" ? (
                         <Sun className="h-4 w-4" />
@@ -409,19 +400,21 @@ export function AdminSidebar({
                       ) : (
                         <Monitor className="h-4 w-4" />
                       )}
-                      <span className="font-inter">Tema</span>
+                      <span className="text-sm">
+                        {theme === "light" ? "Claro" : theme === "dark" ? "Escuro" : "Sistema"}
+                      </span>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-40">
-                    <DropdownMenuItem onClick={() => setTheme("light")}>
+                  <DropdownMenuContent align="end" className="w-48 bg-background border shadow-lg">
+                    <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer">
                       <Sun className="mr-2 h-4 w-4" />
                       Claro
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTheme("dark")}>
+                    <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer">
                       <Moon className="mr-2 h-4 w-4" />
                       Escuro
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => setTheme("system")}>
+                    <DropdownMenuItem onClick={() => setTheme("system")} className="cursor-pointer">
                       <Monitor className="mr-2 h-4 w-4" />
                       Sistema
                     </DropdownMenuItem>
@@ -434,10 +427,10 @@ export function AdminSidebar({
                 variant="ghost"
                 size="sm"
                 onClick={onSignOut}
-                className="justify-start gap-2 hover:bg-destructive hover:text-destructive-foreground transition-all duration-300"
+                className="justify-start gap-2 w-full hover:bg-destructive/10 hover:text-destructive"
               >
                 <LogOut className="h-4 w-4" />
-                {state === "expanded" && <span className="font-inter font-medium">🎅 Sair</span>}
+                {state === "expanded" && <span className="text-sm font-medium">Sair</span>}
               </Button>
             </div>
           </SidebarMenuItem>
