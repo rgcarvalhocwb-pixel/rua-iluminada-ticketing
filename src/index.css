@@ -79,19 +79,19 @@ All colors MUST be HSL.
     --snow-3: 0 0 6px hsla(0, 0%, 100%, 0.5);
   }
 
-  /* Admin theme - cores profissionais sem dourado no tema claro */
+  /* Admin theme - cores profissionais com vermelho bordô no tema claro */
   .admin-theme {
-    /* Tema claro - letras escuras, sem dourado */
+    /* Tema claro - letras vermelho bordô */
     --background: 210 40% 98%;
-    --foreground: 222.2 84% 4.9%;     /* LETRAS ESCURAS no tema claro */
+    --foreground: 0 75% 35%;          /* LETRAS VERMELHO BORDÔ no tema claro */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%; /* LETRAS ESCURAS em cards */
+    --card-foreground: 0 75% 35%;     /* LETRAS VERMELHO BORDÔ em cards */
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%; /* LETRAS ESCURAS */
+    --secondary-foreground: 0 75% 35%; /* LETRAS VERMELHO BORDÔ */
     --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%; /* Texto muted ESCURO */
+    --muted-foreground: 0 75% 45%;    /* Texto muted VERMELHO BORDÔ mais claro */
     --accent: 142 76% 36%;
     --accent-foreground: 355.7 100% 97.3%;
     --border: 214.3 31.8% 91.4%;
