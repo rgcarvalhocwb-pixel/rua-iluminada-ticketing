@@ -59,11 +59,13 @@ export const CashRegister = () => {
   
   const [isClosingRegister, setIsClosingRegister] = useState(false);
   const [isImportingPagSeguro, setIsImportingPagSeguro] = useState(false);
+  const [pendingCommissions, setPendingCommissions] = useState<any[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+    fetchPendingCommissions();
+  }, [selectedDate]);
 
   const fetchEvents = async () => {
     try {
@@ -80,6 +82,25 @@ export const CashRegister = () => {
         description: "Erro ao carregar eventos: " + error.message,
         variant: "destructive"
       });
+    }
+  };
+
+  const fetchPendingCommissions = async () => {
+    if (!selectedDate) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('store_daily_sales')
+        .select(`
+          *,
+          stores(name)
+        `)
+        .eq('sale_date', selectedDate);
+
+      if (error) throw error;
+      setPendingCommissions(data || []);
+    } catch (error: any) {
+      console.error('Erro ao carregar comissões pendentes:', error);
     }
   };
 
@@ -265,6 +286,23 @@ export const CashRegister = () => {
 
   const totals = calculateTotals();
 
+  const addCommissionPayment = (commission: any) => {
+    const commissionEntry: CashEntry = {
+      id: Date.now().toString(),
+      type: 'expense',
+      description: `Pagamento comissão - ${commission.stores.name}`,
+      amount: commission.commission_amount,
+      paymentMethod: 'cash'
+    };
+
+    setEntries([...entries, commissionEntry]);
+    
+    toast({
+      title: "Comissão adicionada",
+      description: `Pagamento de R$ ${commission.commission_amount.toFixed(2)} para ${commission.stores.name}`,
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Event and Date Selection */}
@@ -318,6 +356,40 @@ export const CashRegister = () => {
         </CardContent>
       </Card>
 
+      {/* Comissões Pendentes */}
+      {pendingCommissions.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Banknote className="w-5 h-5" />
+              Comissões Pendentes para {new Date(selectedDate).toLocaleDateString('pt-BR')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {pendingCommissions.map((commission) => (
+                <div key={commission.id} className="flex items-center justify-between p-3 border rounded">
+                  <div>
+                    <p className="font-medium">{commission.stores.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Venda: R$ {commission.total_sales.toFixed(2)} | 
+                      Comissão: R$ {commission.commission_amount.toFixed(2)}
+                    </p>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => addCommissionPayment(commission)}
+                  >
+                    Pagar Comissão
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Livro Caixa - Lançamentos */}
       <Card>
         <CardHeader>
@@ -365,7 +437,7 @@ export const CashRegister = () => {
               <Input
                 value={entryForm.description}
                 onChange={(e) => setEntryForm({...entryForm, description: e.target.value})}
-                placeholder="Ex: Venda de ingressos, Combustível, Troco..."
+                placeholder="Ex: Venda de ingressos, Combustível, Pagamento comissão..."
               />
             </div>
             <div>
