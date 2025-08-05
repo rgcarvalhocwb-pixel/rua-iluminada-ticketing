@@ -427,24 +427,30 @@ export type Database = {
         Row: {
           created_at: string
           description: string | null
+          display_order: number
           event_id: string
           id: string
+          is_active: boolean
           name: string
           price: number
         }
         Insert: {
           created_at?: string
           description?: string | null
+          display_order?: number
           event_id: string
           id?: string
+          is_active?: boolean
           name: string
           price: number
         }
         Update: {
           created_at?: string
           description?: string | null
+          display_order?: number
           event_id?: string
           id?: string
+          is_active?: boolean
           name?: string
           price?: number
         }

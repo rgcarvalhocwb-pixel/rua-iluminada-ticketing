@@ -119,7 +119,8 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
         .from('ticket_types')
         .select('*')
         .eq('event_id', selectedEvent.id)
-        .order('created_at', { ascending: true });
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
 
       if (error) throw error;
       

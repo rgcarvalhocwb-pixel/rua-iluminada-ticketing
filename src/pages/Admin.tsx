@@ -12,7 +12,8 @@ import { CashRegister } from '@/components/admin/CashRegister';
 import { PaymentSettings } from '@/components/admin/PaymentSettings';
 import { StoresManager } from '@/components/admin/StoresManager';
 import { OnlineSalesManager } from '@/components/admin/OnlineSalesManager';
-import { LogOut, Calendar, ShoppingCart, CreditCard, DollarSign, Store, Globe } from 'lucide-react';
+import { TicketTypesManager } from '@/components/admin/TicketTypesManager';
+import { LogOut, Calendar, ShoppingCart, CreditCard, DollarSign, Store, Globe, Ticket } from 'lucide-react';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -86,10 +87,14 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="events" className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Eventos
+            </TabsTrigger>
+            <TabsTrigger value="tickets" className="flex items-center gap-2">
+              <Ticket className="w-4 h-4" />
+              Ingressos
             </TabsTrigger>
             <TabsTrigger value="cash-register" className="flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
@@ -123,6 +128,20 @@ const Admin = () => {
               </CardHeader>
               <CardContent>
                 <EventsManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tickets">
+            <Card>
+              <CardHeader>
+                <CardTitle>Gerenciar Tipos de Ingresso</CardTitle>
+                <CardDescription>
+                  Configure tipos de ingressos, preços e visibilidade
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TicketTypesManager />
               </CardContent>
             </Card>
           </TabsContent>
