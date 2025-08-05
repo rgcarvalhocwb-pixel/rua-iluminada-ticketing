@@ -222,7 +222,7 @@ export function AdminSidebar({
   const isActive = (id: string) => activeTab === id;
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border/40">
+    <Sidebar collapsible="icon" className="border-r border-border/40 bg-background">
       <SidebarHeader className="border-b border-border/40 p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg overflow-hidden bg-white shadow-sm">
