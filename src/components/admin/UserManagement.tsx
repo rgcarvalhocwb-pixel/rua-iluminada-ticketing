@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { Users, Check, X, Settings } from 'lucide-react';
 import { format } from 'date-fns';
@@ -31,19 +30,6 @@ interface UserRole {
 interface UserWithPermissions extends UserRole {
   permissions: UserPermission[];
 }
-
-const SYSTEM_PERMISSIONS = [
-  { id: 'events_manage', label: 'Gerenciar Eventos' },
-  { id: 'tickets_manage', label: 'Gerenciar Ingressos' },
-  { id: 'cash_daily', label: 'Caixa Diário' },
-  { id: 'cash_general', label: 'Caixa Geral' },
-  { id: 'stores_manage', label: 'Gerenciar Lojas' },
-  { id: 'online_sales', label: 'Vendas Online' },
-  { id: 'orders_view', label: 'Visualizar Pedidos' },
-  { id: 'payments_config', label: 'Configurar Pagamentos' },
-  { id: 'users_manage', label: 'Gerenciar Usuários' },
-  { id: 'dashboard_view', label: 'Visualizar Dashboard' }
-];
 
 export const UserManagement = () => {
   const [users, setUsers] = useState<UserWithPermissions[]>([]);
@@ -182,48 +168,6 @@ export const UserManagement = () => {
     }
   };
 
-  const handlePermissionChange = async (userId: string, permission: string, checked: boolean) => {
-    try {
-      if (checked) {
-        // Adicionar permissão
-        const { error } = await supabase
-          .from('user_permissions')
-          .insert({
-            user_id: userId,
-            permission: permission as any, // Type assertion for enum
-            granted_by: (await supabase.auth.getUser()).data.user?.id
-          });
-
-        if (error) throw error;
-      } else {
-        // Remover permissão
-        const { error } = await supabase
-          .from('user_permissions')
-          .delete()
-          .eq('user_id', userId)
-          .eq('permission', permission as any); // Type assertion for enum
-
-        if (error) throw error;
-      }
-
-      toast({
-        title: "Sucesso",
-        description: `Permissão ${checked ? 'concedida' : 'removida'} com sucesso!`
-      });
-
-      fetchUsers(); // Recarregar lista
-    } catch (error: any) {
-      toast({
-        title: "Erro",
-        description: "Erro ao alterar permissão: " + error.message,
-        variant: "destructive"
-      });
-    }
-  };
-
-  const hasPermission = (user: UserWithPermissions, permission: string) => {
-    return user.permissions.some(p => p.permission === permission);
-  };
 
   if (loading) {
     return <div>Carregando...</div>;
@@ -258,7 +202,6 @@ export const UserManagement = () => {
                   <TableHead>Usuário</TableHead>
                   <TableHead>Papel</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Permissões do Sistema</TableHead>
                   <TableHead>Data de Criação</TableHead>
                   <TableHead>Ações</TableHead>
                 </TableRow>
@@ -293,44 +236,9 @@ export const UserManagement = () => {
                          user.status === 'pending' ? 'Pendente' : 'Rejeitado'}
                       </Badge>
                     </TableCell>
-                    <TableCell>
-                      <div className="space-y-2">
-                        <div className="text-sm font-medium mb-2">Controle de Acesso:</div>
-                        <div className="grid grid-cols-2 gap-2 max-w-md">
-                          {SYSTEM_PERMISSIONS.map((permission) => (
-                            <div key={permission.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`${user.id}-${permission.id}`}
-                                checked={hasPermission(user, permission.id)}
-                                onCheckedChange={(checked) => 
-                                  handlePermissionChange(user.user_id, permission.id, checked as boolean)
-                                }
-                                disabled={user.role === 'admin' || user.status !== 'approved'} 
-                              />
-                              <label 
-                                htmlFor={`${user.id}-${permission.id}`}
-                                className="text-xs cursor-pointer"
-                              >
-                                {permission.label}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                        {user.role === 'admin' && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            * Administradores têm acesso total
-                          </div>
-                        )}
-                        {user.status !== 'approved' && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            * Usuário deve ser aprovado primeiro
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {format(new Date(user.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
-                    </TableCell>
+                     <TableCell>
+                       {format(new Date(user.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                     </TableCell>
                      <TableCell>
                        <div className="flex gap-2">
                          {user.status === 'pending' && (
@@ -364,8 +272,10 @@ export const UserManagement = () => {
                           {user.status === 'approved' && (
                             <EditUserDialog
                               targetUserId={user.user_id}
-                              userEmail={user.user_id} // Usando user_id como email por enquanto
-                              currentDisplayName="Usuário"
+                              userEmail={user.profiles?.email || user.user_id}
+                              currentDisplayName={user.profiles?.nickname || ''}
+                              currentRole={user.role}
+                              currentPermissions={user.permissions.map(p => p.permission)}
                               onUserUpdated={fetchUsers}
                               canEditUser={['master', 'admin'].includes(currentUserRole)}
                             />

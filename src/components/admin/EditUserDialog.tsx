@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Edit3 } from 'lucide-react';
@@ -11,14 +13,31 @@ interface EditUserDialogProps {
   targetUserId: string;
   userEmail: string;
   currentDisplayName?: string;
+  currentRole?: 'user' | 'admin' | 'master';
+  currentPermissions?: string[];
   onUserUpdated: () => void;
   canEditUser: boolean;
 }
+
+const SYSTEM_PERMISSIONS = [
+  { id: 'events_manage', label: 'Gerenciar Eventos' },
+  { id: 'tickets_manage', label: 'Gerenciar Ingressos' },
+  { id: 'cash_daily', label: 'Caixa Diário' },
+  { id: 'cash_general', label: 'Caixa Geral' },
+  { id: 'stores_manage', label: 'Gerenciar Lojas' },
+  { id: 'online_sales', label: 'Vendas Online' },
+  { id: 'orders_view', label: 'Visualizar Pedidos' },
+  { id: 'payments_config', label: 'Configurar Pagamentos' },
+  { id: 'users_manage', label: 'Gerenciar Usuários' },
+  { id: 'dashboard_view', label: 'Visualizar Dashboard' }
+];
 
 export const EditUserDialog = ({ 
   targetUserId, 
   userEmail, 
   currentDisplayName,
+  currentRole = 'user',
+  currentPermissions = [],
   onUserUpdated, 
   canEditUser 
 }: EditUserDialogProps) => {
@@ -26,10 +45,34 @@ export const EditUserDialog = ({
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     displayName: currentDisplayName || '',
+    role: currentRole,
+    permissions: currentPermissions,
     newPassword: '',
     changePassword: false
   });
   const { toast } = useToast();
+
+  // Atualizar dados quando o diálogo abrir
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        displayName: currentDisplayName || '',
+        role: currentRole,
+        permissions: currentPermissions,
+        newPassword: '',
+        changePassword: false
+      });
+    }
+  }, [open, currentDisplayName, currentRole, currentPermissions]);
+
+  const handlePermissionChange = (permissionId: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      permissions: checked 
+        ? [...prev.permissions, permissionId]
+        : prev.permissions.filter(p => p !== permissionId)
+    }));
+  };
 
   const generateRandomPassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
@@ -45,47 +88,100 @@ export const EditUserDialog = ({
     setLoading(true);
 
     try {
-      // Get current user session for authorization
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session?.access_token) {
-        throw new Error("Não autorizado");
+      // Atualizar perfil do usuário
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          user_id: targetUserId,
+          nickname: formData.displayName,
+          email: userEmail
+        });
+
+      if (profileError) {
+        console.error('Profile error:', profileError);
       }
 
-      // Prepare data to send
-      const updateData: any = {
-        targetUserId,
-        userEmail,
-        displayName: formData.displayName
-      };
+      // Atualizar role do usuário se mudou
+      if (formData.role !== currentRole) {
+        const currentUser = await supabase.auth.getUser();
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .update({
+            role: formData.role,
+            approved_by: currentUser.data.user?.id,
+            approved_at: new Date().toISOString()
+          })
+          .eq('user_id', targetUserId);
 
+        if (roleError) {
+          throw roleError;
+        }
+      }
+
+      // Atualizar permissões (apenas para usuários normais)
+      if (formData.role === 'user') {
+        // Remover todas as permissões atuais
+        const { error: deleteError } = await supabase
+          .from('user_permissions')
+          .delete()
+          .eq('user_id', targetUserId);
+
+        if (deleteError) {
+          console.error('Delete permissions error:', deleteError);
+        }
+
+        // Adicionar novas permissões
+        if (formData.permissions.length > 0) {
+          const currentUser = await supabase.auth.getUser();
+          const permissionsToInsert = formData.permissions.map(permission => ({
+            user_id: targetUserId,
+            permission: permission as any,
+            granted_by: currentUser.data.user?.id
+          }));
+
+          const { error: permError } = await supabase
+            .from('user_permissions')
+            .insert(permissionsToInsert);
+
+          if (permError) {
+            throw permError;
+          }
+        }
+      }
+
+      // Se alterou senha, chamar edge function
       if (formData.changePassword && formData.newPassword) {
-        updateData.newPassword = formData.newPassword;
-      }
+        const { data: session } = await supabase.auth.getSession();
+        if (!session.session?.access_token) {
+          throw new Error("Não autorizado");
+        }
 
-      // Call edge function to update user
-      const response = await fetch(`https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/reset-user-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.session.access_token}`,
-        },
-        body: JSON.stringify(updateData),
-      });
+        const response = await fetch(`https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/reset-user-password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.session.access_token}`,
+          },
+          body: JSON.stringify({
+            targetUserId,
+            userEmail,
+            newPassword: formData.newPassword
+          }),
+        });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Erro ao atualizar usuário');
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Erro ao alterar senha');
+        }
       }
 
       toast({
         title: "Sucesso",
-        description: result.message || "Usuário atualizado com sucesso!"
+        description: "Usuário atualizado com sucesso!"
       });
 
       onUserUpdated();
       setOpen(false);
-      setFormData({ displayName: '', newPassword: '', changePassword: false });
     } catch (error: any) {
       toast({
         title: "Erro",
@@ -108,7 +204,7 @@ export const EditUserDialog = ({
           <Edit3 className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Editar Usuário</DialogTitle>
         </DialogHeader>
@@ -130,12 +226,53 @@ export const EditUserDialog = ({
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="role">Tipo de Usuário</Label>
+            <Select value={formData.role} onValueChange={(value: any) => setFormData(prev => ({ ...prev, role: value }))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user">Usuário</SelectItem>
+                <SelectItem value="admin">Administrador</SelectItem>
+                <SelectItem value="master">Master</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {formData.role === 'user' && (
+            <div className="space-y-2">
+              <Label>Permissões Específicas</Label>
+              <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border rounded-md p-3">
+                {SYSTEM_PERMISSIONS.map((permission) => (
+                  <div key={permission.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={permission.id}
+                      checked={formData.permissions.includes(permission.id)}
+                      onCheckedChange={(checked) => 
+                        handlePermissionChange(permission.id, checked as boolean)
+                      }
+                    />
+                    <Label 
+                      htmlFor={permission.id}
+                      className="text-xs cursor-pointer"
+                    >
+                      {permission.label}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Admins e Masters têm acesso completo automaticamente
+              </p>
+            </div>
+          )}
+
+          <div className="space-y-2">
             <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
+              <Checkbox
                 id="changePassword"
                 checked={formData.changePassword}
-                onChange={(e) => setFormData(prev => ({ ...prev, changePassword: e.target.checked }))}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, changePassword: checked as boolean }))}
               />
               <Label htmlFor="changePassword">Alterar senha</Label>
             </div>
@@ -167,14 +304,11 @@ export const EditUserDialog = ({
             )}
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Cancelar
             </Button>
-            <Button 
-              type="submit" 
-              disabled={loading || (!formData.displayName.trim() && !formData.changePassword)}
-            >
+            <Button type="submit" disabled={loading}>
               {loading ? 'Atualizando...' : 'Atualizar Usuário'}
             </Button>
           </div>
