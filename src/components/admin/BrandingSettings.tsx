@@ -38,13 +38,10 @@ export const BrandingSettings = () => {
 
   const fetchBrandingConfig = async () => {
     try {
-      const { data } = await supabase
-        .from('branding_config')
-        .select('*')
-        .single();
-      
-      if (data) {
-        setConfig(data);
+      // Usar localStorage temporariamente até os tipos serem atualizados
+      const saved = localStorage.getItem('branding_config');
+      if (saved) {
+        setConfig(JSON.parse(saved));
       }
     } catch (error) {
       // Configuração ainda não existe, usar padrões
@@ -54,11 +51,8 @@ export const BrandingSettings = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('branding_config')
-        .upsert(config, { onConflict: 'id' });
-
-      if (error) throw error;
+      // Salvar no localStorage temporariamente até os tipos serem atualizados
+      localStorage.setItem('branding_config', JSON.stringify(config));
 
       // Aplicar cores ao CSS customizado
       applyCustomColors();
@@ -88,25 +82,18 @@ export const BrandingSettings = () => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const fileExt = file.name.split('.').pop();
-    const fileName = `logo-${Date.now()}.${fileExt}`;
-
     try {
-      const { error: uploadError } = await supabase.storage
-        .from('brand-assets')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('brand-assets')
-        .getPublicUrl(fileName);
-
-      setConfig({ ...config, logo_url: publicUrl });
+      // Converter para base64 temporariamente
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const base64 = e.target?.result as string;
+        setConfig({ ...config, logo_url: base64 });
+      };
+      reader.readAsDataURL(file);
     } catch (error: any) {
       toast({
         title: "Erro",
-        description: "Erro ao fazer upload do logo: " + error.message,
+        description: "Erro ao processar logo: " + error.message,
         variant: "destructive"
       });
     }

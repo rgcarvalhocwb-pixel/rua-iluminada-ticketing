@@ -99,48 +99,57 @@ const Admin = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="events" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-11">
-            <TabsTrigger value="events" className="flex items-center gap-2">
+          <TabsList className="grid w-full grid-cols-12">
+            <TabsTrigger value="events" className="flex items-center gap-1 text-xs">
               <Calendar className="w-4 h-4" />
               Eventos
             </TabsTrigger>
-            <TabsTrigger value="tickets" className="flex items-center gap-2">
+            <TabsTrigger value="tickets" className="flex items-center gap-1 text-xs">
               <Ticket className="w-4 h-4" />
               Ingressos
             </TabsTrigger>
-            <TabsTrigger value="cash-register" className="flex items-center gap-2">
+            <TabsTrigger value="cash-register" className="flex items-center gap-1 text-xs">
               <DollarSign className="w-4 h-4" />
-              Caixa Diário
+              Caixa
             </TabsTrigger>
-            <TabsTrigger value="general-cash" className="flex items-center gap-2">
+            <TabsTrigger value="general-cash" className="flex items-center gap-1 text-xs">
               <Banknote className="w-4 h-4" />
-              Caixa Geral
+              Geral
             </TabsTrigger>
-            <TabsTrigger value="stores" className="flex items-center gap-2">
+            <TabsTrigger value="stores" className="flex items-center gap-1 text-xs">
               <Store className="w-4 h-4" />
               Lojas
             </TabsTrigger>
-            <TabsTrigger value="online" className="flex items-center gap-2">
+            <TabsTrigger value="online" className="flex items-center gap-1 text-xs">
               <Globe className="w-4 h-4" />
               Online
             </TabsTrigger>
-            <TabsTrigger value="orders" className="flex items-center gap-2">
+            <TabsTrigger value="orders" className="flex items-center gap-1 text-xs">
               <ShoppingCart className="w-4 h-4" />
               Pedidos
             </TabsTrigger>
-            <TabsTrigger value="payments" className="flex items-center gap-2">
+            <TabsTrigger value="payments" className="flex items-center gap-1 text-xs">
               <CreditCard className="w-4 h-4" />
-              Pagamentos
+              Pagtos
             </TabsTrigger>
-            <TabsTrigger value="reports" className="flex items-center gap-2">
-              📊 Relatórios
+            <TabsTrigger value="reports" className="flex items-center gap-1 text-xs">
+              📊 Reports
             </TabsTrigger>
-            <TabsTrigger value="backup" className="flex items-center gap-2">
+            <TabsTrigger value="backup" className="flex items-center gap-1 text-xs">
               💾 Backup
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex items-center gap-2">
+            <TabsTrigger value="branding" className="flex items-center gap-1 text-xs">
+              🎨 Marca
+            </TabsTrigger>
+            <TabsTrigger value="performance" className="flex items-center gap-1 text-xs">
+              ⚡ Perf.
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center gap-1 text-xs">
+              📈 Analytics
+            </TabsTrigger>
+            <TabsTrigger value="users" className="flex items-center gap-1 text-xs">
               <Users className="w-4 h-4" />
-              Usuários
+              Users
             </TabsTrigger>
           </TabsList>
 
@@ -280,6 +289,48 @@ const Admin = () => {
               </CardHeader>
               <CardContent>
                 <BackupRecovery />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="branding">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurações de Marca</CardTitle>
+                <CardDescription>
+                  Personalize logo, cores e identidade visual da empresa
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <BrandingSettings />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="performance">
+            <Card>
+              <CardHeader>
+                <CardTitle>Monitoramento de Performance</CardTitle>
+                <CardDescription>
+                  Acompanhe métricas de performance e logs de erro
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <PerformanceMonitoring />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <Card>
+              <CardHeader>
+                <CardTitle>Integrações de Analytics</CardTitle>
+                <CardDescription>
+                  Configure Google Analytics, Facebook Pixel e outras integrações
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AnalyticsIntegration />
               </CardContent>
             </Card>
           </TabsContent>

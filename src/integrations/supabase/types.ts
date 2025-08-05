@@ -41,6 +41,51 @@ export type Database = {
         }
         Relationships: []
       }
+      branding_config: {
+        Row: {
+          company_description: string | null
+          company_name: string
+          created_at: string
+          email_footer: string | null
+          id: string
+          logo_url: string | null
+          primary_color: string
+          secondary_color: string
+          social_facebook: string | null
+          social_instagram: string | null
+          social_whatsapp: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_description?: string | null
+          company_name?: string
+          created_at?: string
+          email_footer?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          secondary_color?: string
+          social_facebook?: string | null
+          social_instagram?: string | null
+          social_whatsapp?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_description?: string | null
+          company_name?: string
+          created_at?: string
+          email_footer?: string | null
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          secondary_color?: string
+          social_facebook?: string | null
+          social_instagram?: string | null
+          social_whatsapp?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       daily_closures: {
         Row: {
           closure_date: string
