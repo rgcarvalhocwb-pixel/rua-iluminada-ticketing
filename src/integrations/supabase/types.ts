@@ -768,6 +768,7 @@ export type Database = {
       }
       user_roles: {
         Row: {
+          account_status: string | null
           approved_at: string | null
           approved_by: string | null
           created_at: string
@@ -778,6 +779,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          account_status?: string | null
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
@@ -788,6 +790,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          account_status?: string | null
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
