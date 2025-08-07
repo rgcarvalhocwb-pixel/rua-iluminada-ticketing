@@ -67,6 +67,21 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
   const selectedShow = showTimes.find(s => s.id === selectedShowTime);
   const totalPrice = selectedTicket ? selectedTicket.price * quantity : 0;
 
+  // Definir tema dinâmico do Resumo conforme o tipo de ingresso
+  const getTicketTheme = (name?: string) => {
+    const n = (name || '').toLowerCase();
+    if (n.includes('vip')) return { from: 'success', to: 'secondary', accent: 'success' } as const;
+    if (n.includes('meia')) return { from: 'secondary', to: 'primary', accent: 'secondary' } as const;
+    if (n.includes('cortes')) return { from: 'muted', to: 'secondary', accent: 'muted-foreground' } as const;
+    // padrão (ex.: inteira)
+    return { from: 'primary', to: 'secondary', accent: 'secondary' } as const;
+  };
+
+  const theme = getTicketTheme(selectedTicket?.name);
+  const summaryCardStyle = {
+    background: `linear-gradient(135deg, hsl(var(--${theme.from}) / 0.15), hsl(var(--${theme.to}) / 0.15))`,
+    borderColor: `hsl(var(--${theme.accent}))`,
+  };
   const handleProceed = () => {
     if (!selectedTicket || !selectedShow) {
       toast({
@@ -218,7 +233,7 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
 
           {/* Resumo do Pedido */}
           <div className="lg:sticky lg:top-8">
-            <Card className="bg-gradient-to-br from-red-600/20 to-yellow-600/20 backdrop-blur-md border-yellow-400/30">
+            <Card className="backdrop-blur-md border" style={summaryCardStyle}>
               <CardHeader>
                 <CardTitle className="text-white text-xl">Resumo do Pedido</CardTitle>
               </CardHeader>
@@ -247,8 +262,8 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                     </div>
                     
                     <div className="flex justify-between items-center text-lg font-bold">
-                      <span className="text-yellow-300">Total</span>
-                      <span className="text-yellow-300">R$ {totalPrice.toFixed(2)}</span>
+                      <span style={{ color: `hsl(var(--${theme.accent}))` }}>Total</span>
+                      <span style={{ color: `hsl(var(--${theme.accent}))` }}>R$ {totalPrice.toFixed(2)}</span>
                     </div>
                   </div>
                 )}
@@ -256,14 +271,14 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
                 <Button
                   onClick={handleProceed}
                   disabled={!selectedTicket || !selectedShow}
-                  className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-3 text-lg shadow-xl transform hover:scale-105 transition-all duration-300"
+                  className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20 font-bold py-3 text-lg shadow-xl transform hover:scale-105 transition-all duration-300"
                 >
                   🎄 Continuar para Pagamento
                 </Button>
 
-                <div className="text-center bg-red-800 p-3 rounded-lg border border-yellow-400/50">
+                <div className="text-center bg-white/10 p-3 rounded-lg border border-white/20">
                   <div className="flex items-center justify-center space-x-2 text-white text-sm font-medium">
-                    <MapPin className="h-4 w-4 text-yellow-300" />
+                    <MapPin className="h-4 w-4" />
                     <span>R. Nicola Pellanda, 5962 - Umbará, Curitiba - PR, 81940-305</span>
                   </div>
                 </div>
