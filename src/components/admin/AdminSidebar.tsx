@@ -66,9 +66,13 @@ export function AdminSidebar({
   userEmail,
   userRole,
 }: AdminSidebarProps) {
-  const { state } = useSidebar();
+  const { state, isMobile } = useSidebar();
   const { theme, setTheme } = useTheme();
   const userPermissions = useUserPermissions();
+
+  // No mobile, garantimos que o conteúdo esteja sempre expandido
+  const isExpanded = isMobile ? true : state === "expanded";
+  const collapsed = !isExpanded;
 
   const sidebarItems = [];
 
@@ -232,7 +236,7 @@ export function AdminSidebar({
   const isActive = (id: string) => activeTab === id;
 
   return (
-    <Sidebar collapsible="icon" className="border-r border-border/40 bg-background">
+    <Sidebar collapsible="icon" className="border-r border-border/40">
       <SidebarHeader className="border-b border-border/40 p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-lg overflow-hidden bg-white shadow-sm">
@@ -242,7 +246,7 @@ export function AdminSidebar({
               className="h-10 w-10 object-contain"
             />
           </div>
-          {state === "expanded" && (
+          {isExpanded && (
             <div className="flex flex-col">
               <span className="text-lg font-semibold text-foreground">
                 Rua Iluminada
@@ -269,7 +273,7 @@ export function AdminSidebar({
                     <SidebarMenuButton
                       onClick={() => onTabChange(item.id)}
                       isActive={isActive(item.id)}
-                      tooltip={state === "collapsed" ? item.title : undefined}
+                      tooltip={collapsed ? item.title : undefined}
                       className={`
                         mx-2 rounded-lg transition-all duration-200
                         ${isActive(item.id) 
@@ -301,7 +305,7 @@ export function AdminSidebar({
                     <SidebarMenuButton
                       onClick={() => onTabChange(item.id)}
                       isActive={isActive(item.id)}
-                      tooltip={state === "collapsed" ? item.title : undefined}
+                      tooltip={collapsed ? item.title : undefined}
                       className={`
                         mx-2 rounded-lg transition-all duration-200
                         ${isActive(item.id) 
@@ -333,7 +337,7 @@ export function AdminSidebar({
                     <SidebarMenuButton
                       onClick={() => onTabChange(item.id)}
                       isActive={isActive(item.id)}
-                      tooltip={state === "collapsed" ? item.title : undefined}
+                      tooltip={collapsed ? item.title : undefined}
                       className={`
                         mx-2 rounded-lg transition-all duration-200
                         ${isActive(item.id) 
@@ -365,7 +369,7 @@ export function AdminSidebar({
                     <SidebarMenuButton
                       onClick={() => onTabChange(item.id)}
                       isActive={isActive(item.id)}
-                      tooltip={state === "collapsed" ? item.title : undefined}
+                      tooltip={collapsed ? item.title : undefined}
                       className={`
                         mx-2 rounded-lg transition-all duration-200
                         ${isActive(item.id) 
@@ -397,7 +401,7 @@ export function AdminSidebar({
                     {userEmail?.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                {state === "expanded" && (
+                {isExpanded && (
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm font-medium truncate">
                       {userEmail}
@@ -410,7 +414,7 @@ export function AdminSidebar({
               </div>
 
               {/* Theme Toggle */}
-              {state === "expanded" && (
+              {isExpanded && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -459,7 +463,7 @@ export function AdminSidebar({
                 className="justify-start gap-2 w-full hover:bg-destructive/10 hover:text-destructive"
               >
                 <LogOut className="h-4 w-4" />
-                {state === "expanded" && <span className="text-sm font-medium">Sair</span>}
+                {isExpanded && <span className="text-sm font-medium">Sair</span>}
               </Button>
             </div>
           </SidebarMenuItem>
