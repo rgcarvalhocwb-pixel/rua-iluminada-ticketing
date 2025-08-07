@@ -852,6 +852,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      expire_old_pending_orders: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
       generate_qr_code: {
         Args: Record<PropertyKey, never>
         Returns: string
