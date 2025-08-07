@@ -146,6 +146,20 @@ export const CustomerForm = ({ ticketData, onBack, onProceedToPayment }: Custome
     }
   };
 
+  // Valores seguros para evitar erros quando dados não estiverem definidos
+  const selectedDateSafe = ticketData?.selectedDate ? new Date(ticketData.selectedDate) : null;
+  const dateLabel = selectedDateSafe
+    ? selectedDateSafe.toLocaleDateString('pt-BR', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '—';
+  const timeLabel = ticketData?.selectedTime ?? '—';
+  const quantities = ticketData?.ticketQuantities ?? {};
+  const totalPriceSafe = ticketData?.totalPrice ?? 0;
+
   return (
     <div className="max-w-4xl mx-auto py-4 md:py-8 px-2 md:px-4">
       <div className="mb-6">
@@ -267,25 +281,18 @@ export const CustomerForm = ({ ticketData, onBack, onProceedToPayment }: Custome
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground">Data</p>
-                <p className="font-semibold">
-                  {ticketData.selectedDate.toLocaleDateString('pt-BR', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </p>
+                <p className="font-semibold">{dateLabel}</p>
               </div>
 
               <div>
                 <p className="text-sm text-muted-foreground">Horário</p>
-                <p className="font-semibold">{ticketData.selectedTime}</p>
+                <p className="font-semibold">{timeLabel}</p>
               </div>
 
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Ingressos</p>
-                {Object.entries(ticketData.ticketQuantities).map(([type, quantity]) => {
-                  if (quantity === 0) return null;
+                {Object.entries(quantities).map(([type, quantity]) => {
+                  if (!quantity) return null;
                   const price = type === 'inteira' ? 30 : 15;
                   return (
                     <div key={type} className="flex justify-between">
@@ -302,7 +309,7 @@ export const CustomerForm = ({ ticketData, onBack, onProceedToPayment }: Custome
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total</span>
                   <span className="text-xl font-bold text-primary">
-                    R$ {ticketData.totalPrice.toFixed(2)}
+                    R$ {totalPriceSafe.toFixed(2)}
                   </span>
                 </div>
               </div>
