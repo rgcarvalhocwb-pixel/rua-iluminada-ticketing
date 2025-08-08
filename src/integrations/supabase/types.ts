@@ -281,38 +281,52 @@ export type Database = {
       online_transfers: {
         Row: {
           created_at: string
+          event_id: string | null
           expected_amount: number
           id: string
           notes: string | null
           platform_name: string
           received_amount: number | null
+          received_date: string | null
           status: string
           transfer_date: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          event_id?: string | null
           expected_amount: number
           id?: string
           notes?: string | null
           platform_name: string
           received_amount?: number | null
+          received_date?: string | null
           status?: string
           transfer_date: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          event_id?: string | null
           expected_amount?: number
           id?: string
           notes?: string | null
           platform_name?: string
           received_amount?: number | null
+          received_date?: string | null
           status?: string
           transfer_date?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "online_transfers_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -897,6 +911,10 @@ export type Database = {
         Returns: string
       }
       promote_first_user_to_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      trigger_backup_now: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
