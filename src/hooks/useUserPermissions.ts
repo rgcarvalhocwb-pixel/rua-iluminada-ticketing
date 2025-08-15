@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UserPermissions {
-  role: 'user' | 'admin' | 'master' | null;
+  role: 'user' | 'admin' | 'master' | 'terminal' | null;
   permissions: string[];
   loading: boolean;
 }
@@ -51,6 +51,20 @@ export const useUserPermissions = (): UserPermissions => {
               'payments_config',
               'users_manage',
               'dashboard_view'
+            ],
+            loading: false
+          });
+          return;
+        }
+
+        // Se for terminal, tem permissões específicas para o terminal
+        if (userRole.role === 'terminal') {
+          setUserPermissions({
+            role: userRole.role,
+            permissions: [
+              'terminal_access',
+              'orders_create',
+              'tickets_create'
             ],
             loading: false
           });

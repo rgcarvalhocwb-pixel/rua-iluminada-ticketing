@@ -13,7 +13,7 @@ interface EditUserDialogProps {
   targetUserId: string;
   userEmail: string;
   currentDisplayName?: string;
-  currentRole?: 'user' | 'admin' | 'master';
+  currentRole?: 'user' | 'admin' | 'master' | 'terminal';
   currentPermissions?: string[];
   onUserUpdated: () => void;
   canEditUser: boolean;
@@ -235,6 +235,7 @@ export const EditUserDialog = ({
                 <SelectItem value="user">Usuário</SelectItem>
                 <SelectItem value="admin">Administrador</SelectItem>
                 <SelectItem value="master">Master</SelectItem>
+                <SelectItem value="terminal">Terminal de Autoatendimento</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -276,6 +277,26 @@ export const EditUserDialog = ({
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Este usuário tem acesso completo a todos os módulos do sistema.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {formData.role === 'terminal' && (
+            <div className="space-y-2">
+              <Label>Informações sobre Usuário Terminal</Label>
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded-md">
+                <p className="text-sm text-orange-800 font-medium">
+                  🖥️ Terminal de Autoatendimento
+                </p>
+                <ul className="text-xs text-orange-700 mt-2 space-y-1">
+                  <li>• Acesso exclusivo ao terminal de autoatendimento</li>
+                  <li>• Criar pedidos e ingressos no terminal</li>
+                  <li>• Visualizar eventos e tipos de ingressos</li>
+                  <li>• Processar pagamentos via terminal</li>
+                </ul>
+                <p className="text-xs text-orange-600 mt-2">
+                  ⚠️ Este usuário NÃO terá acesso à área administrativa
                 </p>
               </div>
             </div>

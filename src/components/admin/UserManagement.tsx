@@ -21,7 +21,7 @@ interface UserPermission {
 interface UserRole {
   id: string;
   user_id: string;
-  role: 'admin' | 'user' | 'master';
+  role: 'admin' | 'user' | 'master' | 'terminal';
   status: 'pending' | 'approved' | 'rejected';
   account_status: 'active' | 'inactive';
   approved_by?: string;
@@ -352,10 +352,11 @@ export const UserManagement = () => {
                        </div>
                      </TableCell>
                      <TableCell>
-                       <Badge variant={user.role === 'admin' || user.role === 'master' ? 'default' : 'secondary'}>
-                         {user.role === 'admin' ? 'Administrador' : 
-                          user.role === 'master' ? 'Master' : 'Usuário'}
-                       </Badge>
+                        <Badge variant={user.role === 'admin' || user.role === 'master' ? 'default' : 'secondary'}>
+                          {user.role === 'admin' ? 'Administrador' : 
+                           user.role === 'master' ? 'Master' : 
+                           user.role === 'terminal' ? 'Terminal' : 'Usuário'}
+                        </Badge>
                      </TableCell>
                      <TableCell>
                        <Badge variant={user.status === 'approved' ? 'default' : 'destructive'}>
@@ -391,7 +392,7 @@ export const UserManagement = () => {
                              </Button>
                            </>
                          )}
-                         {user.status === 'approved' && user.role !== 'admin' && user.role !== 'master' && (
+                         {user.status === 'approved' && user.role !== 'admin' && user.role !== 'master' && user.role !== 'terminal' && (
                            <Button 
                              size="sm" 
                              variant="outline"

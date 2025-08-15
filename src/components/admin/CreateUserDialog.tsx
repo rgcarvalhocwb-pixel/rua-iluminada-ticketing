@@ -35,7 +35,7 @@ export const CreateUserDialog = ({ onUserCreated, isMaster }: CreateUserDialogPr
     email: '',
     phone: '',
     password: '',
-    role: 'user' as 'user' | 'admin' | 'master',
+    role: 'user' as 'user' | 'admin' | 'master' | 'terminal',
     permissions: [] as string[]
   });
   const { toast } = useToast();
@@ -98,7 +98,7 @@ export const CreateUserDialog = ({ onUserCreated, isMaster }: CreateUserDialogPr
         }
 
         // Adicionar permissões específicas (se não for admin/master)
-        if (formData.role !== 'admin' && formData.role !== 'master' && formData.permissions.length > 0) {
+        if (formData.role !== 'admin' && formData.role !== 'master' && formData.role !== 'terminal' && formData.permissions.length > 0) {
           const currentUser = await supabase.auth.getUser();
           const permissionsToInsert = formData.permissions.map(permission => ({
             user_id: authData.user.id,
@@ -218,9 +218,28 @@ export const CreateUserDialog = ({ onUserCreated, isMaster }: CreateUserDialogPr
                 <SelectItem value="user">Usuário</SelectItem>
                 <SelectItem value="admin">Administrador</SelectItem>
                 <SelectItem value="master">Master</SelectItem>
+                <SelectItem value="terminal">Terminal de Autoatendimento</SelectItem>
               </SelectContent>
             </Select>
           </div>
+
+          {formData.role === 'terminal' && (
+            <div className="space-y-2">
+              <Label>Informações sobre Usuário Terminal</Label>
+              <div className="border rounded-md p-3 bg-muted/50">
+                <h4 className="text-sm font-medium mb-2">Permissões Automáticas:</h4>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li>• Acesso exclusivo ao terminal de autoatendimento</li>
+                  <li>• Criar pedidos e ingressos no terminal</li>
+                  <li>• Visualizar eventos e tipos de ingressos</li>
+                  <li>• Processar pagamentos via terminal</li>
+                </ul>
+                <p className="text-xs text-orange-600 mt-2">
+                  ⚠️ Este usuário NÃO terá acesso à área administrativa
+                </p>
+              </div>
+            </div>
+          )}
 
           {formData.role === 'user' && (
             <div className="space-y-2">
