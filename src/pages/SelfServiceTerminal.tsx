@@ -121,6 +121,179 @@ const SelfServiceTerminal = () => {
     setCurrentStep('selection');
   };
 
+  const handlePaymentConfirmed = async (orderId: string, paymentMethod: string) => {
+    try {
+      setLoading(true);
+      
+      // Chamar edge function para processar confirmação de pagamento e registrar no caixa
+      const { data: confirmationResult, error: confirmationError } = await supabase.functions.invoke('process-payment-confirmation', {
+        body: {
+          orderId,
+          paymentStatus: 'approved',
+          paymentMethod,
+          totalAmount: getTotalAmount(),
+          isTerminalSale: true,
+          paymentReference: `TERM_${orderId}_${Date.now()}`
+        }
+      });
+
+      if (confirmationError) {
+        console.error('Erro na confirmação:', confirmationError);
+        toast({
+          title: "Erro na confirmação",
+          description: "Erro ao processar confirmação do pagamento",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      if (!confirmationResult.success) {
+        toast({
+          title: "Erro",
+          description: confirmationResult.error || "Erro ao confirmar pagamento",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      toast({
+        title: "Pagamento confirmado!",
+        description: "Venda registrada no sistema. Ingressos sendo impressos...",
+      });
+
+      // Simular impressão dos ingressos
+      setCurrentStep('printing');
+      
+    } catch (error: any) {
+      console.error('Erro ao confirmar pagamento:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao processar confirmação: " + error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const simulatePayment = async (paymentMethod: string) => {
+    try {
+      setLoading(true);
+      setCurrentStep('printing');
+
+      if (!selectedEvent || !selectedTicketType) {
+        toast({
+          title: "Erro",
+          description: "Evento ou tipo de ingresso não selecionado",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Criar pedido real
+      console.log('Criando pedido para venda do terminal...');
+
+      // 1. Buscar ou criar sessão do evento
+      const sessionDate = new Date().toISOString().split('T')[0];
+      const { data: existingSession } = await supabase
+        .from('event_sessions')
+        .select('*')
+        .eq('event_id', selectedEvent.id)
+        .eq('session_date', sessionDate)
+        .single();
+
+      let sessionId = existingSession?.id;
+
+      if (!sessionId) {
+        // Buscar horário do evento
+        const { data: showTime } = await supabase
+          .from('show_times')
+          .select('*')
+          .eq('event_id', selectedEvent.id)
+          .single();
+
+        if (showTime) {
+          const { data: newSession } = await supabase
+            .from('event_sessions')
+            .insert({
+              event_id: selectedEvent.id,
+              show_time_id: showTime.id,
+              session_date: sessionDate,
+              capacity: showTime.capacity || 100,
+              available_tickets: (showTime.capacity || 100) - quantity
+            })
+            .select('id')
+            .single();
+
+          sessionId = newSession?.id;
+        }
+      }
+
+      // 2. Criar pedido
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          session_id: sessionId,
+          customer_name: 'Cliente Terminal',
+          customer_email: `terminal_${Date.now()}@autoatendimento.com`,
+          customer_cpf: '00000000000',
+          total_amount: getTotalAmount(),
+          payment_status: 'pending',
+          payment_method: paymentMethod
+        })
+        .select('id')
+        .single();
+
+      if (orderError) {
+        throw new Error('Erro ao criar pedido: ' + orderError.message);
+      }
+
+      // 3. Criar item do pedido
+      const { error: itemError } = await supabase
+        .from('order_items')
+        .insert({
+          order_id: order.id,
+          ticket_type_id: selectedTicketType.id,
+          quantity,
+          unit_price: selectedTicketType.price,
+          subtotal: getTotalAmount()
+        });
+
+      if (itemError) {
+        throw new Error('Erro ao criar item do pedido: ' + itemError.message);
+      }
+
+      // 4. Simular aprovação do pagamento (3 segundos)
+      setTimeout(async () => {
+        await handlePaymentConfirmed(order.id, paymentMethod);
+        
+        // 5. Simular impressão dos ingressos
+        setTimeout(() => {
+          toast({
+            title: "Compra finalizada!",
+            description: `${quantity} ingresso(s) impresso(s) com sucesso!`,
+          });
+          
+          // Voltar ao estado inicial após 3 segundos
+          setTimeout(() => {
+            handleBackToIdle();
+          }, 3000);
+        }, 2000);
+      }, 3000);
+      
+    } catch (error: any) {
+      console.error('Erro ao processar venda:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao processar pagamento: " + error.message,
+        variant: "destructive"
+      });
+      setLoading(false);
+      setCurrentStep('payment'); // Voltar para tela de pagamento
+    }
+  };
+
   const handleBackToIdle = () => {
     setIsIdle(true);
     setCurrentStep('selection');
@@ -279,6 +452,8 @@ const SelfServiceTerminal = () => {
               <Button
                 variant="outline"
                 className="h-24 text-xl flex flex-col items-center justify-center space-y-2 border-2 hover:border-primary"
+                onClick={() => simulatePayment('credit_card')}
+                disabled={loading}
               >
                 <span className="text-2xl">💳</span>
                 <span>Cartão</span>
@@ -288,6 +463,8 @@ const SelfServiceTerminal = () => {
               <Button
                 variant="outline"
                 className="h-24 text-xl flex flex-col items-center justify-center space-y-2 border-2 hover:border-primary"
+                onClick={() => simulatePayment('pix')}
+                disabled={loading}
               >
                 <span className="text-2xl">📱</span>
                 <span>PIX</span>
@@ -324,27 +501,40 @@ const SelfServiceTerminal = () => {
 
         {currentStep === 'printing' && (
           <Card className="p-8 text-center">
-            <div className="animate-spin h-16 w-16 border-4 border-primary border-t-transparent rounded-full mx-auto mb-6"></div>
-            <h2 className="text-2xl font-semibold mb-4">
-              Processando Pagamento...
+            <h2 className="text-2xl font-semibold mb-6">
+              {loading ? 'Processando Pagamento...' : 'Imprimindo Ingressos...'}
             </h2>
-            <p className="text-lg text-muted-foreground mb-8">
-              Aguarde enquanto processamos seu pagamento e imprimimos seus ingressos.
-            </p>
             
-            <div className="space-y-4 text-left bg-muted/50 p-6 rounded-lg">
-              <p className="flex items-center">
-                <span className="h-2 w-2 bg-green-500 rounded-full mr-3"></span>
-                Pagamento aprovado
-              </p>
-              <p className="flex items-center">
-                <span className="h-2 w-2 bg-green-500 rounded-full mr-3"></span>
-                Gerando comprovante
-              </p>
-              <p className="flex items-center">
-                <span className="h-2 w-2 bg-yellow-500 rounded-full mr-3 animate-pulse"></span>
-                Imprimindo ingressos...
-              </p>
+            <div className="space-y-6">
+              {loading ? (
+                <>
+                  <div className="text-6xl mb-4">💳</div>
+                  <p className="text-xl">Aguardando confirmação do pagamento...</p>
+                  <div className="animate-spin h-16 w-16 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+                </>
+              ) : (
+                <>
+                  <div className="text-6xl mb-4">🖨️</div>
+                  <p className="text-xl">Imprimindo {quantity} ingresso(s)...</p>
+                  <div className="animate-pulse">
+                    <div className="bg-primary/20 p-4 rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        • Comprovante de pagamento ✓<br/>
+                        • Ingresso(s) com QR Code ✓<br/>
+                        • Registrando venda no caixa diário ✓
+                      </p>
+                    </div>
+                  </div>
+                  <div className="animate-bounce text-4xl">📄</div>
+                </>
+              )}
+              
+              <div className="mt-8 p-4 bg-muted rounded-lg text-left">
+                <h3 className="font-semibold mb-2">Resumo da compra:</h3>
+                <p>{selectedEvent?.name}</p>
+                <p>{selectedTicketType?.name} × {quantity}</p>
+                <p className="font-bold text-primary">{formatPrice(getTotalAmount())}</p>
+              </div>
             </div>
           </Card>
         )}
