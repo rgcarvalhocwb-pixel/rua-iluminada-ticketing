@@ -1,13 +1,122 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, ShoppingCart } from "lucide-react";
+import { Play, ShoppingCart, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+interface Event {
+  id: string;
+  name: string;
+  description: string | null;
+  start_date: string;
+  end_date: string;
+}
+
+interface TicketType {
+  id: string;
+  name: string;
+  price: number;
+  description: string | null;
+  event_id: string;
+}
+
+interface ShowTime {
+  id: string;
+  time_slot: string;
+  event_id: string;
+}
 
 const SelfServiceTerminal = () => {
   const [isIdle, setIsIdle] = useState(true);
   const [currentStep, setCurrentStep] = useState<'selection' | 'payment' | 'printing'>('selection');
+  const [events, setEvents] = useState<Event[]>([]);
+  const [ticketTypes, setTicketTypes] = useState<TicketType[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedTicketType, setSelectedTicketType] = useState<TicketType | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const loadEvents = async () => {
+    try {
+      setLoading(true);
+      
+      // Carregar eventos ativos (data atual entre start_date e end_date)
+      const { data: eventsData, error: eventsError } = await supabase
+        .from('events')
+        .select('*')
+        .gte('end_date', new Date().toISOString().split('T')[0])
+        .order('start_date', { ascending: true });
+
+      if (eventsError) throw eventsError;
+
+      if (eventsData && eventsData.length > 0) {
+        setEvents(eventsData);
+        
+        // Automaticamente selecionar o primeiro evento
+        const firstEvent = eventsData[0];
+        setSelectedEvent(firstEvent);
+        
+        // Carregar tipos de ingresso para o primeiro evento
+        const { data: ticketTypesData, error: ticketTypesError } = await supabase
+          .from('ticket_types')
+          .select('*')
+          .eq('event_id', firstEvent.id)
+          .eq('is_active', true)
+          .order('display_order', { ascending: true });
+
+        if (ticketTypesError) throw ticketTypesError;
+
+        if (ticketTypesData && ticketTypesData.length > 0) {
+          setTicketTypes(ticketTypesData);
+          // Selecionar o primeiro tipo de ingresso disponível
+          setSelectedTicketType(ticketTypesData[0]);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os dados do evento. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuantityChange = (delta: number) => {
+    const newQuantity = quantity + delta;
+    if (newQuantity >= 1 && newQuantity <= 10) {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const getTotalAmount = () => {
+    return selectedTicketType ? selectedTicketType.price * quantity : 0;
+  };
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(price);
+  };
 
   const handleStartPurchase = () => {
+    if (!selectedEvent || !selectedTicketType) {
+      toast({
+        title: "Erro",
+        description: "Nenhum evento disponível no momento. Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+      return;
+    }
     setIsIdle(false);
     setCurrentStep('selection');
   };
@@ -15,6 +124,7 @@ const SelfServiceTerminal = () => {
   const handleBackToIdle = () => {
     setIsIdle(true);
     setCurrentStep('selection');
+    setQuantity(1);
   };
 
   if (isIdle) {
@@ -71,46 +181,91 @@ const SelfServiceTerminal = () => {
 
         {currentStep === 'selection' && (
           <Card className="p-8">
-            <h2 className="text-2xl font-semibold mb-6">
-              Selecione a quantidade de ingressos
-            </h2>
-            <p className="text-muted-foreground mb-8 text-lg">
-              Disponível apenas ingresso inteiro. Para meia entrada, dirija-se ao caixa.
-            </p>
-            
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="text-center">
-                  <p className="text-xl font-medium mb-2">Ingresso Inteiro</p>
-                  <p className="text-3xl font-bold text-primary">R$ 50,00</p>
+            {loading ? (
+              <div className="text-center py-12">
+                <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-primary" />
+                <p className="text-xl text-muted-foreground">Carregando evento...</p>
+              </div>
+            ) : !selectedEvent || !selectedTicketType ? (
+              <div className="text-center py-12">
+                <p className="text-xl text-muted-foreground mb-4">
+                  Nenhum evento disponível no momento.
+                </p>
+                <Button onClick={handleBackToIdle} variant="outline">
+                  Voltar
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="mb-6 text-center">
+                  <h2 className="text-2xl font-semibold mb-2">{selectedEvent.name}</h2>
+                  <p className="text-muted-foreground text-lg">
+                    {selectedEvent.description || "Selecione a quantidade de ingressos"}
+                  </p>
                 </div>
-                <div className="flex items-center justify-center">
-                  <div className="flex items-center space-x-4">
-                    <Button variant="outline" size="lg" className="h-16 w-16 text-2xl">
-                      -
-                    </Button>
-                    <span className="text-4xl font-bold min-w-[80px] text-center">1</span>
-                    <Button variant="outline" size="lg" className="h-16 w-16 text-2xl">
-                      +
+                
+                <p className="text-muted-foreground mb-8 text-lg text-center">
+                  Disponível apenas ingresso inteiro. Para meia entrada, dirija-se ao caixa.
+                </p>
+                
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="text-center">
+                      <p className="text-xl font-medium mb-2">{selectedTicketType.name}</p>
+                      <p className="text-3xl font-bold text-primary">
+                        {formatPrice(selectedTicketType.price)}
+                      </p>
+                      {selectedTicketType.description && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          {selectedTicketType.description}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <div className="flex items-center space-x-4">
+                        <Button 
+                          variant="outline" 
+                          size="lg" 
+                          className="h-16 w-16 text-2xl"
+                          onClick={() => handleQuantityChange(-1)}
+                          disabled={quantity <= 1}
+                        >
+                          -
+                        </Button>
+                        <span className="text-4xl font-bold min-w-[80px] text-center">
+                          {quantity}
+                        </span>
+                        <Button 
+                          variant="outline" 
+                          size="lg" 
+                          className="h-16 w-16 text-2xl"
+                          onClick={() => handleQuantityChange(1)}
+                          disabled={quantity >= 10}
+                        >
+                          +
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t pt-6">
+                    <div className="flex justify-between items-center mb-6">
+                      <span className="text-2xl font-semibold">Total:</span>
+                      <span className="text-3xl font-bold text-primary">
+                        {formatPrice(getTotalAmount())}
+                      </span>
+                    </div>
+                    
+                    <Button 
+                      className="w-full py-6 text-2xl"
+                      onClick={() => setCurrentStep('payment')}
+                    >
+                      Continuar para Pagamento
                     </Button>
                   </div>
                 </div>
-              </div>
-              
-              <div className="border-t pt-6">
-                <div className="flex justify-between items-center mb-6">
-                  <span className="text-2xl font-semibold">Total:</span>
-                  <span className="text-3xl font-bold text-primary">R$ 50,00</span>
-                </div>
-                
-                <Button 
-                  className="w-full py-6 text-2xl"
-                  onClick={() => setCurrentStep('payment')}
-                >
-                  Continuar para Pagamento
-                </Button>
-              </div>
-            </div>
+              </>
+            )}
           </Card>
         )}
 
@@ -143,7 +298,9 @@ const SelfServiceTerminal = () => {
             <div className="border-t pt-6">
               <div className="flex justify-between items-center mb-6">
                 <span className="text-xl">Total a pagar:</span>
-                <span className="text-2xl font-bold text-primary">R$ 50,00</span>
+                <span className="text-2xl font-bold text-primary">
+                  {formatPrice(getTotalAmount())}
+                </span>
               </div>
               
               <div className="flex space-x-4">
