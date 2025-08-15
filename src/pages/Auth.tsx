@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Monitor, Users } from 'lucide-react';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -18,6 +19,7 @@ const Auth = () => {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [accessType, setAccessType] = useState<'admin' | 'terminal'>('admin');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -27,7 +29,8 @@ const Auth = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         setUser(session.user);
-        navigate('/admin');
+        const redirectTo = accessType === 'terminal' ? '/terminal' : '/admin';
+        navigate(redirectTo);
       }
     };
 
@@ -37,14 +40,15 @@ const Auth = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.user) {
         setUser(session.user);
-        navigate('/admin');
+        const redirectTo = accessType === 'terminal' ? '/terminal' : '/admin';
+        navigate(redirectTo);
       } else {
         setUser(null);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, accessType]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -203,9 +207,9 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background to-muted p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Painel Administrativo</CardTitle>
+          <CardTitle>Sistema de Acesso</CardTitle>
           <CardDescription>
-            Entre com suas credenciais para acessar o sistema de gerenciamento
+            Entre com suas credenciais para acessar a área administrativa ou o terminal de autoatendimento
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -250,6 +254,31 @@ const Auth = () => {
                       )}
                     </button>
                   </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="access-type">Tipo de Acesso</Label>
+                  <Select 
+                    value={accessType} 
+                    onValueChange={(value: 'admin' | 'terminal') => setAccessType(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de acesso" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          <span>Área Administrativa</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="terminal">
+                        <div className="flex items-center gap-2">
+                          <Monitor className="h-4 w-4" />
+                          <span>Terminal de Autoatendimento</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? 'Entrando...' : 'Entrar'}
