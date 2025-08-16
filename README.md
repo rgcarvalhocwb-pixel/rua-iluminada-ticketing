@@ -1,320 +1,176 @@
-# 🎄 Rua Iluminada - Sistema de Ingressos
+# Rua Iluminada - Sistema de Bilheteria
 
-Sistema completo de venda de ingressos online para o espetáculo natalino "Rua Iluminada - Família Moletta", desenvolvido com React, TypeScript e Supabase.
+Sistema completo de gerenciamento de ingressos e vendas para eventos, com terminal de autoatendimento e gestão administrativa.
 
-## 📋 Sumário
+## 🚀 Funcionalidades Principais
 
-- [Visão Geral](#visão-geral)
-- [Funcionalidades](#funcionalidades)
-- [Tecnologias Utilizadas](#tecnologias-utilizadas)
-- [Estrutura do Projeto](#estrutura-do-projeto)
-- [Instalação e Configuração](#instalação-e-configuração)
-- [Uso do Sistema](#uso-do-sistema)
-- [Painel Administrativo](#painel-administrativo)
-- [Permissões de Usuário](#permissões-de-usuário)
-- [Integrações](#integrações)
-- [API e Banco de Dados](#api-e-banco-de-dados)
-- [Deploy](#deploy)
+### 🎫 **Sistema de Bilheteria**
+- Gestão completa de eventos e sessões
+- Múltiplos tipos de ingressos por evento
+- Controle de capacidade e disponibilidade
+- Integração com PagSeguro para pagamentos online
 
-## 🎯 Visão Geral
+### 💻 **Terminal de Autoatendimento**
+- Interface touch-screen otimizada
+- Processo de compra guiado e intuitivo
+- Pagamento via PagSeguro integrado
+- Impressão automática de ingressos
+- Monitoramento de hardware (impressoras, pinpads)
+- Modo offline com sincronização automática
 
-O sistema Rua Iluminada é uma plataforma completa de venda de ingressos que permite:
-- Venda online de ingressos com pagamento via PagSeguro
-- Gestão completa de eventos, horários e tipos de ingressos
-- Painel administrativo com controle de vendas, relatórios e analytics
-- Sistema de permissões para diferentes níveis de usuário
-- Integração com multiple lojas físicas e vendas presenciais
+### 📱 **App Mobile para Gestores**
+- Monitoramento em tempo real
+- Notificações push para alertas críticos
+- Dashboard executivo móvel
+- Gestão remota dos terminais
 
-## ✨ Funcionalidades
+### 🛡️ **Sistema de Segurança**
+- Detecção automática de fraudes
+- Validação avançada de CPF e dados
+- Auditoria completa de ações
+- Criptografia end-to-end
+- Políticas RLS no banco de dados
 
-### Para Visitantes
-- **Página Inicial**: Hero section com informações do evento e programação
-- **Seleção de Ingressos**: Interface intuitiva para escolha de data, horário e tipo de ingresso
-- **Formulário de Cliente**: Coleta de dados pessoais com validação
-- **Pagamento Online**: Integração segura com PagSeguro
-- **Meia Entrada**: Sistema automático de desconto para estudantes e idosos
+### 📊 **Analytics e Relatórios**
+- Análise preditiva de vendas
+- Métricas de performance em tempo real
+- Relatórios financeiros detalhados
+- Monitoramento de comportamento do usuário
 
-### Para Administradores
-- **Dashboard Analítico**: Métricas de vendas, eventos e performance
-- **Gestão de Eventos**: Criação e edição de eventos e horários
-- **Controle de Ingressos**: Gerenciamento de tipos, preços e disponibilidade
-- **Vendas Presenciais**: Sistema de caixa para vendas físicas
-- **Gestão de Lojas**: Cadastro e controle de pontos de venda físicos
-- **Vendas das Lojas**: Registro diário de vendas das lojas com cálculo automático de comissões
-- **Controle de Comissões**: Pagamento de comissões das lojas através do livro caixa
-- **Relatórios Avançados**: Analytics detalhados incluindo performance das lojas
-- **Gestão de Usuários**: Controle de permissões e aprovação de usuários
-- **Configurações**: Personalização de marca, cores e integrações
+### ⚙️ **Administração Completa**
+- Gestão de usuários e permissões
+- Configuração de eventos e preços
+- Controle de caixa diário e geral
+- Gestão de lojas e comissões
+- Backup automático e recuperação
 
-## 🛠 Tecnologias Utilizadas
+## 🧪 **Sistema de Testes**
+- Suite de testes automatizados
+- Validação de segurança e performance
+- Testes de integração com PagSeguro
+- Verificação de preparação para produção
+
+## 🔧 **Tecnologias**
 
 ### Frontend
-- **React 18** - Biblioteca principal
-- **TypeScript** - Tipagem estática
-- **Vite** - Build tool e desenvolvimento
-- **Tailwind CSS** - Framework de CSS utilitário
-- **shadcn/ui** - Componentes de interface
-- **Lucide React** - Ícones
-- **React Router** - Navegação
+- **React 18** com TypeScript
+- **Vite** para build otimizado
+- **Tailwind CSS** para styling
+- **Shadcn/ui** para componentes
+- **React Query** para gerenciamento de estado
+- **Capacitor** para app mobile
 
-### Backend & Banco de Dados
-- **Supabase** - Backend as a Service
-- **PostgreSQL** - Banco de dados principal
-- **Row Level Security (RLS)** - Segurança de dados
-- **Edge Functions** - Processamento serverless
+### Backend
+- **Supabase** para banco de dados e autenticação
+- **Edge Functions** para lógica de negócio
+- **Row Level Security (RLS)** para segurança
+- **Realtime** para atualizações em tempo real
 
 ### Integrações
-- **PagSeguro** - Gateway de pagamento
-- **Google Fonts** - Tipografia (Inter, Dancing Script)
+- **PagSeguro** para processamento de pagamentos
+- **Impressoras térmicas** para tickets
+- **Pinpads** para pagamentos presenciais
 
-## 📁 Estrutura do Projeto
+## 📋 **Preparação para Produção**
 
-```
-src/
-├── components/           # Componentes React
-│   ├── admin/           # Componentes do painel admin
-│   │   ├── AdminSidebar.tsx
-│   │   ├── EventsManager.tsx
-│   │   ├── StoresManager.tsx
-│   │   ├── StoreDailySalesManager.tsx
-│   │   ├── ReportsAnalytics.tsx
-│   │   ├── UserManagement.tsx
-│   │   └── ...
-│   └── ui/              # Componentes de interface
-│       ├── button.tsx
-│       ├── card.tsx
-│       └── ...
-├── hooks/               # Custom hooks
-│   ├── use-ticket-flow.ts
-│   ├── useUserPermissions.ts
-│   └── ...
-├── integrations/        # Integrações externas
-│   └── supabase/
-├── pages/               # Páginas da aplicação
-│   ├── Index.tsx        # Página inicial
-│   ├── Admin.tsx        # Painel administrativo
-│   ├── Auth.tsx         # Autenticação
-│   └── Dashboard.tsx    # Dashboard analítico
-└── lib/                 # Utilitários
-    └── utils.ts
+### ✅ **Verificações de Segurança**
+- [x] Políticas RLS configuradas
+- [x] Validação de entrada implementada
+- [x] Sistema de auditoria ativo
+- [x] Detecção de fraudes funcionando
 
-supabase/
-├── functions/           # Edge Functions
-│   ├── create-pagseguro-payment/
-│   ├── fetch-pagseguro-sales/
-│   └── ...
-└── migrations/          # Migrações do banco
-```
+### ✅ **Performance**
+- [x] Cache inteligente implementado
+- [x] Otimização de imagens
+- [x] Lazy loading configurado
+- [x] Compressão de dados ativa
 
-## ⚙️ Instalação e Configuração
+### ✅ **Infraestrutura**
+- [x] Backup automático configurado
+- [x] Monitoramento em tempo real
+- [x] Tratamento de erros robusto
+- [x] Sistema de logs completo
 
-### Pré-requisitos
-- Node.js 18+ 
-- npm ou yarn
-- Conta no Supabase
-- Conta no PagSeguro (para pagamentos)
+## 🚀 **Deploy**
 
-### Instalação
+### Configuração do Ambiente
+1. Configure as variáveis de ambiente no Supabase
+2. Adicione as credenciais do PagSeguro
+3. Configure os domínios de produção
+4. Ative as notificações push (se usando mobile)
 
+### App Mobile
+Para executar o app mobile:
 ```bash
-# Clone o repositório
-git clone <URL_DO_REPOSITORIO>
-
-# Entre na pasta do projeto
-cd rua-iluminada-ticketing
-
-# Instale as dependências
+# Instalar dependências
 npm install
 
-# Inicie o servidor de desenvolvimento
-npm run dev
+# Inicializar Capacitor
+npx cap init
+
+# Adicionar plataformas
+npx cap add ios
+npx cap add android
+
+# Build e sync
+npm run build
+npx cap sync
+
+# Executar no dispositivo
+npx cap run ios    # Para iOS (requer Mac + Xcode)
+npx cap run android # Para Android (requer Android Studio)
 ```
 
-### Configuração do Supabase
+## 📖 **Documentação**
 
-1. Crie um projeto no [Supabase](https://supabase.com)
-2. Configure as variáveis de ambiente no arquivo `.env`:
+### Estrutura do Projeto
+```
+src/
+├── components/          # Componentes React
+│   ├── admin/          # Painel administrativo
+│   └── ui/             # Componentes de interface
+├── hooks/              # Custom hooks
+├── pages/              # Páginas da aplicação
+├── integrations/       # Integrações (Supabase)
+└── lib/               # Utilitários
 
-```env
-VITE_SUPABASE_URL=sua_url_do_supabase
-VITE_SUPABASE_ANON_KEY=sua_chave_anonima
+supabase/
+├── functions/          # Edge Functions
+└── migrations/        # Migrações do banco
 ```
 
-3. Execute as migrações do banco de dados
-4. Configure as políticas RLS conforme documentação
+### Edge Functions Principais
+- `terminal-payment` - Processamento de pagamentos
+- `terminal-hardware-status` - Status do hardware
+- `terminal-print-ticket` - Impressão de ingressos
+- `system-backup` - Backup automático
+- `advanced-analytics` - Analytics avançados
 
-### Configuração do PagSeguro
+## 🔐 **Segurança**
 
-1. Obtenha suas credenciais no PagSeguro
-2. Configure as credenciais no painel administrativo
-3. Teste a integração em ambiente sandbox
+### Autenticação e Autorização
+- Sistema de roles (admin, user, terminal, master)
+- Permissões granulares por funcionalidade
+- Sessões seguras com JWT
 
-## 📖 Uso do Sistema
+### Proteção de Dados
+- Todas as tabelas com RLS habilitado
+- Validação rigorosa de entrada
+- Logs de auditoria para todas as ações
+- Criptografia de dados sensíveis
 
-### Fluxo de Compra
+### Monitoramento
+- Detecção de atividades suspeitas
+- Alertas automáticos para anomalias
+- Métricas de segurança em tempo real
 
-1. **Seleção**: Cliente escolhe data, horário e tipo de ingresso
-2. **Formulário**: Preenchimento de dados pessoais
-3. **Pagamento**: Redirecionamento para PagSeguro
-4. **Confirmação**: Recebimento do ingresso por email
+## 📞 **Suporte**
 
-### Fluxo Administrativo
-
-1. **Login**: Autenticação no sistema
-2. **Aprovação**: Admin aprova novos usuários
-3. **Configuração**: Setup de eventos, horários e preços
-4. **Vendas**: Acompanhamento em tempo real
-5. **Relatórios**: Análise de performance
-
-### Sistema de Lojas e Comissões
-
-1. **Cadastro de Lojas**: Registre lojas físicas com percentual de comissão
-2. **Vendas Diárias**: Registre vendas diárias de cada loja
-3. **Cálculo Automático**: Sistema calcula comissões automaticamente
-4. **Pagamento de Comissões**: Pague comissões através do livro caixa diário
-5. **Relatórios**: Acompanhe performance e valores devidos por loja
-
-## 🎛 Painel Administrativo
-
-O painel administrativo é organizado em categorias:
-
-### 🎅 Operações
-- **Eventos**: Criação e gestão de eventos
-- **Ingressos**: Configuração de tipos e preços
-- **Gestão de Lojas**: Cadastro de pontos de venda físicos com percentuais de comissão
-
-### 🛷 Vendas  
-- **Vendas Online**: Gerenciamento de plataformas externas
-- **Vendas das Lojas**: Registro diário de vendas das lojas com cálculo automático de comissões
-- **Pedidos**: Visualização de todas as vendas
-
-### 💰 Financeiro
-- **Caixa Diário**: Registro de vendas presenciais e pagamento de comissões pendentes
-- **Caixa Geral**: Consolidação financeira com controle de transferências
-- **Pagamentos**: Configurações do PagSeguro
-
-### ⭐ Administração
-- **Relatórios**: Analytics e métricas incluindo performance das lojas
-- **Backup**: Exportação e recuperação de dados
-- **Marca**: Personalização visual
-- **Performance**: Monitoramento do sistema
-- **Analytics**: Integrações de tracking
-- **Usuários**: Gestão de permissões
-
-## 👥 Permissões de Usuário
-
-### Master
-- Acesso total ao sistema
-- Gestão de usuários e permissões
-- Configurações críticas
-
-### Admin
-- Acesso a todas as funcionalidades operacionais
-- Relatórios e analytics
-- Não pode gerenciar outros admins
-
-### Operador
-- Vendas presenciais
-- Visualização de relatórios básicos
-- Sem acesso a configurações
-
-### Visualizador
-- Apenas leitura de dados
-- Relatórios básicos
-- Sem permissões de edição
-
-## 🔗 Integrações
-
-### PagSeguro
-- Processamento de pagamentos online
-- Webhook para confirmação automática
-- Suporte a PIX, cartão e boleto
-
-### Google Analytics (Opcional)
-- Tracking de conversões
-- Análise de comportamento
-- Métricas de performance
-
-### Backup Automático
-- Exportação diária de dados
-- Recuperação de emergência
-- Histórico de versões
-
-## 🗄 API e Banco de Dados
-
-### Principais Tabelas
-- `events`: Eventos e programação
-- `show_times`: Horários disponíveis
-- `ticket_types`: Tipos de ingressos
-- `stores`: Lojas físicas e percentuais de comissão
-- `store_daily_sales`: Vendas diárias das lojas com comissões
-- `orders`: Pedidos e vendas realizadas
-- `tickets`: Ingressos gerados
-- `user_roles`: Roles dos usuários
-- `user_permissions`: Controle detalhado de acesso
-
-### Edge Functions
-- `create-pagseguro-payment`: Criação de pagamentos
-- `fetch-pagseguro-sales`: Sincronização de vendas
-- `realtime-notifications`: Notificações em tempo real
-- `backup-export`: Exportação de dados
-
-### Segurança
-- Row Level Security (RLS) em todas as tabelas
-- Políticas baseadas em roles
-- Autenticação via Supabase Auth
-- Validação de dados no backend
-
-## 🚀 Deploy
-
-- Vercel
-- Netlify  
-- AWS Amplify
-- Digital Ocean
-
-### Variáveis de Ambiente em Produção
-```env
-VITE_SUPABASE_URL=sua_url_do_supabase
-VITE_SUPABASE_ANON_KEY=sua_chave_anonima
-```
-
-## 🐛 Troubleshooting
-
-### Problemas Comuns
-
-**Erro de conexão com Supabase**
-- Verifique as credenciais
-- Confirme se o projeto está ativo
-- Verifique as políticas RLS
-
-**Pagamentos não funcionam**
-- Teste credenciais do PagSeguro
-- Verifique webhook configurado
-- Confirme ambiente (sandbox/produção)
-
-**Usuário não consegue fazer login**
-- Verifique se está aprovado
-- Confirme permissões atribuídas
-- Teste reset de senha
-
-### Logs e Monitoramento
-
-- Console do navegador para erros frontend
-- Supabase Dashboard para logs de backend
-- Edge Functions logs no Supabase
-- Relatórios de performance no painel admin
-
-## 📞 Suporte
-
-Para suporte técnico, entre em contato:
-- **Desenvolvido por:** Rodolpho Carvalho
-- **RAYZER SERVIÇOS E TECNOLOGIA LTDA**
-- **CNPJ:** 14.073.521/0001-83  
-- **Endereço:** Rua Cel. Hoche Pedra Pires n.º 337 Seminário – Curitiba – Paraná
-- **Telefone:** (41) 99937-2241
+Para suporte técnico ou dúvidas sobre implementação, consulte:
+- Documentação do Supabase: https://supabase.com/docs
+- Documentação do PagSeguro: https://dev.pagseguro.uol.com.br/
+- Documentação do Capacitor: https://capacitorjs.com/docs
 
 ---
 
-**Desenvolvido com ❤️ por Rayzer Tecnologia**
-
-*Sistema de Ingressos Rua Iluminada - Versão 2025*
+**Desenvolvido com ❤️ para eventos inesquecíveis**

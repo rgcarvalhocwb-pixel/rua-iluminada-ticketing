@@ -198,6 +198,21 @@ const Admin = () => {
         title: 'Auditoria do Sistema',
         description: 'Visualize logs de ações e monitore atividades dos usuários'
       },
+      'terminal-monitoring': {
+        component: <TerminalMonitoring />,
+        title: 'Monitoramento de Terminais',
+        description: 'Status em tempo real dos terminais de autoatendimento'
+      },
+      'testing-suite': {
+        component: <TestingSuite />,
+        title: 'Suite de Testes',
+        description: 'Validação automática de funcionalidades críticas'
+      },
+      'production-readiness': {
+        component: <ProductionReadiness />,
+        title: 'Preparação para Produção',
+        description: 'Verificação completa antes do lançamento'
+      },
       'system-health': {
         component: <SystemHealth />,
         title: 'Saúde do Sistema',

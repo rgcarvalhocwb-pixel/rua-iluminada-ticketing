@@ -23,7 +23,9 @@ import {
   Monitor,
   FileText,
   Shield,
-  Computer
+  Computer,
+  Bug,
+  Rocket
 } from "lucide-react";
 
 import {
@@ -141,6 +143,34 @@ export function AdminSidebar({
     });
   }
 
+  // Módulos de sistema e monitoramento
+  if (hasPermission(userPermissions, "dashboard_view")) {
+    sidebarItems.push({
+      id: "terminal-monitoring",
+      title: "Monitoramento",
+      icon: Monitor,
+      category: "system",
+    });
+  }
+
+  if (hasPermission(userPermissions, "dashboard_view")) {
+    sidebarItems.push({
+      id: "testing-suite",
+      title: "Suite de Testes",
+      icon: Bug,
+      category: "system",
+    });
+  }
+
+  if (hasPermission(userPermissions, "dashboard_view")) {
+    sidebarItems.push({
+      id: "production-readiness",
+      title: "Produção",
+      icon: Rocket,
+      category: "system",
+    });
+  }
+
   if (hasPermission(userPermissions, "online_sales")) {
     sidebarItems.push({
       id: "online",
@@ -242,6 +272,7 @@ export function AdminSidebar({
   const operationsItems = sidebarItems.filter((item) => item.category === "operations");
   const salesItems = sidebarItems.filter((item) => item.category === "sales");
   const financialItems = sidebarItems.filter((item) => item.category === "financial");
+  const systemItems = sidebarItems.filter((item) => item.category === "system");
   const adminItems = sidebarItems.filter((item) => item.category === "admin");
 
   const isActive = (id: string) => activeTab === id;
@@ -344,6 +375,38 @@ export function AdminSidebar({
             <SidebarGroupContent>
               <SidebarMenu>
                 {financialItems.map((item) => (
+                  <SidebarMenuItem key={item.id}>
+                    <SidebarMenuButton
+                      onClick={() => onTabChange(item.id)}
+                      isActive={isActive(item.id)}
+                      tooltip={collapsed ? item.title : undefined}
+                      className={`
+                        mx-2 rounded-lg transition-all duration-200
+                        ${isActive(item.id) 
+                          ? "bg-primary text-primary-foreground shadow-sm" 
+                          : "hover:bg-accent hover:text-accent-foreground"
+                        }
+                      `}
+                    >
+                       <item.icon className="h-5 w-5" />
+                       <span className="font-medium">{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Sistema */}
+        {systemItems.length > 0 && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Sistema
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {systemItems.map((item) => (
                   <SidebarMenuItem key={item.id}>
                     <SidebarMenuButton
                       onClick={() => onTabChange(item.id)}
