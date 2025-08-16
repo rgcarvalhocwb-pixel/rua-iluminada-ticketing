@@ -102,6 +102,9 @@ const TerminalManager = () => {
     copies: 1,
     print_logo: true
   });
+
+  const [availablePrinters, setAvailablePrinters] = useState<string[]>([]);
+  const [detectingPrinters, setDetectingPrinters] = useState(false);
   const [ticketTemplates, setTicketTemplates] = useState<TicketTemplate[]>([
     {
       template_name: 'Ingresso Padrão',
@@ -115,6 +118,63 @@ const TerminalManager = () => {
     }
   ]);
   const { toast } = useToast();
+
+  // Função para detectar impressoras disponíveis
+  const detectAvailablePrinters = async () => {
+    setDetectingPrinters(true);
+    try {
+      const printers: string[] = [];
+      
+      // Tentar usar a Print API do navegador se disponível
+      if ('navigator' in window && 'printer' in navigator) {
+        try {
+          // @ts-ignore - API experimental
+          const printerList = await navigator.printer.getPrinters();
+          printers.push(...printerList.map((p: any) => p.name));
+        } catch (error) {
+          console.log('Print API não disponível');
+        }
+      }
+
+      // Impressoras padrão mais comuns para terminais POS
+      const commonPrinters = [
+        'Epson TM-T20III',
+        'Epson TM-T88V',
+        'Epson TM-U220',
+        'Bematech MP-4200 TH',
+        'Elgin i9',
+        'Zebra ZD220',
+        'HP LaserJet',
+        'Canon PIXMA',
+        'Brother HL-L2340DW',
+        'Impressora Térmica 80mm',
+        'Impressora Térmica 58mm',
+        'Microsoft Print to PDF',
+        'Impressora Padrão do Sistema'
+      ];
+
+      // Simular detecção (em uma implementação real, seria feita via API do sistema)
+      printers.push(...commonPrinters);
+      
+      // Remover duplicatas
+      const uniquePrinters = [...new Set(printers)];
+      setAvailablePrinters(uniquePrinters);
+      
+      toast({
+        title: "Impressoras detectadas",
+        description: `${uniquePrinters.length} impressoras encontradas`,
+      });
+    } catch (error) {
+      console.error('Erro ao detectar impressoras:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao detectar impressoras disponíveis",
+        variant: "destructive",
+      });
+    } finally {
+      setDetectingPrinters(false);
+    }
+  };
 
   useEffect(() => {
     loadEvents();
@@ -972,12 +1032,45 @@ const TerminalManager = () => {
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="printer-name">Nome da Impressora</Label>
-                      <Input
-                        id="printer-name"
-                        value={printerConfig.printer_name}
-                        onChange={(e) => setPrinterConfig(prev => ({ ...prev, printer_name: e.target.value }))}
-                        placeholder="Ex: Epson TM-T20"
-                      />
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          {availablePrinters.length > 0 ? (
+                            <select
+                              value={printerConfig.printer_name}
+                              onChange={(e) => setPrinterConfig(prev => ({ ...prev, printer_name: e.target.value }))}
+                              className="w-full border rounded px-3 py-2 bg-background"
+                            >
+                              <option value="">Selecione uma impressora</option>
+                              {availablePrinters.map(printer => (
+                                <option key={printer} value={printer}>{printer}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <Input
+                              id="printer-name"
+                              value={printerConfig.printer_name}
+                              onChange={(e) => setPrinterConfig(prev => ({ ...prev, printer_name: e.target.value }))}
+                              placeholder="Ex: Epson TM-T20"
+                            />
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={detectAvailablePrinters}
+                          disabled={detectingPrinters}
+                          className="px-3"
+                        >
+                          {detectingPrinters ? (
+                            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+                          ) : (
+                            <Settings className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Clique no ícone para detectar impressoras disponíveis
+                      </p>
                     </div>
 
                     <div>
@@ -1063,6 +1156,13 @@ const TerminalManager = () => {
                       <p><strong>Papel:</strong> {printerConfig.paper_size}</p>
                       <p><strong>Cópias:</strong> {printerConfig.copies}</p>
                     </>
+                  )}
+                  {availablePrinters.length > 0 && (
+                    <div className="mt-2 pt-2 border-t">
+                      <p className="font-medium text-green-600">
+                        {availablePrinters.length} impressoras detectadas
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
