@@ -54,11 +54,14 @@ const TerminalManager = () => {
   const [tempValues, setTempValues] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [previewFile, setPreviewFile] = useState<{ url: string; type: 'video' | 'static'; name: string } | null>(null);
+  const [mediaHistory, setMediaHistory] = useState<Array<{ url: string; type: 'video' | 'static'; name: string; path: string }>>([]);
   const { toast } = useToast();
 
   useEffect(() => {
     loadEvents();
     loadTerminalConfig();
+    loadMediaHistory();
   }, []);
 
   const loadEvents = async () => {
@@ -141,6 +144,46 @@ const TerminalManager = () => {
     }
   };
 
+  const loadMediaHistory = async () => {
+    try {
+      const { data: files, error } = await supabase.storage
+        .from('brand-assets')
+        .list('terminal', {
+          limit: 20,
+          sortBy: { column: 'created_at', order: 'desc' }
+        });
+
+      if (error) {
+        console.error('Erro ao carregar histórico:', error);
+        return;
+      }
+
+      if (files) {
+        const history = files
+          .filter(file => file.name !== '.emptyFolderPlaceholder')
+          .map(file => {
+            const { data: { publicUrl } } = supabase.storage
+              .from('brand-assets')
+              .getPublicUrl(`terminal/${file.name}`);
+            
+            const isVideo = file.name.toLowerCase().includes('.mp4') || 
+                           file.name.toLowerCase().includes('.webm');
+            
+            return {
+              url: publicUrl,
+              type: isVideo ? 'video' as const : 'static' as const,
+              name: file.name,
+              path: `terminal/${file.name}`
+            };
+          });
+        
+        setMediaHistory(history);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar histórico de mídias:', error);
+    }
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -185,36 +228,17 @@ const TerminalManager = () => {
         .getPublicUrl(filePath);
 
       const newType: 'video' | 'static' = file.type.startsWith('video/') ? 'video' : 'static';
-      let configId = terminalConfig.id;
-      if (!configId) {
-        const { data: existingConfig } = await supabase
-          .from('terminal_config')
-          .select('id')
-          .single();
-        configId = existingConfig?.id;
-      }
-
-      // Persistir imediatamente no banco para refletir no terminal
-      if (configId) {
-        const { error: dbError } = await supabase
-          .from('terminal_config')
-          .update({
-            background_url: publicUrl,
-            background_type: newType
-          })
-          .eq('id', configId);
-        if (dbError) throw dbError;
-      }
-
-      setTerminalConfig(prev => ({
-        ...prev,
-        background_url: publicUrl,
-        background_type: newType
-      }));
+      
+      // Apenas fazer preview, não salvar ainda no banco
+      setPreviewFile({
+        url: publicUrl,
+        type: newType,
+        name: fileName
+      });
 
       toast({
         title: "Sucesso",
-        description: "Plano de fundo atualizado no terminal!",
+        description: "Arquivo carregado! Clique em 'Aplicar Plano de Fundo' para salvar.",
       });
     } catch (error: any) {
       console.error('Erro no upload:', error);
@@ -225,6 +249,110 @@ const TerminalManager = () => {
       });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const applyBackgroundFromPreview = async () => {
+    if (!previewFile) return;
+
+    try {
+      setLoading(true);
+
+      // Obter o ID da configuração existente
+      let configId = terminalConfig.id;
+      if (!configId) {
+        const { data: existingConfig } = await supabase
+          .from('terminal_config')
+          .select('id')
+          .single();
+        configId = existingConfig?.id;
+      }
+
+      // Salvar no banco
+      if (configId) {
+        const { error: dbError } = await supabase
+          .from('terminal_config')
+          .update({
+            background_url: previewFile.url,
+            background_type: previewFile.type
+          })
+          .eq('id', configId);
+        if (dbError) throw dbError;
+      }
+
+      // Atualizar estado local
+      setTerminalConfig(prev => ({
+        ...prev,
+        background_url: previewFile.url,
+        background_type: previewFile.type
+      }));
+
+      // Limpar preview e recarregar histórico
+      setPreviewFile(null);
+      loadMediaHistory();
+
+      toast({
+        title: "Sucesso",
+        description: "Plano de fundo aplicado no terminal!",
+      });
+    } catch (error: any) {
+      console.error('Erro ao aplicar plano de fundo:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao aplicar plano de fundo: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const applyBackgroundFromHistory = async (historyItem: typeof mediaHistory[0]) => {
+    try {
+      setLoading(true);
+
+      // Obter o ID da configuração existente
+      let configId = terminalConfig.id;
+      if (!configId) {
+        const { data: existingConfig } = await supabase
+          .from('terminal_config')
+          .select('id')
+          .single();
+        configId = existingConfig?.id;
+      }
+
+      // Salvar no banco
+      if (configId) {
+        const { error: dbError } = await supabase
+          .from('terminal_config')
+          .update({
+            background_url: historyItem.url,
+            background_type: historyItem.type
+          })
+          .eq('id', configId);
+        if (dbError) throw dbError;
+      }
+
+      // Atualizar estado local
+      setTerminalConfig(prev => ({
+        ...prev,
+        background_url: historyItem.url,
+        background_type: historyItem.type
+      }));
+
+      toast({
+        title: "Sucesso",
+        description: "Plano de fundo aplicado do histórico!",
+      });
+    } catch (error: any) {
+      console.error('Erro ao aplicar plano de fundo:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao aplicar plano de fundo: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -403,10 +531,54 @@ const TerminalManager = () => {
                 </div>
               </div>
 
-              {terminalConfig.background_url && (
+              {/* Preview do arquivo selecionado */}
+              {previewFile && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label>Novo Arquivo Selecionado</Label>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={applyBackgroundFromPreview}
+                        disabled={loading}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        {loading ? 'Aplicando...' : 'Aplicar Plano de Fundo'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setPreviewFile(null)}
+                        disabled={loading}
+                      >
+                        Cancelar
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="border rounded-lg p-4 bg-yellow-50 border-yellow-200">
+                    {previewFile.type === 'video' ? (
+                      <video 
+                        src={previewFile.url} 
+                        className="w-full max-w-md mx-auto rounded"
+                        controls
+                      />
+                    ) : (
+                      <img 
+                        src={previewFile.url} 
+                        alt="Preview do novo arquivo"
+                        className="w-full max-w-md mx-auto rounded"
+                      />
+                    )}
+                    <p className="text-sm text-center mt-2 text-muted-foreground">
+                      {previewFile.name}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Arquivo atual */}
+              {terminalConfig.background_url && !previewFile && (
                 <div className="space-y-2">
-                  <Label>Preview do Arquivo Atual</Label>
-                  <div className="border rounded-lg p-4 bg-gray-50">
+                  <Label>Plano de Fundo Atual</Label>
+                  <div className="border rounded-lg p-4 bg-green-50 border-green-200">
                     {terminalConfig.background_type === 'video' ? (
                       <video 
                         src={terminalConfig.background_url} 
@@ -420,7 +592,53 @@ const TerminalManager = () => {
                         className="w-full max-w-md mx-auto rounded"
                       />
                     )}
+                    <p className="text-sm text-center mt-2 text-green-700 font-medium">
+                      ✓ Ativo no terminal
+                    </p>
                   </div>
+                </div>
+              )}
+
+              {/* Histórico de arquivos */}
+              {mediaHistory.length > 0 && (
+                <div className="space-y-4">
+                  <Label>Histórico de Arquivos</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+                    {mediaHistory.map((item, index) => (
+                      <div key={index} className="border rounded-lg p-3 bg-gray-50 hover:bg-gray-100 transition-colors">
+                        <div className="aspect-video mb-2 rounded overflow-hidden bg-gray-200">
+                          {item.type === 'video' ? (
+                            <video 
+                              src={item.url} 
+                              className="w-full h-full object-cover"
+                              muted
+                            />
+                          ) : (
+                            <img 
+                              src={item.url} 
+                              alt={item.name}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-2 truncate" title={item.name}>
+                          {item.name}
+                        </p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="w-full text-xs"
+                          onClick={() => applyBackgroundFromHistory(item)}
+                          disabled={loading || terminalConfig.background_url === item.url}
+                        >
+                          {terminalConfig.background_url === item.url ? '✓ Em uso' : 'Reutilizar'}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Clique em "Reutilizar" para aplicar um arquivo do histórico
+                  </p>
                 </div>
               )}
             </CardContent>
