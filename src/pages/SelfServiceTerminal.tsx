@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, ShoppingCart, Loader2 } from "lucide-react";
+import { Play, ShoppingCart, Loader2, AlertCircle, CheckCircle, CreditCard } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { TerminalStatusBar } from "@/components/ui/terminal-status-bar";
+import { useTerminalHardware } from "@/hooks/useTerminalHardware";
 
 interface Event {
   id: string;
@@ -47,7 +49,17 @@ const SelfServiceTerminal = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
   const [terminalConfig, setTerminalConfig] = useState<TerminalConfig | null>(null);
+  const [paymentWindow, setPaymentWindow] = useState<Window | null>(null);
+  const [currentOrderId, setCurrentOrderId] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  const { 
+    hardwareStatus, 
+    processPayment, 
+    printTickets, 
+    isAnyPrinterOnline, 
+    isAnyPinpadOnline 
+  } = useTerminalHardware();
 
   useEffect(() => {
     loadEvents();
@@ -157,65 +169,9 @@ const SelfServiceTerminal = () => {
     setCurrentStep('selection');
   };
 
-  const handlePaymentConfirmed = async (orderId: string, paymentMethod: string) => {
+  const processRealPayment = async (paymentMethod: string) => {
     try {
       setLoading(true);
-      
-      // Chamar edge function para processar confirmação de pagamento e registrar no caixa
-      const { data: confirmationResult, error: confirmationError } = await supabase.functions.invoke('process-payment-confirmation', {
-        body: {
-          orderId,
-          paymentStatus: 'approved',
-          paymentMethod,
-          totalAmount: getTotalAmount(),
-          isTerminalSale: true,
-          paymentReference: `TERM_${orderId}_${Date.now()}`
-        }
-      });
-
-      if (confirmationError) {
-        console.error('Erro na confirmação:', confirmationError);
-        toast({
-          title: "Erro na confirmação",
-          description: "Erro ao processar confirmação do pagamento",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      if (!confirmationResult.success) {
-        toast({
-          title: "Erro",
-          description: confirmationResult.error || "Erro ao confirmar pagamento",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      toast({
-        title: "Pagamento confirmado!",
-        description: "Venda registrada no sistema. Ingressos sendo impressos...",
-      });
-
-      // Simular impressão dos ingressos
-      setCurrentStep('printing');
-      
-    } catch (error: any) {
-      console.error('Erro ao confirmar pagamento:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao processar confirmação: " + error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const simulatePayment = async (paymentMethod: string) => {
-    try {
-      setLoading(true);
-      setCurrentStep('printing');
 
       if (!selectedEvent || !selectedTicketType) {
         toast({
@@ -227,7 +183,17 @@ const SelfServiceTerminal = () => {
         return;
       }
 
-      // Criar pedido real
+      // Verificar se há impressora disponível
+      if (!isAnyPrinterOnline()) {
+        toast({
+          title: "Impressora Indisponível",
+          description: "Nenhuma impressora está disponível. Verifique as conexões.",
+          variant: "destructive"
+        });
+        setLoading(false);
+        return;
+      }
+
       console.log('Criando pedido para venda do terminal...');
 
       // 1. Buscar ou criar sessão do evento
@@ -285,6 +251,8 @@ const SelfServiceTerminal = () => {
         throw new Error('Erro ao criar pedido: ' + orderError.message);
       }
 
+      setCurrentOrderId(order.id);
+
       // 3. Criar item do pedido
       const { error: itemError } = await supabase
         .from('order_items')
@@ -300,24 +268,31 @@ const SelfServiceTerminal = () => {
         throw new Error('Erro ao criar item do pedido: ' + itemError.message);
       }
 
-      // 4. Simular aprovação do pagamento (3 segundos)
-      setTimeout(async () => {
-        await handlePaymentConfirmed(order.id, paymentMethod);
-        
-        // 5. Simular impressão dos ingressos
-        setTimeout(() => {
-          toast({
-            title: "Compra finalizada!",
-            description: `${quantity} ingresso(s) impresso(s) com sucesso!`,
-          });
-          
-          // Voltar ao estado inicial após 3 segundos
-          setTimeout(() => {
-            handleBackToIdle();
-          }, 3000);
-        }, 2000);
-      }, 3000);
-      
+      // 4. Processar pagamento real
+      const paymentResult = await processPayment({
+        orderId: order.id,
+        amount: getTotalAmount(),
+        customerName: 'Cliente Terminal',
+        customerEmail: `terminal_${Date.now()}@autoatendimento.com`,
+        customerCPF: '00000000000',
+        description: `${selectedEvent.name} - ${quantity}x ${selectedTicketType.name}`
+      });
+
+      // 5. Abrir janela de pagamento
+      const newWindow = window.open(paymentResult.paymentUrl, 'pagamento', 'width=800,height=600');
+      setPaymentWindow(newWindow);
+      setCurrentStep('payment');
+
+      // 6. Monitorar fechamento da janela de pagamento
+      const checkWindow = setInterval(() => {
+        if (newWindow?.closed) {
+          clearInterval(checkWindow);
+          setPaymentWindow(null);
+          // Verificar status do pagamento
+          checkPaymentStatus(order.id);
+        }
+      }, 1000);
+
     } catch (error: any) {
       console.error('Erro ao processar venda:', error);
       toast({
@@ -326,7 +301,79 @@ const SelfServiceTerminal = () => {
         variant: "destructive"
       });
       setLoading(false);
-      setCurrentStep('payment'); // Voltar para tela de pagamento
+    }
+  };
+
+  const checkPaymentStatus = async (orderId: string) => {
+    try {
+      // Verificar status do pedido
+      const { data: order, error } = await supabase
+        .from('orders')
+        .select('payment_status')
+        .eq('id', orderId)
+        .single();
+
+      if (error) throw error;
+
+      if (order.payment_status === 'approved') {
+        // Pagamento aprovado, gerar e imprimir ingressos
+        await handlePaymentApproved(orderId);
+      } else {
+        // Pagamento não aprovado, voltar para seleção
+        toast({
+          title: "Pagamento não realizado",
+          description: "O pagamento não foi confirmado. Tente novamente.",
+          variant: "destructive"
+        });
+        handleBackToIdle();
+      }
+    } catch (error: any) {
+      console.error('Erro ao verificar pagamento:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao verificar status do pagamento",
+        variant: "destructive"
+      });
+      handleBackToIdle();
+    }
+  };
+
+  const handlePaymentApproved = async (orderId: string) => {
+    try {
+      setCurrentStep('printing');
+      setLoading(false);
+      
+      // Buscar ingressos gerados
+      const { data: tickets, error: ticketsError } = await supabase
+        .from('tickets')
+        .select('id')
+        .eq('order_item_id', orderId);
+
+      if (ticketsError) throw ticketsError;
+
+      if (tickets && tickets.length > 0) {
+        // Imprimir ingressos
+        await printTickets(tickets.map(t => t.id));
+        
+        toast({
+          title: "Compra finalizada!",
+          description: `${tickets.length} ingresso(s) impresso(s) com sucesso!`,
+        });
+      }
+
+      // Voltar ao estado inicial após 3 segundos
+      setTimeout(() => {
+        handleBackToIdle();
+      }, 3000);
+
+    } catch (error: any) {
+      console.error('Erro ao processar ingressos:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao processar ingressos: " + error.message,
+        variant: "destructive"
+      });
+      handleBackToIdle();
     }
   };
 
@@ -334,6 +381,12 @@ const SelfServiceTerminal = () => {
     setIsIdle(true);
     setCurrentStep('selection');
     setQuantity(1);
+    setLoading(false);
+    setCurrentOrderId(null);
+    if (paymentWindow && !paymentWindow.closed) {
+      paymentWindow.close();
+    }
+    setPaymentWindow(null);
   };
 
   if (isIdle) {
@@ -379,6 +432,11 @@ const SelfServiceTerminal = () => {
           className="absolute inset-0 flex items-center justify-center cursor-pointer hover:bg-black/10 transition-colors"
           onClick={handleStartPurchase}
         >
+          {/* Status do Terminal */}
+          <div className="absolute top-4 left-4">
+            <TerminalStatusBar terminalId="terminal-001" compact={true} />
+          </div>
+
           {/* Informações discretas no canto inferior direito */}
           <div className="absolute bottom-8 right-8 bg-white/95 backdrop-blur-sm border border-white/20 shadow-lg rounded-xl p-4 max-w-xs">
             <div className="flex items-center gap-2 mb-2">
@@ -497,9 +555,17 @@ const SelfServiceTerminal = () => {
                     
                     <Button 
                       className="w-full py-6 text-2xl"
-                      onClick={() => setCurrentStep('payment')}
+                      onClick={() => processRealPayment('pagseguro')}
+                      disabled={loading}
                     >
-                      Continuar para Pagamento
+                      {loading ? (
+                        <>
+                          <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+                          Processando...
+                        </>
+                      ) : (
+                        'Continuar para Pagamento'
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -510,97 +576,87 @@ const SelfServiceTerminal = () => {
 
         {currentStep === 'payment' && (
           <Card className="p-8">
-            <h2 className="text-2xl font-semibold mb-6">
-              Forma de Pagamento
-            </h2>
-            
-            <div className="grid grid-cols-2 gap-6 mb-8">
-              <Button
-                variant="outline"
-                className="h-24 text-xl flex flex-col items-center justify-center space-y-2 border-2 hover:border-primary"
-                onClick={() => simulatePayment('credit_card')}
-                disabled={loading}
-              >
-                <span className="text-2xl">💳</span>
-                <span>Cartão</span>
-                <span className="text-sm text-muted-foreground">Débito/Crédito</span>
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="h-24 text-xl flex flex-col items-center justify-center space-y-2 border-2 hover:border-primary"
-                onClick={() => simulatePayment('pix')}
-                disabled={loading}
-              >
-                <span className="text-2xl">📱</span>
-                <span>PIX</span>
-                <span className="text-sm text-muted-foreground">Pagamento instantâneo</span>
-              </Button>
+            <div className="text-center mb-6">
+              <CreditCard className="h-16 w-16 mx-auto mb-4 text-primary" />
+              <h2 className="text-2xl font-semibold mb-4">Processando Pagamento</h2>
+              <p className="text-muted-foreground text-lg">
+                Complete o pagamento na janela que foi aberta
+              </p>
             </div>
             
-            <div className="border-t pt-6">
-              <div className="flex justify-between items-center mb-6">
-                <span className="text-xl">Total a pagar:</span>
-                <span className="text-2xl font-bold text-primary">
-                  {formatPrice(getTotalAmount())}
-                </span>
+            <div className="space-y-4">
+              <div className="flex items-center justify-center space-x-2">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <span className="text-lg">Aguardando confirmação do pagamento...</span>
               </div>
               
-              <div className="flex space-x-4">
-                <Button
-                  variant="outline"
-                  className="flex-1 py-4 text-lg"
-                  onClick={() => setCurrentStep('selection')}
-                >
-                  Voltar
-                </Button>
-                <Button
-                  className="flex-1 py-4 text-lg"
-                  onClick={() => setCurrentStep('printing')}
-                >
-                  Processar Pagamento
-                </Button>
-              </div>
+              {paymentWindow && !paymentWindow.closed && (
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Finalize o pagamento na janela aberta e feche-a quando concluído
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      if (paymentWindow && !paymentWindow.closed) {
+                        paymentWindow.focus();
+                      }
+                    }}
+                  >
+                    Focar Janela de Pagamento
+                  </Button>
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-6 text-center">
+              <Button variant="ghost" onClick={handleBackToIdle}>
+                Cancelar Compra
+              </Button>
             </div>
           </Card>
         )}
 
         {currentStep === 'printing' && (
-          <Card className="p-8 text-center">
-            <h2 className="text-2xl font-semibold mb-6">
-              {loading ? 'Processando Pagamento...' : 'Imprimindo Ingressos...'}
-            </h2>
-            
-            <div className="space-y-6">
-              {loading ? (
-                <>
-                  <div className="text-6xl mb-4">💳</div>
-                  <p className="text-xl">Aguardando confirmação do pagamento...</p>
-                  <div className="animate-spin h-16 w-16 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-                </>
-              ) : (
-                <>
-                  <div className="text-6xl mb-4">🖨️</div>
-                  <p className="text-xl">Imprimindo {quantity} ingresso(s)...</p>
-                  <div className="animate-pulse">
-                    <div className="bg-primary/20 p-4 rounded-lg">
-                      <p className="text-sm text-muted-foreground">
-                        • Comprovante de pagamento ✓<br/>
-                        • Ingresso(s) com QR Code ✓<br/>
-                        • Registrando venda no caixa diário ✓
-                      </p>
-                    </div>
-                  </div>
-                  <div className="animate-bounce text-4xl">📄</div>
-                </>
-              )}
-              
-              <div className="mt-8 p-4 bg-muted rounded-lg text-left">
-                <h3 className="font-semibold mb-2">Resumo da compra:</h3>
-                <p>{selectedEvent?.name}</p>
-                <p>{selectedTicketType?.name} × {quantity}</p>
-                <p className="font-bold text-primary">{formatPrice(getTotalAmount())}</p>
+          <Card className="p-8">
+            <div className="text-center">
+              <div className="mb-6">
+                {loading ? (
+                  <>
+                    <Loader2 className="h-16 w-16 animate-spin mx-auto mb-4 text-primary" />
+                    <h2 className="text-2xl font-semibold mb-4">Imprimindo Ingressos</h2>
+                    <p className="text-lg text-muted-foreground">
+                      Aguarde enquanto seus ingressos são impressos...
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-16 w-16 mx-auto mb-4 text-green-600" />
+                    <h2 className="text-2xl font-semibold mb-4 text-green-700">Compra Finalizada!</h2>
+                    <p className="text-lg text-muted-foreground">
+                      Seus ingressos foram impressos com sucesso!
+                    </p>
+                  </>
+                )}
               </div>
+              
+              {/* Informações sobre a impressão */}
+              <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-center space-x-4">
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-gray-600">Ingressos Impressos</p>
+                    <p className="text-2xl font-bold text-primary">{quantity}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-gray-600">Total Pago</p>
+                    <p className="text-2xl font-bold text-primary">{formatPrice(getTotalAmount())}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-sm text-muted-foreground">
+                Retorne à tela inicial em alguns segundos...
+              </p>
             </div>
           </Card>
         )}
