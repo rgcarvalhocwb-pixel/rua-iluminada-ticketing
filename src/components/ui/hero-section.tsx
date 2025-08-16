@@ -8,28 +8,56 @@ import heroImage from '@/assets/hero-rua-iluminada.jpg';
 
 export const HeroSection = () => {
   const [totalShowTimes, setTotalShowTimes] = useState<number>(6);
+  const [eventPeriod, setEventPeriod] = useState<{
+    startDate: string;
+    endDate: string;
+  }>({
+    startDate: '07 Dezembro',
+    endDate: '06 Janeiro'
+  });
 
   useEffect(() => {
-    const fetchShowTimes = async () => {
+    const fetchData = async () => {
       try {
-        const { data, error } = await supabase
-          .from('show_times')
-          .select('*');
+        // Buscar show_times e eventos em paralelo
+        const [showTimesResult, eventsResult] = await Promise.all([
+          supabase.from('show_times').select('*'),
+          supabase.from('events').select('*').order('start_date', { ascending: true }).limit(1)
+        ]);
         
-        if (!error && data) {
-          setTotalShowTimes(data.length);
+        // Atualizar total de show_times
+        if (!showTimesResult.error && showTimesResult.data) {
+          setTotalShowTimes(showTimesResult.data.length);
+        }
+        
+        // Atualizar período do evento
+        if (!eventsResult.error && eventsResult.data && eventsResult.data.length > 0) {
+          const event = eventsResult.data[0];
+          const startDate = new Date(event.start_date);
+          const endDate = new Date(event.end_date);
+          
+          setEventPeriod({
+            startDate: startDate.toLocaleDateString('pt-BR', { 
+              day: '2-digit', 
+              month: 'long' 
+            }),
+            endDate: endDate.toLocaleDateString('pt-BR', { 
+              day: '2-digit', 
+              month: 'long' 
+            })
+          });
         }
       } catch (error) {
-        console.error('Erro ao buscar horários:', error);
+        console.error('Erro ao buscar dados:', error);
         setTotalShowTimes(6);
       }
     };
 
-    fetchShowTimes();
+    fetchData();
 
     // Listener para atualizações em tempo real
     const handleEventsUpdate = () => {
-      fetchShowTimes();
+      fetchData();
     };
 
     window.addEventListener('eventsUpdated', handleEventsUpdate);
@@ -99,7 +127,7 @@ export const HeroSection = () => {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Período</h3>
               <p className="text-red-100 text-lg">
-                07 Dezembro a<br />06 Janeiro
+                {eventPeriod.startDate} a<br />{eventPeriod.endDate}
               </p>
             </CardContent>
           </Card>

@@ -37,6 +37,14 @@ export const TicketSelector = ({ onProceedToCheckout }: TicketSelectorProps) => 
 
   useEffect(() => {
     fetchData();
+
+    // Listener para atualizações em tempo real quando eventos são alterados no admin
+    const handleEventsUpdate = () => {
+      fetchData();
+    };
+
+    window.addEventListener('eventsUpdated', handleEventsUpdate);
+    return () => window.removeEventListener('eventsUpdated', handleEventsUpdate);
   }, []);
 
   const fetchData = async () => {
