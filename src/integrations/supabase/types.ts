@@ -903,6 +903,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      log_security_event: {
+        Args: { p_details?: Json; p_event_type: string }
+        Returns: undefined
+      }
       log_user_action: {
         Args: {
           p_action: string
