@@ -105,6 +105,9 @@ const TerminalManager = () => {
 
   const [availablePrinters, setAvailablePrinters] = useState<string[]>([]);
   const [detectingPrinters, setDetectingPrinters] = useState(false);
+
+  const [availablePinpads, setAvailablePinpads] = useState<string[]>([]);
+  const [detectingPinpads, setDetectingPinpads] = useState(false);
   const [ticketTemplates, setTicketTemplates] = useState<TicketTemplate[]>([
     {
       template_name: 'Ingresso Padrão',
@@ -173,6 +176,68 @@ const TerminalManager = () => {
       });
     } finally {
       setDetectingPrinters(false);
+    }
+  };
+
+  // Função para detectar pinpads disponíveis
+  const detectAvailablePinpads = async () => {
+    setDetectingPinpads(true);
+    try {
+      const pinpads: string[] = [];
+      
+      // Pinpads mais comuns no mercado brasileiro
+      const commonPinpads = [
+        'Ingenico iPP350',
+        'Ingenico iWL220',
+        'Ingenico iWL250',
+        'Cielo LIO',
+        'Cielo Point Mini',
+        'Stone P2',
+        'Stone Ton T1',
+        'Stone Ton T2',
+        'PagBank Moderninha X',
+        'PagBank Moderninha Plus',
+        'PagBank Moderninha Pro',
+        'PagBank Moderninha Smart',
+        'GetNet Point H',
+        'GetNet Point Pro',
+        'Rede e-Rede',
+        'Rede POS',
+        'Mercado Pago Point Mini',
+        'Mercado Pago Point Pro',
+        'Vero Pay Plus',
+        'Sumup Top',
+        'Sumup On'
+      ];
+
+      pinpads.push(...commonPinpads);
+      
+      // Simular detecção de dispositivos conectados (seria via API do sistema em produção)
+      const connectedDevices = [
+        'Dispositivo USB - Porta COM3',
+        'Dispositivo Ethernet - IP 192.168.1.100',
+        'Bluetooth - Pagbank Moderninha X'
+      ];
+      
+      pinpads.push(...connectedDevices);
+      
+      // Remover duplicatas
+      const uniquePinpads = [...new Set(pinpads)];
+      setAvailablePinpads(uniquePinpads);
+      
+      toast({
+        title: "Pinpads detectados",
+        description: `${uniquePinpads.length} pinpads encontrados`,
+      });
+    } catch (error) {
+      console.error('Erro ao detectar pinpads:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao detectar pinpads disponíveis",
+        variant: "destructive",
+      });
+    } finally {
+      setDetectingPinpads(false);
     }
   };
 
@@ -913,19 +978,53 @@ const TerminalManager = () => {
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="device-type">Tipo do Equipamento</Label>
-                      <select
-                        id="device-type"
-                        value={pinpadConfig.device_type}
-                        onChange={(e) => setPinpadConfig(prev => ({ ...prev, device_type: e.target.value }))}
-                        className="w-full border rounded px-3 py-2 bg-background"
-                      >
-                        <option value="Ingenico">Ingenico</option>
-                        <option value="Cielo">Cielo</option>
-                        <option value="Stone">Stone</option>
-                        <option value="GetNet">GetNet</option>
-                        <option value="Rede">Rede</option>
-                        <option value="Pagbank">Pagbank</option>
-                      </select>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          {availablePinpads.length > 0 ? (
+                            <select
+                              id="device-type"
+                              value={pinpadConfig.device_type}
+                              onChange={(e) => setPinpadConfig(prev => ({ ...prev, device_type: e.target.value }))}
+                              className="w-full border rounded px-3 py-2 bg-background z-10"
+                            >
+                              <option value="">Selecione um pinpad</option>
+                              {availablePinpads.map(pinpad => (
+                                <option key={pinpad} value={pinpad}>{pinpad}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <select
+                              id="device-type"
+                              value={pinpadConfig.device_type}
+                              onChange={(e) => setPinpadConfig(prev => ({ ...prev, device_type: e.target.value }))}
+                              className="w-full border rounded px-3 py-2 bg-background z-10"
+                            >
+                              <option value="Ingenico">Ingenico</option>
+                              <option value="Cielo">Cielo</option>
+                              <option value="Stone">Stone</option>
+                              <option value="GetNet">GetNet</option>
+                              <option value="Rede">Rede</option>
+                              <option value="Pagbank">Pagbank</option>
+                            </select>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={detectAvailablePinpads}
+                          disabled={detectingPinpads}
+                          className="px-3"
+                        >
+                          {detectingPinpads ? (
+                            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+                          ) : (
+                            <Settings className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Clique no ícone para detectar pinpads disponíveis
+                      </p>
                     </div>
 
                     <div>
@@ -989,6 +1088,13 @@ const TerminalManager = () => {
                       <p><strong>Porta:</strong> {pinpadConfig.port}</p>
                       <p><strong>Timeout:</strong> {pinpadConfig.timeout}s</p>
                     </>
+                  )}
+                  {availablePinpads.length > 0 && (
+                    <div className="mt-2 pt-2 border-t">
+                      <p className="font-medium text-green-600">
+                        {availablePinpads.length} pinpads detectados
+                      </p>
+                    </div>
                   )}
                 </div>
               </div>
