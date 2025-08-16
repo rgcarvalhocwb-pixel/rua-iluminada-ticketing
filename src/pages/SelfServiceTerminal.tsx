@@ -351,8 +351,11 @@ const SelfServiceTerminal = () => {
             />
           ) : (
             <div 
-              className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
-              style={{ backgroundImage: `url(${terminalConfig.background_url})` }}
+              className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat animate-pulse-slow"
+              style={{ 
+                backgroundImage: `url(${terminalConfig.background_url})`,
+                animation: 'backgroundLoop 20s ease-in-out infinite'
+              }}
             />
           )
         ) : (

@@ -191,6 +191,18 @@ All colors MUST be HSL.
     50% { transform: translateY(0px) scaleX(-1); }
     75% { transform: translateY(-5px) scaleX(-1); }
   }
+
+  /* Terminal background loop animation for images */
+  @keyframes backgroundLoop {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 0.9;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 1;
+    }
+  }
 }
 
 @layer components {
