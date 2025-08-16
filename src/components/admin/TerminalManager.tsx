@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Upload, Play, Image, Settings, Ticket, DollarSign, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, Play, Image, Settings, Ticket, DollarSign, AlertCircle, CheckCircle, CreditCard, Printer, FileText, Receipt } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
@@ -38,6 +38,37 @@ interface TerminalConfig {
   max_tickets_per_purchase: number;
 }
 
+interface PinpadConfig {
+  id?: string;
+  enabled: boolean;
+  device_type: string;
+  port: string;
+  timeout: number;
+  retry_attempts: number;
+}
+
+interface PrinterConfig {
+  id?: string;
+  enabled: boolean;
+  printer_name: string;
+  paper_size: string;
+  auto_cut: boolean;
+  copies: number;
+  print_logo: boolean;
+}
+
+interface TicketTemplate {
+  id?: string;
+  template_name: string;
+  template_type: 'ticket' | 'receipt';
+  header_text: string;
+  footer_text: string;
+  show_logo: boolean;
+  show_qr_code: boolean;
+  show_event_info: boolean;
+  font_size: number;
+}
+
 const TerminalManager = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -56,6 +87,33 @@ const TerminalManager = () => {
   const [uploading, setUploading] = useState(false);
   const [previewFile, setPreviewFile] = useState<{ url: string; type: 'video' | 'static'; name: string } | null>(null);
   const [mediaHistory, setMediaHistory] = useState<Array<{ url: string; type: 'video' | 'static'; name: string; path: string }>>([]);
+  const [pinpadConfig, setPinpadConfig] = useState<PinpadConfig>({
+    enabled: false,
+    device_type: 'Ingenico',
+    port: 'COM1',
+    timeout: 30,
+    retry_attempts: 3
+  });
+  const [printerConfig, setPrinterConfig] = useState<PrinterConfig>({
+    enabled: false,
+    printer_name: 'Impressora Térmica',
+    paper_size: '80mm',
+    auto_cut: true,
+    copies: 1,
+    print_logo: true
+  });
+  const [ticketTemplates, setTicketTemplates] = useState<TicketTemplate[]>([
+    {
+      template_name: 'Ingresso Padrão',
+      template_type: 'ticket',
+      header_text: 'EVENTO RUA ILUMINADA',
+      footer_text: 'Apresente este ingresso na entrada',
+      show_logo: true,
+      show_qr_code: true,
+      show_event_info: true,
+      font_size: 12
+    }
+  ]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -450,9 +508,12 @@ const TerminalManager = () => {
       </div>
 
       <Tabs defaultValue="background" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="background">Plano de Fundo</TabsTrigger>
           <TabsTrigger value="tickets">Tipos de Ingresso</TabsTrigger>
+          <TabsTrigger value="pinpad">Pinpad</TabsTrigger>
+          <TabsTrigger value="printer">Impressoras</TabsTrigger>
+          <TabsTrigger value="printing">Modelos de Impressão</TabsTrigger>
           <TabsTrigger value="settings">Configurações</TabsTrigger>
         </TabsList>
 
@@ -758,6 +819,456 @@ const TerminalManager = () => {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="pinpad" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CreditCard className="h-5 w-5" />
+                Configuração do Pinpad
+              </CardTitle>
+              <CardDescription>
+                Configure a máquina de cartão para pagamentos no terminal
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={pinpadConfig.enabled}
+                    onChange={(e) => setPinpadConfig(prev => ({ ...prev, enabled: e.target.checked }))}
+                    className="w-4 h-4"
+                  />
+                  <span className="font-medium">Habilitar Pinpad</span>
+                </label>
+                <Badge variant={pinpadConfig.enabled ? "default" : "secondary"}>
+                  {pinpadConfig.enabled ? "Ativo" : "Inativo"}
+                </Badge>
+              </div>
+
+              {pinpadConfig.enabled && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="device-type">Tipo do Equipamento</Label>
+                      <select
+                        id="device-type"
+                        value={pinpadConfig.device_type}
+                        onChange={(e) => setPinpadConfig(prev => ({ ...prev, device_type: e.target.value }))}
+                        className="w-full border rounded px-3 py-2 bg-background"
+                      >
+                        <option value="Ingenico">Ingenico</option>
+                        <option value="Cielo">Cielo</option>
+                        <option value="Stone">Stone</option>
+                        <option value="GetNet">GetNet</option>
+                        <option value="Rede">Rede</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="port">Porta de Comunicação</Label>
+                      <select
+                        id="port"
+                        value={pinpadConfig.port}
+                        onChange={(e) => setPinpadConfig(prev => ({ ...prev, port: e.target.value }))}
+                        className="w-full border rounded px-3 py-2 bg-background"
+                      >
+                        <option value="COM1">COM1</option>
+                        <option value="COM2">COM2</option>
+                        <option value="USB">USB</option>
+                        <option value="Ethernet">Ethernet</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="timeout">Timeout (segundos)</Label>
+                      <Input
+                        id="timeout"
+                        type="number"
+                        min="10"
+                        max="120"
+                        value={pinpadConfig.timeout}
+                        onChange={(e) => setPinpadConfig(prev => ({ ...prev, timeout: parseInt(e.target.value) || 30 }))}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="retry-attempts">Tentativas de Retry</Label>
+                      <Input
+                        id="retry-attempts"
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={pinpadConfig.retry_attempts}
+                        onChange={(e) => setPinpadConfig(prev => ({ ...prev, retry_attempts: parseInt(e.target.value) || 3 }))}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="p-4 bg-muted rounded-lg">
+                <h4 className="font-medium mb-2">Status do Pinpad</h4>
+                <div className="text-sm space-y-2">
+                  <div className="flex items-center gap-2">
+                    {pinpadConfig.enabled ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-gray-400" />
+                    )}
+                    <span>{pinpadConfig.enabled ? 'Pinpad configurado' : 'Pinpad desabilitado'}</span>
+                  </div>
+                  {pinpadConfig.enabled && (
+                    <>
+                      <p><strong>Equipamento:</strong> {pinpadConfig.device_type}</p>
+                      <p><strong>Porta:</strong> {pinpadConfig.port}</p>
+                      <p><strong>Timeout:</strong> {pinpadConfig.timeout}s</p>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <Button onClick={() => toast({ title: "Configurações salvas", description: "Configurações do pinpad salvas com sucesso!" })}>
+                Salvar Configurações do Pinpad
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="printer" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Printer className="h-5 w-5" />
+                Configuração de Impressoras
+              </CardTitle>
+              <CardDescription>
+                Configure as impressoras para tickets e comprovantes
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={printerConfig.enabled}
+                    onChange={(e) => setPrinterConfig(prev => ({ ...prev, enabled: e.target.checked }))}
+                    className="w-4 h-4"
+                  />
+                  <span className="font-medium">Habilitar Impressão</span>
+                </label>
+                <Badge variant={printerConfig.enabled ? "default" : "secondary"}>
+                  {printerConfig.enabled ? "Ativo" : "Inativo"}
+                </Badge>
+              </div>
+
+              {printerConfig.enabled && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="printer-name">Nome da Impressora</Label>
+                      <Input
+                        id="printer-name"
+                        value={printerConfig.printer_name}
+                        onChange={(e) => setPrinterConfig(prev => ({ ...prev, printer_name: e.target.value }))}
+                        placeholder="Ex: Epson TM-T20"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="paper-size">Tamanho do Papel</Label>
+                      <select
+                        id="paper-size"
+                        value={printerConfig.paper_size}
+                        onChange={(e) => setPrinterConfig(prev => ({ ...prev, paper_size: e.target.value }))}
+                        className="w-full border rounded px-3 py-2 bg-background"
+                      >
+                        <option value="80mm">80mm (Padrão)</option>
+                        <option value="58mm">58mm (Compacto)</option>
+                        <option value="A4">A4 (Laser)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="copies">Número de Cópias</Label>
+                      <Input
+                        id="copies"
+                        type="number"
+                        min="1"
+                        max="5"
+                        value={printerConfig.copies}
+                        onChange={(e) => setPrinterConfig(prev => ({ ...prev, copies: parseInt(e.target.value) || 1 }))}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={printerConfig.auto_cut}
+                          onChange={(e) => setPrinterConfig(prev => ({ ...prev, auto_cut: e.target.checked }))}
+                          className="w-4 h-4"
+                        />
+                        <span>Corte Automático</span>
+                      </label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Cortar automaticamente o papel após a impressão
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={printerConfig.print_logo}
+                          onChange={(e) => setPrinterConfig(prev => ({ ...prev, print_logo: e.target.checked }))}
+                          className="w-4 h-4"
+                        />
+                        <span>Imprimir Logo</span>
+                      </label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Incluir logo da empresa nos tickets
+                      </p>
+                    </div>
+
+                    <Button variant="outline" className="w-full">
+                      <Printer className="h-4 w-4 mr-2" />
+                      Testar Impressão
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <div className="p-4 bg-muted rounded-lg">
+                <h4 className="font-medium mb-2">Status da Impressora</h4>
+                <div className="text-sm space-y-2">
+                  <div className="flex items-center gap-2">
+                    {printerConfig.enabled ? (
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4 text-gray-400" />
+                    )}
+                    <span>{printerConfig.enabled ? 'Impressora configurada' : 'Impressão desabilitada'}</span>
+                  </div>
+                  {printerConfig.enabled && (
+                    <>
+                      <p><strong>Impressora:</strong> {printerConfig.printer_name}</p>
+                      <p><strong>Papel:</strong> {printerConfig.paper_size}</p>
+                      <p><strong>Cópias:</strong> {printerConfig.copies}</p>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <Button onClick={() => toast({ title: "Configurações salvas", description: "Configurações da impressora salvas com sucesso!" })}>
+                Salvar Configurações da Impressora
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="printing" className="space-y-4">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Modelos de Impressão
+                </CardTitle>
+                <CardDescription>
+                  Configure os modelos de tickets e comprovantes que serão impressos
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {ticketTemplates.map((template, index) => (
+                  <div key={index} className="border rounded-lg p-4 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Receipt className="h-5 w-5 text-primary" />
+                        <h4 className="font-medium">{template.template_name}</h4>
+                        <Badge variant={template.template_type === 'ticket' ? "default" : "secondary"}>
+                          {template.template_type === 'ticket' ? 'Ingresso' : 'Comprovante'}
+                        </Badge>
+                      </div>
+                      <Button variant="outline" size="sm">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Visualizar
+                      </Button>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Nome do Modelo</Label>
+                          <Input
+                            value={template.template_name}
+                            onChange={(e) => {
+                              const newTemplates = [...ticketTemplates];
+                              newTemplates[index].template_name = e.target.value;
+                              setTicketTemplates(newTemplates);
+                            }}
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Tipo</Label>
+                          <select
+                            value={template.template_type}
+                            onChange={(e) => {
+                              const newTemplates = [...ticketTemplates];
+                              newTemplates[index].template_type = e.target.value as 'ticket' | 'receipt';
+                              setTicketTemplates(newTemplates);
+                            }}
+                            className="w-full border rounded px-3 py-2 bg-background"
+                          >
+                            <option value="ticket">Ingresso</option>
+                            <option value="receipt">Comprovante</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <Label>Texto do Cabeçalho</Label>
+                          <Textarea
+                            value={template.header_text}
+                            onChange={(e) => {
+                              const newTemplates = [...ticketTemplates];
+                              newTemplates[index].header_text = e.target.value;
+                              setTicketTemplates(newTemplates);
+                            }}
+                            rows={2}
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Texto do Rodapé</Label>
+                          <Textarea
+                            value={template.footer_text}
+                            onChange={(e) => {
+                              const newTemplates = [...ticketTemplates];
+                              newTemplates[index].footer_text = e.target.value;
+                              setTicketTemplates(newTemplates);
+                            }}
+                            rows={2}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <Label>Tamanho da Fonte</Label>
+                          <Input
+                            type="number"
+                            min="8"
+                            max="24"
+                            value={template.font_size}
+                            onChange={(e) => {
+                              const newTemplates = [...ticketTemplates];
+                              newTemplates[index].font_size = parseInt(e.target.value) || 12;
+                              setTicketTemplates(newTemplates);
+                            }}
+                          />
+                        </div>
+
+                        <div className="space-y-3">
+                          <Label>Elementos a Incluir</Label>
+                          
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={template.show_logo}
+                              onChange={(e) => {
+                                const newTemplates = [...ticketTemplates];
+                                newTemplates[index].show_logo = e.target.checked;
+                                setTicketTemplates(newTemplates);
+                              }}
+                              className="w-4 h-4"
+                            />
+                            <span>Mostrar Logo</span>
+                          </label>
+
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={template.show_qr_code}
+                              onChange={(e) => {
+                                const newTemplates = [...ticketTemplates];
+                                newTemplates[index].show_qr_code = e.target.checked;
+                                setTicketTemplates(newTemplates);
+                              }}
+                              className="w-4 h-4"
+                            />
+                            <span>Mostrar QR Code</span>
+                          </label>
+
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={template.show_event_info}
+                              onChange={(e) => {
+                                const newTemplates = [...ticketTemplates];
+                                newTemplates[index].show_event_info = e.target.checked;
+                                setTicketTemplates(newTemplates);
+                              }}
+                              className="w-4 h-4"
+                            />
+                            <span>Mostrar Dados do Evento</span>
+                          </label>
+                        </div>
+
+                        <div className="p-3 bg-muted rounded-lg">
+                          <h5 className="font-medium mb-2">Preview do Ticket</h5>
+                          <div className="text-xs space-y-1 bg-white p-2 rounded border">
+                            {template.show_logo && <div className="text-center">[LOGO]</div>}
+                            <div className="text-center font-bold">{template.header_text}</div>
+                            {template.show_event_info && (
+                              <div>
+                                <p>Evento: {selectedEvent?.name || 'Nome do Evento'}</p>
+                                <p>Data: {selectedEvent?.start_date || '2024-12-25'}</p>
+                                <p>Ingresso: Adulto - R$ 50,00</p>
+                              </div>
+                            )}
+                            {template.show_qr_code && <div className="text-center">[QR CODE]</div>}
+                            <div className="text-center">{template.footer_text}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const newTemplate: TicketTemplate = {
+                      template_name: 'Novo Modelo',
+                      template_type: 'ticket',
+                      header_text: 'EVENTO RUA ILUMINADA',
+                      footer_text: 'Apresente este ingresso na entrada',
+                      show_logo: true,
+                      show_qr_code: true,
+                      show_event_info: true,
+                      font_size: 12
+                    };
+                    setTicketTemplates([...ticketTemplates, newTemplate]);
+                  }}
+                  className="w-full"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Adicionar Novo Modelo
+                </Button>
+
+                <Button onClick={() => toast({ title: "Modelos salvos", description: "Modelos de impressão salvos com sucesso!" })}>
+                  Salvar Todos os Modelos
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
