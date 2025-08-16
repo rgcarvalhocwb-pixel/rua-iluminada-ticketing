@@ -50,6 +50,8 @@ const TerminalManager = () => {
     idle_timeout: 60,
     max_tickets_per_purchase: 10
   });
+  const [editingTicketType, setEditingTicketType] = useState<string | null>(null);
+  const [tempValues, setTempValues] = useState<Record<string, any>>({});
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -206,8 +208,6 @@ const TerminalManager = () => {
 
   const updateTicketType = async (ticketTypeId: string, updates: Partial<TicketType>) => {
     try {
-      setLoading(true);
-
       const { error } = await supabase
         .from('ticket_types')
         .update(updates)
@@ -231,9 +231,24 @@ const TerminalManager = () => {
         description: "Erro ao atualizar tipo de ingresso: " + error.message,
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
+  };
+
+  const handleTicketTypeChange = (ticketTypeId: string, field: string, value: any) => {
+    // Atualizar localmente primeiro para feedback imediato
+    setTicketTypes(prev => prev.map(tt => 
+      tt.id === ticketTypeId ? { ...tt, [field]: value } : tt
+    ));
+    
+    // Agendar atualização no banco com debounce
+    setTempValues(prev => ({
+      ...prev,
+      [`${ticketTypeId}_${field}`]: value
+    }));
+    
+    setTimeout(() => {
+      updateTicketType(ticketTypeId, { [field]: value });
+    }, 500);
   };
 
   const saveTerminalConfig = async () => {
@@ -450,8 +465,9 @@ const TerminalManager = () => {
                               value={ticketType.price}
                               onChange={(e) => {
                                 const newPrice = parseFloat(e.target.value) || 0;
-                                updateTicketType(ticketType.id, { price: newPrice });
+                                handleTicketTypeChange(ticketType.id, 'price', newPrice);
                               }}
+                              className="text-right"
                             />
                           </div>
                           
@@ -460,13 +476,16 @@ const TerminalManager = () => {
                             <select
                               value={ticketType.is_active ? 'true' : 'false'}
                               onChange={(e) => {
-                                updateTicketType(ticketType.id, { is_active: e.target.value === 'true' });
+                                handleTicketTypeChange(ticketType.id, 'is_active', e.target.value === 'true');
                               }}
-                              className="w-full border rounded px-3 py-2"
+                              className="w-full border rounded px-3 py-2 bg-background"
                             >
-                              <option value="true">Ativo</option>
-                              <option value="false">Inativo</option>
+                              <option value="true">Ativo no Terminal</option>
+                              <option value="false">Inativo no Terminal</option>
                             </select>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Apenas ingressos ativos aparecem no terminal
+                            </p>
                           </div>
                           
                           <div>
@@ -476,9 +495,12 @@ const TerminalManager = () => {
                               value={ticketType.display_order}
                               onChange={(e) => {
                                 const newOrder = parseInt(e.target.value) || 0;
-                                updateTicketType(ticketType.id, { display_order: newOrder });
+                                handleTicketTypeChange(ticketType.id, 'display_order', newOrder);
                               }}
                             />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Ordem crescente (0 = primeiro)
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -499,95 +521,156 @@ const TerminalManager = () => {
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Configurações Gerais
-              </CardTitle>
-              <CardDescription>
-                Configure mensagens e comportamento do terminal
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="welcome-message">Mensagem de Boas-vindas</Label>
-                    <Input
-                      id="welcome-message"
-                      value={terminalConfig.welcome_message}
-                      onChange={(e) => setTerminalConfig(prev => ({
-                        ...prev,
-                        welcome_message: e.target.value
-                      }))}
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="instructions">Instruções para o Cliente</Label>
-                    <Textarea
-                      id="instructions"
-                      value={terminalConfig.instructions}
-                      onChange={(e) => setTerminalConfig(prev => ({
-                        ...prev,
-                        instructions: e.target.value
-                      }))}
-                      rows={3}
-                    />
-                  </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Mensagens e Interface
+                </CardTitle>
+                <CardDescription>
+                  Configure as mensagens exibidas no terminal
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="welcome-message">Título da Tela Inicial</Label>
+                  <Input
+                    id="welcome-message"
+                    value={terminalConfig.welcome_message}
+                    onChange={(e) => setTerminalConfig(prev => ({
+                      ...prev,
+                      welcome_message: e.target.value
+                    }))}
+                    placeholder="Ex: Terminal de Auto Atendimento - Rua Iluminada"
+                  />
                 </div>
                 
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="idle-timeout">Timeout de Inatividade (segundos)</Label>
+                <div>
+                  <Label htmlFor="instructions">Instruções para o Cliente</Label>
+                  <Textarea
+                    id="instructions"
+                    value={terminalConfig.instructions}
+                    onChange={(e) => setTerminalConfig(prev => ({
+                      ...prev,
+                      instructions: e.target.value
+                    }))}
+                    rows={3}
+                    placeholder="Ex: Toque na tela para iniciar sua compra de ingressos"
+                  />
+                </div>
+                
+                <div className="p-4 bg-muted rounded-lg">
+                  <h4 className="font-medium mb-2">Preview da Tela Inicial</h4>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p className="font-semibold">{terminalConfig.welcome_message}</p>
+                    <p>{terminalConfig.instructions}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings className="h-5 w-5" />
+                  Comportamento do Terminal
+                </CardTitle>
+                <CardDescription>
+                  Configure limites e timeouts do sistema
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="idle-timeout">Timeout de Inatividade</Label>
+                  <div className="flex items-center gap-2">
                     <Input
                       id="idle-timeout"
                       type="number"
+                      min="30"
+                      max="300"
                       value={terminalConfig.idle_timeout}
                       onChange={(e) => setTerminalConfig(prev => ({
                         ...prev,
                         idle_timeout: parseInt(e.target.value) || 60
                       }))}
+                      className="w-24"
                     />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Tempo para voltar à tela inicial sem atividade
-                    </p>
+                    <span className="text-sm text-muted-foreground">segundos</span>
                   </div>
-                  
-                  <div>
-                    <Label htmlFor="max-tickets">Máximo de Ingressos por Compra</Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Tempo para voltar à tela inicial sem atividade (30-300s)
+                  </p>
+                </div>
+                
+                <div>
+                  <Label htmlFor="max-tickets">Máximo de Ingressos por Compra</Label>
+                  <div className="flex items-center gap-2">
                     <Input
                       id="max-tickets"
                       type="number"
+                      min="1"
+                      max="50"
                       value={terminalConfig.max_tickets_per_purchase}
                       onChange={(e) => setTerminalConfig(prev => ({
                         ...prev,
                         max_tickets_per_purchase: parseInt(e.target.value) || 10
                       }))}
+                      className="w-24"
                     />
+                    <span className="text-sm text-muted-foreground">ingressos</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Limite por transação (1-50 ingressos)
+                  </p>
+                </div>
+
+                <div className="p-4 bg-muted rounded-lg">
+                  <h4 className="font-medium mb-2">Status Atual</h4>
+                  <div className="text-sm space-y-1">
+                    <div className="flex justify-between">
+                      <span>Plano de Fundo:</span>
+                      <span className="text-muted-foreground">
+                        {terminalConfig.background_url ? 
+                          `${terminalConfig.background_type === 'video' ? 'Vídeo' : 'Imagem'} configurado` : 
+                          'Padrão do sistema'
+                        }
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Timeout:</span>
+                      <span className="text-muted-foreground">{terminalConfig.idle_timeout}s</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Limite de Ingressos:</span>
+                      <span className="text-muted-foreground">{terminalConfig.max_tickets_per_purchase}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="flex gap-4">
-                <Button 
-                  className="flex-1"
-                  onClick={saveTerminalConfig}
-                  disabled={loading}
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  {loading ? 'Salvando...' : 'Salvar Configurações'}
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => window.open('/terminal', '_blank')}
-                >
-                  Testar Terminal
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="flex justify-center gap-4 pt-6 border-t">
+            <Button 
+              size="lg"
+              onClick={saveTerminalConfig}
+              disabled={loading}
+              className="min-w-[200px]"
+            >
+              <CheckCircle className="h-4 w-4 mr-2" />
+              {loading ? 'Salvando...' : 'Salvar Todas as Configurações'}
+            </Button>
+            <Button 
+              variant="outline"
+              size="lg"
+              onClick={() => window.open('/terminal', '_blank')}
+              className="min-w-[150px]"
+            >
+              <Play className="h-4 w-4 mr-2" />
+              Testar Terminal
+            </Button>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
