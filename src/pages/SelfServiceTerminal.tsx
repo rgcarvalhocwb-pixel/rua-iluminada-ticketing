@@ -367,23 +367,26 @@ const SelfServiceTerminal = () => {
         
         {/* Touch to Start Overlay */}
         <div 
-          className="absolute inset-0 flex items-center justify-center cursor-pointer hover:bg-black/20 transition-colors"
+          className="absolute inset-0 flex items-center justify-center cursor-pointer hover:bg-black/10 transition-colors"
           onClick={handleStartPurchase}
         >
-          <Card className="p-12 text-center bg-white/95 backdrop-blur-sm border-2 border-primary/20 shadow-2xl max-w-2xl mx-4">
-            <ShoppingCart className="h-16 w-16 mx-auto mb-6 text-primary" />
-            <h1 className="text-4xl font-bold mb-4 text-foreground">
-              {terminalConfig?.welcome_message || 'Terminal de Auto Atendimento'}
-            </h1>
-            <p className="text-2xl text-muted-foreground mb-6">
+          {/* Informações discretas no canto inferior direito */}
+          <div className="absolute bottom-8 right-8 bg-white/95 backdrop-blur-sm border border-white/20 shadow-lg rounded-xl p-4 max-w-xs">
+            <div className="flex items-center gap-2 mb-2">
+              <ShoppingCart className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold text-foreground">
+                {terminalConfig?.welcome_message || 'Terminal de Auto Atendimento'}
+              </h2>
+            </div>
+            <p className="text-sm text-muted-foreground mb-3">
               {terminalConfig?.instructions || 'Clique em qualquer local da tela para iniciar sua compra'}
             </p>
-            <div className="animate-pulse">
-              <p className="text-lg text-primary font-medium">
+            <div className="flex items-center justify-center animate-pulse">
+              <p className="text-sm text-primary font-medium">
                 Toque aqui para começar
               </p>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     );
