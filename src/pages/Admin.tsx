@@ -27,6 +27,9 @@ import { StoreDailySalesManager } from '@/components/admin/StoreDailySalesManage
 import { SystemHealth } from '@/components/admin/SystemHealth';
 import { AuditLogs } from '@/components/admin/AuditLogs';
 import TerminalManager from '@/components/admin/TerminalManager';
+import TerminalMonitoring from '@/components/admin/TerminalMonitoring';
+import TestingSuite from '@/components/admin/TestingSuite';
+import ProductionReadiness from '@/components/admin/ProductionReadiness';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
