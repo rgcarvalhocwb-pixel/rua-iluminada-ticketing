@@ -864,6 +864,7 @@ const TerminalManager = () => {
                         <option value="Stone">Stone</option>
                         <option value="GetNet">GetNet</option>
                         <option value="Rede">Rede</option>
+                        <option value="Pagbank">Pagbank</option>
                       </select>
                     </div>
 
