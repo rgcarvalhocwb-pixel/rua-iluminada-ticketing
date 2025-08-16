@@ -346,15 +346,24 @@ const SelfServiceTerminal = () => {
               autoPlay 
               muted 
               loop 
-              className="absolute inset-0 w-full h-full object-cover"
+              playsInline
+              className="absolute inset-0 w-full h-full object-cover min-w-full min-h-full"
               src={terminalConfig.background_url}
+              style={{
+                width: '100vw',
+                height: '100vh',
+                objectFit: 'cover'
+              }}
             />
           ) : (
             <div 
-              className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat animate-pulse-slow"
+              className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
               style={{ 
                 backgroundImage: `url(${terminalConfig.background_url})`,
-                animation: 'backgroundLoop 20s ease-in-out infinite'
+                animation: 'backgroundLoop 20s ease-in-out infinite',
+                backgroundSize: 'cover',
+                width: '100vw',
+                height: '100vh'
               }}
             />
           )
