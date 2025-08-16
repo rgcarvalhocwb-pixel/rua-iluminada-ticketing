@@ -22,7 +22,8 @@ import {
   Moon,
   Monitor,
   FileText,
-  Shield
+  Shield,
+  Computer
 } from "lucide-react";
 
 import {
@@ -154,6 +155,16 @@ export function AdminSidebar({
       id: "orders",
       title: "Pedidos",
       icon: ShoppingCart,
+      category: "sales",
+    });
+  }
+
+  // Terminal de autoatendimento (apenas admins/masters)
+  if (userPermissions.role === "master" || userPermissions.role === "admin") {
+    sidebarItems.push({
+      id: "terminal",
+      title: "Terminal",
+      icon: Computer,
       category: "sales",
     });
   }

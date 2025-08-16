@@ -26,6 +26,7 @@ import { AnalyticsIntegration } from '@/components/admin/AnalyticsIntegration';
 import { StoreDailySalesManager } from '@/components/admin/StoreDailySalesManager';
 import { SystemHealth } from '@/components/admin/SystemHealth';
 import { AuditLogs } from '@/components/admin/AuditLogs';
+import TerminalManager from '@/components/admin/TerminalManager';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -78,6 +79,7 @@ const Admin = () => {
       }
       if (hasPermission(userPermissions, 'online_sales')) availableTabs.push('online');
       if (hasPermission(userPermissions, 'orders_view')) availableTabs.push('orders');
+      if (userPermissions.role === 'master' || userPermissions.role === 'admin') availableTabs.push('terminal');
       if (hasPermission(userPermissions, 'payments_config')) availableTabs.push('payments');
       
       if (userPermissions.role === 'master' || userPermissions.role === 'admin') {
@@ -147,6 +149,11 @@ const Admin = () => {
         component: <OrdersView />,
         title: 'Visualizar Pedidos',
         description: 'Acompanhe todas as vendas online e presenciais'
+      },
+      terminal: {
+        component: <TerminalManager />,
+        title: 'Gerenciamento do Terminal',
+        description: 'Configure plano de fundo, tipos de ingressos e valores para o terminal de autoatendimento'
       },
       payments: {
         component: <PaymentSettings />,
