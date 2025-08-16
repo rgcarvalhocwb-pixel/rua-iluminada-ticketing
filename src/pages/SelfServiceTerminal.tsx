@@ -347,21 +347,21 @@ const SelfServiceTerminal = () => {
               muted 
               loop 
               playsInline
-              className="absolute inset-0 w-full h-full object-cover min-w-full min-h-full"
+              className="absolute inset-0 w-full h-full object-contain"
               src={terminalConfig.background_url}
               style={{
                 width: '100vw',
                 height: '100vh',
-                objectFit: 'cover'
+                objectFit: 'contain'
               }}
             />
           ) : (
             <div 
-              className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+              className="absolute inset-0 w-full h-full bg-contain bg-center bg-no-repeat"
               style={{ 
                 backgroundImage: `url(${terminalConfig.background_url})`,
                 animation: 'backgroundLoop 20s ease-in-out infinite',
-                backgroundSize: 'cover',
+                backgroundSize: 'contain',
                 width: '100vw',
                 height: '100vh'
               }}
