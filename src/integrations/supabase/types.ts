@@ -599,6 +599,42 @@ export type Database = {
         }
         Relationships: []
       }
+      terminal_config: {
+        Row: {
+          background_type: string
+          background_url: string | null
+          created_at: string
+          id: string
+          idle_timeout: number
+          instructions: string
+          max_tickets_per_purchase: number
+          updated_at: string
+          welcome_message: string
+        }
+        Insert: {
+          background_type?: string
+          background_url?: string | null
+          created_at?: string
+          id?: string
+          idle_timeout?: number
+          instructions?: string
+          max_tickets_per_purchase?: number
+          updated_at?: string
+          welcome_message?: string
+        }
+        Update: {
+          background_type?: string
+          background_url?: string | null
+          created_at?: string
+          id?: string
+          idle_timeout?: number
+          instructions?: string
+          max_tickets_per_purchase?: number
+          updated_at?: string
+          welcome_message?: string
+        }
+        Relationships: []
+      }
       ticket_types: {
         Row: {
           created_at: string

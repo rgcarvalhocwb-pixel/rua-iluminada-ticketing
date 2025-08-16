@@ -104,8 +104,31 @@ const TerminalManager = () => {
   };
 
   const loadTerminalConfig = async () => {
-    // Aqui você carregaria as configurações do terminal do banco
-    // Por enquanto, manteremos as configurações padrão
+    try {
+      const { data, error } = await supabase
+        .from('terminal_config')
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error('Erro ao carregar configurações:', error);
+        return;
+      }
+
+      if (data) {
+        setTerminalConfig({
+          id: data.id,
+          background_type: data.background_type as 'video' | 'slideshow' | 'static',
+          background_url: data.background_url,
+          welcome_message: data.welcome_message,
+          instructions: data.instructions,
+          idle_timeout: data.idle_timeout,
+          max_tickets_per_purchase: data.max_tickets_per_purchase
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar configurações do terminal:', error);
+    }
   };
 
   const handleEventChange = (eventId: string) => {
@@ -206,6 +229,40 @@ const TerminalManager = () => {
       toast({
         title: "Erro",
         description: "Erro ao atualizar tipo de ingresso: " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveTerminalConfig = async () => {
+    try {
+      setLoading(true);
+
+      const { error } = await supabase
+        .from('terminal_config')
+        .update({
+          background_type: terminalConfig.background_type,
+          background_url: terminalConfig.background_url,
+          welcome_message: terminalConfig.welcome_message,
+          instructions: terminalConfig.instructions,
+          idle_timeout: terminalConfig.idle_timeout,
+          max_tickets_per_purchase: terminalConfig.max_tickets_per_purchase
+        })
+        .eq('id', terminalConfig.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Configurações do terminal salvas com sucesso!",
+      });
+    } catch (error: any) {
+      console.error('Erro ao salvar configurações:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar configurações: " + error.message,
         variant: "destructive",
       });
     } finally {
@@ -514,11 +571,18 @@ const TerminalManager = () => {
               </div>
               
               <div className="flex gap-4">
-                <Button className="flex-1">
+                <Button 
+                  className="flex-1"
+                  onClick={saveTerminalConfig}
+                  disabled={loading}
+                >
                   <CheckCircle className="h-4 w-4 mr-2" />
-                  Salvar Configurações
+                  {loading ? 'Salvando...' : 'Salvar Configurações'}
                 </Button>
-                <Button variant="outline">
+                <Button 
+                  variant="outline"
+                  onClick={() => window.open('/terminal', '_blank')}
+                >
                   Testar Terminal
                 </Button>
               </div>

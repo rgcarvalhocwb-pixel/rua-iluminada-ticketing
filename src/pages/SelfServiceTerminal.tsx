@@ -27,6 +27,16 @@ interface ShowTime {
   event_id: string;
 }
 
+interface TerminalConfig {
+  id: string;
+  background_type: 'video' | 'slideshow' | 'static';
+  background_url: string | null;
+  welcome_message: string;
+  instructions: string;
+  idle_timeout: number;
+  max_tickets_per_purchase: number;
+}
+
 const SelfServiceTerminal = () => {
   const [isIdle, setIsIdle] = useState(true);
   const [currentStep, setCurrentStep] = useState<'selection' | 'payment' | 'printing'>('selection');
@@ -36,10 +46,12 @@ const SelfServiceTerminal = () => {
   const [selectedTicketType, setSelectedTicketType] = useState<TicketType | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [terminalConfig, setTerminalConfig] = useState<TerminalConfig | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     loadEvents();
+    loadTerminalConfig();
   }, []);
 
   const loadEvents = async () => {
@@ -90,9 +102,33 @@ const SelfServiceTerminal = () => {
     }
   };
 
+  const loadTerminalConfig = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('terminal_config')
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error('Erro ao carregar configurações do terminal:', error);
+        return;
+      }
+
+      if (data) {
+        setTerminalConfig({
+          ...data,
+          background_type: data.background_type as 'video' | 'slideshow' | 'static'
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao carregar configurações do terminal:', error);
+    }
+  };
+
   const handleQuantityChange = (delta: number) => {
     const newQuantity = quantity + delta;
-    if (newQuantity >= 1 && newQuantity <= 10) {
+    const maxTickets = terminalConfig?.max_tickets_per_purchase || 10;
+    if (newQuantity >= 1 && newQuantity <= maxTickets) {
       setQuantity(newQuantity);
     }
   };
@@ -302,27 +338,42 @@ const SelfServiceTerminal = () => {
 
   if (isIdle) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-primary/5 to-secondary/5 flex items-center justify-center relative">
-        {/* Video Background Placeholder */}
-        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-          <div className="text-center text-white">
-            <Play className="h-24 w-24 mx-auto mb-4 opacity-50" />
-            <p className="text-xl opacity-75">Vídeo promocional do evento...</p>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gradient-to-b from-primary/5 to-secondary/5 flex items-center justify-center relative overflow-hidden">
+        {/* Dynamic Background */}
+        {terminalConfig?.background_url ? (
+          terminalConfig.background_type === 'video' ? (
+            <video 
+              autoPlay 
+              muted 
+              loop 
+              className="absolute inset-0 w-full h-full object-cover"
+              src={terminalConfig.background_url}
+            />
+          ) : (
+            <div 
+              className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${terminalConfig.background_url})` }}
+            />
+          )
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/10 to-accent/20" />
+        )}
+        
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/40" />
         
         {/* Touch to Start Overlay */}
         <div 
-          className="absolute inset-0 flex items-center justify-center cursor-pointer bg-black/40 hover:bg-black/30 transition-colors"
+          className="absolute inset-0 flex items-center justify-center cursor-pointer hover:bg-black/20 transition-colors"
           onClick={handleStartPurchase}
         >
-          <Card className="p-12 text-center bg-white/95 backdrop-blur-sm border-2 border-primary/20 shadow-2xl">
+          <Card className="p-12 text-center bg-white/95 backdrop-blur-sm border-2 border-primary/20 shadow-2xl max-w-2xl mx-4">
             <ShoppingCart className="h-16 w-16 mx-auto mb-6 text-primary" />
             <h1 className="text-4xl font-bold mb-4 text-foreground">
-              Terminal de Auto Atendimento
+              {terminalConfig?.welcome_message || 'Terminal de Auto Atendimento'}
             </h1>
             <p className="text-2xl text-muted-foreground mb-6">
-              Clique em qualquer local da tela para iniciar sua compra
+              {terminalConfig?.instructions || 'Clique em qualquer local da tela para iniciar sua compra'}
             </p>
             <div className="animate-pulse">
               <p className="text-lg text-primary font-medium">
@@ -413,7 +464,7 @@ const SelfServiceTerminal = () => {
                           size="lg" 
                           className="h-16 w-16 text-2xl"
                           onClick={() => handleQuantityChange(1)}
-                          disabled={quantity >= 10}
+                          disabled={quantity >= (terminalConfig?.max_tickets_per_purchase || 10)}
                         >
                           +
                         </Button>
