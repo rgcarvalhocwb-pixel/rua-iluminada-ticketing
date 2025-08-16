@@ -184,15 +184,37 @@ const TerminalManager = () => {
         .from('brand-assets')
         .getPublicUrl(filePath);
 
+      const newType: 'video' | 'static' = file.type.startsWith('video/') ? 'video' : 'static';
+      let configId = terminalConfig.id;
+      if (!configId) {
+        const { data: existingConfig } = await supabase
+          .from('terminal_config')
+          .select('id')
+          .single();
+        configId = existingConfig?.id;
+      }
+
+      // Persistir imediatamente no banco para refletir no terminal
+      if (configId) {
+        const { error: dbError } = await supabase
+          .from('terminal_config')
+          .update({
+            background_url: publicUrl,
+            background_type: newType
+          })
+          .eq('id', configId);
+        if (dbError) throw dbError;
+      }
+
       setTerminalConfig(prev => ({
         ...prev,
         background_url: publicUrl,
-        background_type: file.type.startsWith('video/') ? 'video' : 'static'
+        background_type: newType
       }));
 
       toast({
         title: "Sucesso",
-        description: "Arquivo enviado com sucesso!",
+        description: "Plano de fundo atualizado no terminal!",
       });
     } catch (error: any) {
       console.error('Erro no upload:', error);
