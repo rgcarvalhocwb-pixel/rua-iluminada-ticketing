@@ -86,7 +86,7 @@ const Admin = () => {
       if (hasPermission(userPermissions, 'payments_config')) availableTabs.push('payments');
       
       if (userPermissions.role === 'master' || userPermissions.role === 'admin') {
-        availableTabs.push('reports', 'backup', 'branding', 'performance', 'analytics', 'system-health');
+        availableTabs.push('reports', 'backup', 'branding', 'performance', 'analytics', 'system-health', 'terminal-monitoring', 'testing-suite', 'production-readiness');
       }
       
       if (hasPermission(userPermissions, 'users_manage')) availableTabs.push('users', 'audit');
