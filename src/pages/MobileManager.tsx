@@ -14,9 +14,11 @@ import {
   CheckCircle,
   RefreshCw,
   TrendingUp,
-  Users
+  Users,
+  QrCode
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 // Mobile-specific imports (optional - will be available when running on mobile)
 declare const CapacitorApp: any;
@@ -61,6 +63,7 @@ const MobileManager = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pushEnabled, setPushEnabled] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Initialize mobile app
   useEffect(() => {
@@ -261,6 +264,20 @@ const MobileManager = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Validador de Ingressos */}
+      <Card className="mb-6">
+        <CardContent className="p-4">
+          <Button 
+            onClick={() => navigate('/mobile/validator')}
+            className="w-full h-16 text-lg"
+            size="lg"
+          >
+            <QrCode className="h-6 w-6 mr-3" />
+            Validador de Ingressos
+          </Button>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="dashboard" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
