@@ -18,10 +18,15 @@ import {
   Users,
   Clock,
   Database,
-  AlertTriangle
+  AlertTriangle,
+  Sun,
+  Moon,
+  Monitor
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useOfflineValidator } from '@/hooks/useOfflineValidator';
+import { useTheme } from 'next-themes';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import QrScanner from 'qr-scanner';
 
 interface ValidationResult {
@@ -39,6 +44,7 @@ const OfflineTicketValidator = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const qrScannerRef = useRef<QrScanner | null>(null);
   const { toast } = useToast();
+  const { theme, setTheme } = useTheme();
   
   const {
     tickets,
@@ -155,15 +161,47 @@ const OfflineTicketValidator = () => {
               <QrCode className="h-5 w-5" />
               Validador Offline
             </div>
-            <div className="flex items-center gap-2">
-              {syncStatus.isOnline ? (
-                <Wifi className="h-4 w-4 text-green-600" />
-              ) : (
-                <WifiOff className="h-4 w-4 text-red-600" />
-              )}
-              <Badge variant={syncStatus.isOnline ? "default" : "secondary"}>
-                {syncStatus.isOnline ? "Online" : "Offline"}
-              </Badge>
+            <div className="flex items-center gap-3">
+              {/* Seletor de Tema */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    {theme === 'light' ? (
+                      <Sun className="h-4 w-4" />
+                    ) : theme === 'dark' ? (
+                      <Moon className="h-4 w-4" />
+                    ) : (
+                      <Monitor className="h-4 w-4" />
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setTheme('light')}>
+                    <Sun className="h-4 w-4 mr-2" />
+                    Claro
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('dark')}>
+                    <Moon className="h-4 w-4 mr-2" />
+                    Escuro
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme('system')}>
+                    <Monitor className="h-4 w-4 mr-2" />
+                    Sistema
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              {/* Status Online/Offline */}
+              <div className="flex items-center gap-2">
+                {syncStatus.isOnline ? (
+                  <Wifi className="h-4 w-4 text-green-600" />
+                ) : (
+                  <WifiOff className="h-4 w-4 text-red-600" />
+                )}
+                <Badge variant={syncStatus.isOnline ? "default" : "secondary"}>
+                  {syncStatus.isOnline ? "Online" : "Offline"}
+                </Badge>
+              </div>
             </div>
           </CardTitle>
         </CardHeader>
