@@ -63,7 +63,27 @@ const TicketValidator = () => {
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro RLS ou query:', error);
+        // Para debug: tentar query mais simples
+        const { data: simpleData, error: simpleError } = await supabase
+          .from('tickets')
+          .select('*')
+          .limit(5);
+          
+        if (simpleError) {
+          console.error('Erro na query simples:', simpleError);
+          toast({
+            title: "Erro de Acesso",
+            description: "Sem permissão para acessar dados. Verifique se está logado como admin.",
+            variant: "destructive"
+          });
+          return;
+        }
+        
+        console.log('Query simples funcionou:', simpleData);
+        throw error;
+      }
 
       const formattedTickets: TicketInfo[] = data?.map((ticket: any) => ({
         id: ticket.id,
@@ -79,8 +99,14 @@ const TicketValidator = () => {
       })) || [];
 
       setRecentTickets(formattedTickets);
+      console.log('Ingressos carregados:', formattedTickets.length);
     } catch (error) {
       console.error('Erro ao carregar ingressos:', error);
+      toast({
+        title: "Erro ao Carregar",
+        description: "Não foi possível carregar a lista de ingressos.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -144,6 +170,8 @@ const TicketValidator = () => {
 
   const validateTicket = async (code: string) => {
     try {
+      console.log('Validando código:', code);
+      
       // Buscar ingresso pelo QR code ou número do ingresso
       const { data, error } = await supabase
         .from('tickets')
@@ -163,9 +191,20 @@ const TicketValidator = () => {
           )
         `)
         .or(`qr_code.eq.${code},ticket_number.eq.${code}`)
-        .single();
+        .maybeSingle();
 
-      if (error || !data) {
+      console.log('Resultado da busca:', { data, error });
+
+      if (error) {
+        console.error('Erro na consulta:', error);
+        setValidationResult({
+          isValid: false,
+          message: "Erro ao consultar ingresso. Verifique sua conexão."
+        });
+        return;
+      }
+
+      if (!data) {
         setValidationResult({
           isValid: false,
           message: "Ingresso não encontrado ou inválido"
@@ -193,18 +232,28 @@ const TicketValidator = () => {
         .eq('id', data.id);
 
       if (updateError) {
-        throw updateError;
+        console.error('Erro ao atualizar ingresso:', updateError);
+        setValidationResult({
+          isValid: false,
+          message: "Erro ao validar ingresso. Tente novamente."
+        });
+        return;
       }
 
-      // Registrar validação
-      await supabase
-        .from('validations')
-        .insert({
-          ticket_id: data.id,
-          validation_method: inputMode === 'scanner' ? 'qr_scanner' : 'manual_entry',
-          validator_user: 'mobile_validator',
-          notes: `Validado via app mobile - ${inputMode === 'scanner' ? 'Scanner QR' : 'Entrada Manual'}`
-        });
+      // Tentar registrar validação (opcional - não bloqueia se falhar)
+      try {
+        await supabase
+          .from('validations')
+          .insert({
+            ticket_id: data.id,
+            validation_method: inputMode === 'scanner' ? 'qr_scanner' : 'manual',
+            validator_user: 'mobile_validator',
+            notes: `Validado via app mobile - ${inputMode === 'scanner' ? 'Scanner QR' : 'Entrada Manual'}`
+          });
+      } catch (validationError) {
+        console.warn('Não foi possível registrar validação:', validationError);
+        // Não impede o sucesso da validação
+      }
 
       const ticketInfo: TicketInfo = {
         id: data.id,
@@ -230,6 +279,8 @@ const TicketValidator = () => {
       
       // Limpar código manual
       setManualCode('');
+
+      console.log('Validação concluída com sucesso');
 
     } catch (error) {
       console.error('Erro na validação:', error);
