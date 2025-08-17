@@ -8,13 +8,13 @@ const corsHeaders = {
 
 interface HardwareStatusRequest {
   terminalId: string;
-  hardwareType: 'printer' | 'pinpad' | 'all';
+  hardwareType: 'printer' | 'pinpad' | 'turnstile' | 'all';
 }
 
 interface HardwareDevice {
   id: string;
   name: string;
-  type: 'printer' | 'pinpad';
+  type: 'printer' | 'pinpad' | 'turnstile';
   status: 'online' | 'offline' | 'error';
   lastChecked: string;
   details?: any;
@@ -48,6 +48,12 @@ serve(async (req) => {
       // Simular detecção de pinpads
       const pinpads = await detectPinpads();
       devices.push(...pinpads);
+    }
+
+    if (hardwareType === 'turnstile' || hardwareType === 'all') {
+      // Simular detecção de catracas
+      const turnstiles = await detectTurnstiles();
+      devices.push(...turnstiles);
     }
 
     // Registrar status no banco de dados
@@ -140,6 +146,31 @@ async function detectPinpads(): Promise<HardwareDevice[]> {
       connection: index % 2 === 0 ? 'USB' : 'Bluetooth',
       battery: Math.floor(Math.random() * 100),
       lastTransaction: new Date(Date.now() - Math.random() * 86400000).toISOString()
+    }
+  }));
+}
+
+async function detectTurnstiles(): Promise<HardwareDevice[]> {
+  // Simular detecção de catracas
+  const commonTurnstiles = [
+    "Henry Catraca TC-01",
+    "Controlid iDBlock",
+    "Linear HCS Catraca",
+    "Intelbras SS 3530"
+  ];
+
+  return commonTurnstiles.map((name, index) => ({
+    id: `turnstile_${index + 1}`,
+    name,
+    type: 'turnstile' as const,
+    status: Math.random() > 0.2 ? 'online' : 'offline' as const,
+    lastChecked: new Date().toISOString(),
+    details: {
+      connection: index % 2 === 0 ? 'TCP/IP' : 'Serial',
+      firmware: '2.1.' + Math.floor(Math.random() * 10),
+      passageCount: Math.floor(Math.random() * 1000),
+      qrReaderStatus: Math.random() > 0.1 ? 'active' : 'inactive',
+      lastValidation: new Date(Date.now() - Math.random() * 3600000).toISOString()
     }
   }));
 }

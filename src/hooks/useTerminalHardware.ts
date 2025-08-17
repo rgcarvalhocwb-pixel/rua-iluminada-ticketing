@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface HardwareDevice {
   id: string;
   name: string;
-  type: 'printer' | 'pinpad';
+  type: 'printer' | 'pinpad' | 'turnstile';
   status: 'online' | 'offline' | 'error';
   lastChecked: string;
   details?: any;
@@ -25,7 +25,7 @@ export const useTerminalHardware = (terminalId: string = 'terminal-001') => {
   });
   const { toast } = useToast();
 
-  const checkHardwareStatus = useCallback(async (hardwareType: 'printer' | 'pinpad' | 'all' = 'all') => {
+  const checkHardwareStatus = useCallback(async (hardwareType: 'printer' | 'pinpad' | 'turnstile' | 'all' = 'all') => {
     try {
       setHardwareStatus(prev => ({ ...prev, isLoading: true }));
 
@@ -135,6 +135,48 @@ export const useTerminalHardware = (terminalId: string = 'terminal-001') => {
     }
   }, []);
 
+  const validateTicketOnTurnstile = useCallback(async (turnstileId: string, options: {
+    qrCode?: string;
+    ticketNumber?: string;
+    validatorUser: string;
+  }) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('turnstile-qr-validation', {
+        body: {
+          turnstileId,
+          qrCode: options.qrCode,
+          ticketNumber: options.ticketNumber,
+          validatorUser: options.validatorUser
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast({
+          title: "Acesso liberado",
+          description: `Ticket validado para ${data.ticketInfo?.customerName}`,
+        });
+        return data;
+      } else {
+        toast({
+          title: "Acesso negado",
+          description: data.error,
+          variant: "destructive",
+        });
+        return data;
+      }
+    } catch (error: any) {
+      console.error('Erro na validação da catraca:', error);
+      toast({
+        title: "Erro na validação",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  }, [toast]);
+
   // Verificação automática de hardware a cada 5 minutos
   useEffect(() => {
     checkHardwareStatus();
@@ -150,12 +192,15 @@ export const useTerminalHardware = (terminalId: string = 'terminal-001') => {
     checkHardwareStatus,
     printTickets,
     processPayment,
+    validateTicketOnTurnstile,
     // Helpers para verificar status específicos
     getPrinters: () => hardwareStatus.devices.filter(d => d.type === 'printer'),
     getPinpads: () => hardwareStatus.devices.filter(d => d.type === 'pinpad'),
+    getTurnstiles: () => hardwareStatus.devices.filter(d => d.type === 'turnstile'),
     getOnlineDevices: () => hardwareStatus.devices.filter(d => d.status === 'online'),
     getOfflineDevices: () => hardwareStatus.devices.filter(d => d.status === 'offline'),
     isAnyPrinterOnline: () => hardwareStatus.devices.some(d => d.type === 'printer' && d.status === 'online'),
-    isAnyPinpadOnline: () => hardwareStatus.devices.some(d => d.type === 'pinpad' && d.status === 'online')
+    isAnyPinpadOnline: () => hardwareStatus.devices.some(d => d.type === 'pinpad' && d.status === 'online'),
+    isAnyTurnstileOnline: () => hardwareStatus.devices.some(d => d.type === 'turnstile' && d.status === 'online')
   };
 };

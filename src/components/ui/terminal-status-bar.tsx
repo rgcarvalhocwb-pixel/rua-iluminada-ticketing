@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Wifi, WifiOff, Printer, CreditCard, RefreshCw, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Wifi, WifiOff, Printer, CreditCard, RefreshCw, AlertTriangle, CheckCircle, DoorOpen } from 'lucide-react';
 import { useTerminalHardware, type HardwareDevice } from '@/hooks/useTerminalHardware';
 
 interface TerminalStatusBarProps {
@@ -17,8 +17,10 @@ export const TerminalStatusBar = ({ terminalId = 'terminal-001', compact = false
     checkHardwareStatus, 
     getPrinters, 
     getPinpads,
+    getTurnstiles,
     isAnyPrinterOnline,
-    isAnyPinpadOnline 
+    isAnyPinpadOnline,
+    isAnyTurnstileOnline
   } = useTerminalHardware(terminalId);
 
   // Monitorar status da rede
@@ -49,6 +51,9 @@ export const TerminalStatusBar = ({ terminalId = 'terminal-001', compact = false
   const getStatusIcon = (device: HardwareDevice) => {
     if (device.type === 'printer') {
       return <Printer className="h-4 w-4" />;
+    }
+    if (device.type === 'turnstile') {
+      return <DoorOpen className="h-4 w-4" />;
     }
     return <CreditCard className="h-4 w-4" />;
   };
@@ -87,6 +92,17 @@ export const TerminalStatusBar = ({ terminalId = 'terminal-001', compact = false
             className="text-xs px-1 py-0"
           >
             {getPinpads().filter(p => p.status === 'online').length}/{getPinpads().length}
+          </Badge>
+        </div>
+
+        {/* Status das Catracas */}
+        <div className="flex items-center space-x-1">
+          <DoorOpen className="h-4 w-4" />
+          <Badge 
+            variant={isAnyTurnstileOnline() ? "default" : "destructive"}
+            className="text-xs px-1 py-0"
+          >
+            {getTurnstiles().filter(t => t.status === 'online').length}/{getTurnstiles().length}
           </Badge>
         </div>
 
@@ -159,7 +175,8 @@ export const TerminalStatusBar = ({ terminalId = 'terminal-001', compact = false
                   <div>
                     <p className="font-medium">{device.name}</p>
                     <p className="text-sm text-muted-foreground capitalize">
-                      {device.type === 'printer' ? 'Impressora' : 'Pinpad'}
+                      {device.type === 'printer' ? 'Impressora' : 
+                       device.type === 'pinpad' ? 'Pinpad' : 'Catraca'}
                     </p>
                   </div>
                 </div>
