@@ -599,6 +599,78 @@ export type Database = {
         }
         Relationships: []
       }
+      system_alerts: {
+        Row: {
+          alert_type: string
+          created_at: string
+          id: string
+          message: string
+          resolved: boolean
+          resolved_at: string | null
+          severity: string
+          terminal_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          id?: string
+          message: string
+          resolved?: boolean
+          resolved_at?: string | null
+          severity?: string
+          terminal_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          id?: string
+          message?: string
+          resolved?: boolean
+          resolved_at?: string | null
+          severity?: string
+          terminal_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      terminal_commands: {
+        Row: {
+          command_data: Json | null
+          command_type: string
+          created_at: string
+          executed_at: string | null
+          id: string
+          sent_at: string | null
+          status: string
+          terminal_id: string
+          updated_at: string
+        }
+        Insert: {
+          command_data?: Json | null
+          command_type: string
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string
+          terminal_id: string
+          updated_at?: string
+        }
+        Update: {
+          command_data?: Json | null
+          command_type?: string
+          created_at?: string
+          executed_at?: string | null
+          id?: string
+          sent_at?: string | null
+          status?: string
+          terminal_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       terminal_config: {
         Row: {
           background_type: string
@@ -632,6 +704,75 @@ export type Database = {
           max_tickets_per_purchase?: number
           updated_at?: string
           welcome_message?: string
+        }
+        Relationships: []
+      }
+      terminal_heartbeats: {
+        Row: {
+          created_at: string
+          hardware_status: Json | null
+          id: string
+          location: string | null
+          metrics: Json | null
+          status: string
+          system_info: Json | null
+          terminal_id: string
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          hardware_status?: Json | null
+          id?: string
+          location?: string | null
+          metrics?: Json | null
+          status: string
+          system_info?: Json | null
+          terminal_id: string
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          hardware_status?: Json | null
+          id?: string
+          location?: string | null
+          metrics?: Json | null
+          status?: string
+          system_info?: Json | null
+          terminal_id?: string
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
+      terminal_updates: {
+        Row: {
+          created_at: string
+          id: string
+          status: string
+          terminal_id: string
+          update_url: string | null
+          updated_at: string
+          version: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: string
+          terminal_id: string
+          update_url?: string | null
+          updated_at?: string
+          version: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: string
+          terminal_id?: string
+          update_url?: string | null
+          updated_at?: string
+          version?: string
         }
         Relationships: []
       }
