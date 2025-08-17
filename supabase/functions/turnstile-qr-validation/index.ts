@@ -10,7 +10,9 @@ interface TurnstileValidationRequest {
   turnstileId: string;
   qrCode?: string;
   ticketNumber?: string;
+  cardData?: string; // Para cartões meia/inteira
   validatorUser: string;
+  isTerminalCheckIn?: boolean; // Para check-in do terminal
 }
 
 interface ValidationResponse {
@@ -39,9 +41,16 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    const { turnstileId, qrCode, ticketNumber, validatorUser }: TurnstileValidationRequest = await req.json();
+    const { turnstileId, qrCode, ticketNumber, cardData, validatorUser, isTerminalCheckIn }: TurnstileValidationRequest = await req.json();
 
-    console.log("Validação de catraca:", { turnstileId, qrCode, ticketNumber, validatorUser });
+    console.log("Validação de catraca:", { 
+      turnstileId, 
+      qrCode, 
+      ticketNumber, 
+      cardData, 
+      validatorUser, 
+      isTerminalCheckIn 
+    });
 
     // Buscar informações do ticket
     let ticketQuery = supabase
@@ -76,8 +85,17 @@ serve(async (req) => {
       ticketQuery = ticketQuery.eq('qr_code', qrCode);
     } else if (ticketNumber) {
       ticketQuery = ticketQuery.eq('ticket_number', ticketNumber);
+    } else if (cardData) {
+      // Para cartões meia/inteira, buscar por dados do cartão
+      // Assumindo que cardData contém informações para identificar o ticket
+      const cardInfo = JSON.parse(cardData);
+      if (cardInfo.ticketNumber) {
+        ticketQuery = ticketQuery.eq('ticket_number', cardInfo.ticketNumber);
+      } else {
+        throw new Error('Dados do cartão inválidos');
+      }
     } else {
-      throw new Error('QR Code ou número do ticket é obrigatório');
+      throw new Error('QR Code, número do ticket ou dados do cartão são obrigatórios');
     }
 
     const { data: tickets, error: ticketError } = await ticketQuery.single();
@@ -154,12 +172,17 @@ serve(async (req) => {
     }
 
     // Registrar a validação
+    const validationMethod = qrCode ? 'qr_code' : (cardData ? 'card_reader' : 'ticket_number');
+    const validationNotes = isTerminalCheckIn ? 
+      `Check-in via terminal/catraca ${turnstileId}` : 
+      `Validação via catraca ${turnstileId}`;
+
     const { error: validationError } = await supabase.from("validations").insert({
       ticket_id: tickets.id,
-      validation_method: qrCode ? 'qr_code' : 'ticket_number',
+      validation_method: validationMethod,
       validator_user: validatorUser,
       turnstile_id: turnstileId,
-      notes: `Validação via catraca ${turnstileId}`
+      notes: validationNotes
     });
 
     if (validationError) {
@@ -170,7 +193,7 @@ serve(async (req) => {
     await supabase.from("user_audit_logs").insert({
       user_id: null,
       user_email: validatorUser,
-      action: "TICKET_VALIDATED",
+      action: isTerminalCheckIn ? "TERMINAL_CHECKIN" : "TICKET_VALIDATED",
       entity_type: "TURNSTILE",
       entity_id: turnstileId,
       details: {
@@ -178,7 +201,9 @@ serve(async (req) => {
         ticketNumber: tickets.ticket_number,
         customerName: tickets.order_item_id.orders.customer_name,
         eventName: tickets.order_item_id.orders.event_sessions.events.name,
-        validationMethod: qrCode ? 'qr_code' : 'ticket_number'
+        validationMethod: validationMethod,
+        isTerminalCheckIn: isTerminalCheckIn || false,
+        cardData: cardData ? 'present' : 'none'
       }
     });
 

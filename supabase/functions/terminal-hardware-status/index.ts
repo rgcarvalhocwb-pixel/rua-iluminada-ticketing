@@ -151,12 +151,12 @@ async function detectPinpads(): Promise<HardwareDevice[]> {
 }
 
 async function detectTurnstiles(): Promise<HardwareDevice[]> {
-  // Simular detecção de catracas
+  // Simular detecção de catracas - Topdata Fit é a principal
   const commonTurnstiles = [
+    "Topdata Fit QR Reader",
     "Henry Catraca TC-01",
     "Controlid iDBlock",
-    "Linear HCS Catraca",
-    "Intelbras SS 3530"
+    "Linear HCS Catraca"
   ];
 
   return commonTurnstiles.map((name, index) => ({
@@ -166,11 +166,13 @@ async function detectTurnstiles(): Promise<HardwareDevice[]> {
     status: Math.random() > 0.2 ? 'online' : 'offline' as const,
     lastChecked: new Date().toISOString(),
     details: {
-      connection: index % 2 === 0 ? 'TCP/IP' : 'Serial',
-      firmware: '2.1.' + Math.floor(Math.random() * 10),
+      connection: name.includes('Topdata Fit') ? 'TCP/IP' : (index % 2 === 0 ? 'TCP/IP' : 'Serial'),
+      firmware: name.includes('Topdata Fit') ? '3.2.1' : '2.1.' + Math.floor(Math.random() * 10),
       passageCount: Math.floor(Math.random() * 1000),
-      qrReaderStatus: Math.random() > 0.1 ? 'active' : 'inactive',
-      lastValidation: new Date(Date.now() - Math.random() * 3600000).toISOString()
+      qrReaderStatus: Math.random() > 0.05 ? 'active' : 'inactive',
+      lastValidation: new Date(Date.now() - Math.random() * 3600000).toISOString(),
+      cardReaderStatus: name.includes('Topdata Fit') ? 'active' : undefined,
+      terminalIntegration: name.includes('Topdata Fit') ? 'enabled' : 'disabled'
     }
   }));
 }

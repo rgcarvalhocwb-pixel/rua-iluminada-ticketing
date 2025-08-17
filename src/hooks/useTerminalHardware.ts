@@ -138,7 +138,9 @@ export const useTerminalHardware = (terminalId: string = 'terminal-001') => {
   const validateTicketOnTurnstile = useCallback(async (turnstileId: string, options: {
     qrCode?: string;
     ticketNumber?: string;
+    cardData?: string;
     validatorUser: string;
+    isTerminalCheckIn?: boolean;
   }) => {
     try {
       const { data, error } = await supabase.functions.invoke('turnstile-qr-validation', {
@@ -146,21 +148,25 @@ export const useTerminalHardware = (terminalId: string = 'terminal-001') => {
           turnstileId,
           qrCode: options.qrCode,
           ticketNumber: options.ticketNumber,
-          validatorUser: options.validatorUser
+          cardData: options.cardData,
+          validatorUser: options.validatorUser,
+          isTerminalCheckIn: options.isTerminalCheckIn
         }
       });
 
       if (error) throw error;
 
       if (data.success) {
+        const actionType = options.isTerminalCheckIn ? "Check-in realizado" : "Acesso liberado";
         toast({
-          title: "Acesso liberado",
-          description: `Ticket validado para ${data.ticketInfo?.customerName}`,
+          title: actionType,
+          description: `${options.isTerminalCheckIn ? 'Check-in' : 'Ticket validado'} para ${data.ticketInfo?.customerName}`,
         });
         return data;
       } else {
+        const errorTitle = options.isTerminalCheckIn ? "Erro no check-in" : "Acesso negado";
         toast({
-          title: "Acesso negado",
+          title: errorTitle,
           description: data.error,
           variant: "destructive",
         });
