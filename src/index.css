@@ -14,48 +14,48 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Ceará Natal de Luz Theme - Inspirado no site oficial */
-    --background: 240 20% 8%;        /* Fundo escuro noturno */
-    --foreground: 45 80% 85%;        /* Texto dourado claro */
+    /* Tema claro suave - Cores confortáveis aos olhos */
+    --background: 0 0% 98%;          /* Fundo quase branco, mais suave */
+    --foreground: 240 10% 15%;       /* Texto cinza escuro suave */
 
-    --card: 0 0% 100%;               /* Cards brancos */
-    --card-foreground: 0 80% 25%;    /* Texto escuro em cards */
+    --card: 0 0% 100%;               /* Cards brancos puros */
+    --card-foreground: 240 8% 25%;   /* Texto suave em cards */
 
     --popover: 0 0% 100%;            /* Popovers brancos */
-    --popover-foreground: 0 80% 25%;
+    --popover-foreground: 240 8% 25%;
 
-    /* Vermelho Bordô - Cor principal do site */
-    --primary: 0 75% 35%;            /* Vermelho bordô profundo */
+    /* Bordô suave - menos agressivo */
+    --primary: 0 60% 50%;            /* Bordô mais suave */
     --primary-foreground: 0 0% 98%;
 
-    /* Dourado - Elegância e celebração */
-    --secondary: 45 90% 60%;         /* Dourado vibrante */
-    --secondary-foreground: 0 80% 15%;
+    /* Dourado suave */
+    --secondary: 45 70% 55%;         /* Dourado menos vibrante */
+    --secondary-foreground: 240 8% 20%;
 
-    /* Tons sutis */
-    --muted: 240 20% 15%;            /* Cinza escuro sutil */
-    --muted-foreground: 45 60% 70%;
+    /* Tons bem sutis */
+    --muted: 240 5% 94%;             /* Cinza muito claro */
+    --muted-foreground: 240 6% 45%;  /* Texto muted suave */
 
-    /* Dourado para destaques */
-    --accent: 45 90% 60%;            /* Dourado brilhante */
-    --accent-foreground: 0 80% 15%;
+    /* Accent suave */
+    --accent: 45 70% 55%;            /* Dourado suave */
+    --accent-foreground: 240 8% 20%;
 
-    /* Vermelho para alertas */
-    --destructive: 0 75% 50%;
+    /* Vermelho suave para alertas */
+    --destructive: 0 60% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Dourado para avisos */
-    --warning: 45 90% 60%;
-    --warning-foreground: 0 80% 15%;
+    /* Amarelo suave para avisos */
+    --warning: 45 70% 55%;
+    --warning-foreground: 240 8% 20%;
 
-    /* Verde para sucesso */
-    --success: 120 60% 40%;
+    /* Verde suave para sucesso */
+    --success: 120 50% 45%;
     --success-foreground: 0 0% 98%;
 
-    /* Bordas sutis */
-    --border: 240 20% 20%;
-    --input: 0 0% 100%;
-    --ring: 0 75% 35%;               /* Foco em bordô */
+    /* Bordas muito sutis */
+    --border: 240 6% 88%;            /* Borda cinza muito clara */
+    --input: 240 6% 88%;             /* Input border suave */
+    --ring: 0 60% 50%;               /* Foco suave */
 
     --radius: 0.75rem;
 
