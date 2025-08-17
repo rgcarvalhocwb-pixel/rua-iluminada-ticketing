@@ -79,6 +79,57 @@ All colors MUST be HSL.
     --snow-3: 0 0 6px hsla(0, 0%, 100%, 0.5);
   }
 
+  /* Tema escuro - cores suaves para melhor experiência noturna */
+  .dark {
+    /* Fundo escuro suave */
+    --background: 240 10% 8%;           /* Fundo escuro mais suave */
+    --foreground: 45 70% 85%;           /* Texto dourado claro */
+
+    --card: 240 10% 12%;                /* Cards escuros suaves */
+    --card-foreground: 45 70% 85%;      /* Texto claro em cards */
+
+    --popover: 240 10% 12%;             /* Popovers escuros */
+    --popover-foreground: 45 70% 85%;
+
+    /* Vermelho Bordô mais suave para escuro */
+    --primary: 0 65% 45%;               /* Bordô menos intenso */
+    --primary-foreground: 0 0% 98%;
+
+    /* Dourado mais suave */
+    --secondary: 45 80% 55%;            /* Dourado menos vibrante */
+    --secondary-foreground: 240 10% 15%;
+
+    /* Tons mais sutis para escuro */
+    --muted: 240 10% 15%;               /* Cinza escuro sutil */
+    --muted-foreground: 45 50% 65%;
+
+    /* Dourado para destaques mais suave */
+    --accent: 45 80% 55%;               /* Dourado mais suave */
+    --accent-foreground: 240 10% 15%;
+
+    /* Cores de estado ajustadas */
+    --destructive: 0 65% 55%;
+    --destructive-foreground: 0 0% 98%;
+
+    --warning: 45 80% 55%;
+    --warning-foreground: 240 10% 15%;
+
+    --success: 120 50% 45%;
+    --success-foreground: 0 0% 98%;
+
+    /* Bordas mais visíveis no escuro */
+    --border: 240 10% 20%;
+    --input: 240 10% 15%;
+    --ring: 0 65% 45%;
+
+    /* Cores para gráficos ajustadas */
+    --chart-1: 0 65% 45%;               /* Bordô suave */
+    --chart-2: 45 80% 55%;              /* Dourado suave */
+    --chart-3: 240 10% 85%;             /* Cinza claro */
+    --chart-4: 240 10% 25%;             /* Cinza escuro */
+    --chart-5: 0 65% 55%;               /* Vermelho suave */
+  }
+
   /* Admin theme - baseado no CodingNepal moderno */
   .admin-theme {
     /* Tema claro - fundo branco limpo, textos escuros */
