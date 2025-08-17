@@ -8,7 +8,7 @@ const MobileApp = () => {
       <Routes>
         <Route path="/" element={<MobileManager />} />
         <Route path="/validator" element={<TicketValidation />} />
-        <Route path="/*" element={<Navigate to="/mobile" replace />} />
+        <Route path="/*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
   );
