@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useTerminalHardware } from '@/hooks/useTerminalHardware';
-import { DoorOpen, QrCode, CreditCard, Settings, CheckCircle, AlertTriangle, Zap } from 'lucide-react';
+import { DoorOpen, QrCode, CreditCard, Settings, CheckCircle, AlertTriangle, Zap, Plus, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface TurnstileConfig {
@@ -29,6 +30,18 @@ const TurnstileManager = () => {
   const [turnstiles, setTurnstiles] = useState<TurnstileConfig[]>([]);
   const [testResult, setTestResult] = useState<any>(null);
   const [testLoading, setTestLoading] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [newTurnstile, setNewTurnstile] = useState<Partial<TurnstileConfig>>({
+    name: '',
+    location: '',
+    ipAddress: '',
+    qrReaderEnabled: true,
+    cardReaderEnabled: true,
+    terminalIntegration: true,
+    allowCheckIn: true,
+    allowValidation: true,
+    status: 'offline'
+  });
   const { toast } = useToast();
   const { 
     hardwareStatus, 
@@ -142,6 +155,101 @@ const TurnstileManager = () => {
     }
   };
 
+  const addNewTurnstile = async () => {
+    try {
+      if (!newTurnstile.name || !newTurnstile.ipAddress) {
+        toast({
+          title: "Dados incompletos",
+          description: "Preencha pelo menos o nome e endereço IP da catraca",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('turnstiles')
+        .insert({
+          name: newTurnstile.name,
+          location: newTurnstile.location || '',
+          ip_address: newTurnstile.ipAddress,
+          status: 'active'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newConfig: TurnstileConfig = {
+        id: data.id,
+        name: data.name,
+        location: data.location || '',
+        ipAddress: data.ip_address?.toString() || '',
+        qrReaderEnabled: true,
+        cardReaderEnabled: true,
+        terminalIntegration: true,
+        allowCheckIn: true,
+        allowValidation: true,
+        status: 'offline'
+      };
+
+      setTurnstiles(prev => [...prev, newConfig]);
+      setShowAddDialog(false);
+      setNewTurnstile({
+        name: '',
+        location: '',
+        ipAddress: '',
+        qrReaderEnabled: true,
+        cardReaderEnabled: true,
+        terminalIntegration: true,
+        allowCheckIn: true,
+        allowValidation: true,
+        status: 'offline'
+      });
+
+      toast({
+        title: "Catraca adicionada",
+        description: `Catraca ${data.name} adicionada com sucesso`,
+      });
+
+      // Testar conexão automaticamente
+      setTimeout(() => {
+        testTurnstileConnection(data.id);
+      }, 1000);
+    } catch (error: any) {
+      console.error('Erro ao adicionar catraca:', error);
+      toast({
+        title: "Erro ao adicionar catraca",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteTurnstile = async (turnstileId: string) => {
+    try {
+      const { error } = await supabase
+        .from('turnstiles')
+        .delete()
+        .eq('id', turnstileId);
+
+      if (error) throw error;
+
+      setTurnstiles(prev => prev.filter(t => t.id !== turnstileId));
+
+      toast({
+        title: "Catraca removida",
+        description: "Catraca removida com sucesso",
+      });
+    } catch (error: any) {
+      console.error('Erro ao remover catraca:', error);
+      toast({
+        title: "Erro ao remover catraca",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   const updateTurnstile = (id: string, updates: Partial<TurnstileConfig>) => {
     setTurnstiles(prev => 
       prev.map(t => t.id === id ? { ...t, ...updates } : t)
@@ -160,10 +268,17 @@ const TurnstileManager = () => {
           </p>
         </div>
         
-        <Button onClick={() => checkHardwareStatus('turnstile')}>
-          <DoorOpen className="h-4 w-4 mr-2" />
-          Detectar Catracas
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => checkHardwareStatus('turnstile')} variant="outline">
+            <DoorOpen className="h-4 w-4 mr-2" />
+            Detectar Catracas
+          </Button>
+          
+          <Button onClick={() => setShowAddDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Adicionar Catraca
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="detected" className="w-full">
@@ -185,68 +300,155 @@ const TurnstileManager = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {detectedTurnstiles.length === 0 ? (
-                <div className="text-center p-8 text-muted-foreground">
-                  <DoorOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>Nenhuma catraca detectada</p>
-                  <p className="text-sm">Verifique as conexões de rede</p>
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  {detectedTurnstiles.map((turnstile) => (
-                    <div key={turnstile.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="p-2 bg-secondary rounded-lg">
-                          <DoorOpen className="h-6 w-6" />
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">{turnstile.name}</h3>
-                          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                            <span>Última verificação: {new Date(turnstile.lastChecked).toLocaleTimeString()}</span>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm text-muted-foreground">
+                  {turnstiles.length > 0 ? `${turnstiles.length} catraca(s) configurada(s)` : 'Nenhuma catraca configurada'}
+                </p>
+                <Button onClick={() => setShowAddDialog(true)} size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Adicionar Catraca
+                </Button>
+              </div>
+              
+              {/* Mostrar catracas configuradas manualmente */}
+              {turnstiles.length > 0 && (
+                <div className="space-y-4 mb-6">
+                  <h4 className="text-sm font-medium text-muted-foreground">Catracas Configuradas</h4>
+                  <div className="grid gap-4">
+                    {turnstiles.map((turnstile) => (
+                      <div key={turnstile.id} className="flex items-center justify-between p-4 border rounded-lg bg-card">
+                        <div className="flex items-center space-x-4">
+                          <div className="p-2 bg-secondary rounded-lg">
+                            <DoorOpen className="h-6 w-6" />
                           </div>
-                          {turnstile.details?.terminalIntegration === 'enabled' && (
-                            <div className="flex items-center space-x-1 mt-1">
-                              <Zap className="h-3 w-3 text-blue-500" />
-                              <span className="text-xs text-blue-600">Integração Terminal Ativa</span>
+                          <div>
+                            <h3 className="font-semibold">{turnstile.name}</h3>
+                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                              <span>IP: {turnstile.ipAddress}</span>
+                              {turnstile.location && (
+                                <>
+                                  <span>•</span>
+                                  <span>{turnstile.location}</span>
+                                </>
+                              )}
                             </div>
-                          )}
+                            <div className="flex items-center space-x-2 mt-1">
+                              {turnstile.qrReaderEnabled && (
+                                <div className="flex items-center space-x-1">
+                                  <QrCode className="h-3 w-3 text-green-600" />
+                                  <span className="text-xs text-green-600">QR</span>
+                                </div>
+                              )}
+                              {turnstile.cardReaderEnabled && (
+                                <div className="flex items-center space-x-1">
+                                  <CreditCard className="h-3 w-3 text-blue-600" />
+                                  <span className="text-xs text-blue-600">Card</span>
+                                </div>
+                              )}
+                              {turnstile.terminalIntegration && (
+                                <div className="flex items-center space-x-1">
+                                  <Zap className="h-3 w-3 text-purple-600" />
+                                  <span className="text-xs text-purple-600">Terminal</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-3">
+                          <Badge 
+                            variant={turnstile.status === 'online' ? "default" : "secondary"}
+                          >
+                            {turnstile.status === 'online' ? 'Online' : 'Offline'}
+                          </Badge>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => testTurnstileConnection(turnstile.id)}
+                            disabled={testLoading}
+                          >
+                            {testLoading ? 'Testando...' : 'Testar'}
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center space-x-3">
-                        {turnstile.details?.qrReaderStatus === 'active' && (
-                          <div className="flex items-center space-x-1">
-                            <QrCode className="h-4 w-4 text-green-600" />
-                            <span className="text-xs text-green-600">QR OK</span>
-                          </div>
-                        )}
-                        
-                        {turnstile.details?.cardReaderStatus === 'active' && (
-                          <div className="flex items-center space-x-1">
-                            <CreditCard className="h-4 w-4 text-blue-600" />
-                            <span className="text-xs text-blue-600">Cartão OK</span>
-                          </div>
-                        )}
-                        
-                        <Badge 
-                          variant={turnstile.status === 'online' ? "default" : "destructive"}
-                        >
-                          {turnstile.status === 'online' ? 'Online' : 'Offline'}
-                        </Badge>
-                        
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => testTurnstileConnection(turnstile.id)}
-                          disabled={testLoading}
-                        >
-                          Testar
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
+              
+              {/* Mostrar catracas detectadas automaticamente */}
+              {detectedTurnstiles.length > 0 && (
+                <div className="space-y-4">
+                  <h4 className="text-sm font-medium text-muted-foreground">Catracas Detectadas Automaticamente</h4>
+                  <div className="grid gap-4">
+                    {detectedTurnstiles.map((turnstile) => (
+                      <div key={`detected-${turnstile.id}`} className="flex items-center justify-between p-4 border rounded-lg bg-accent/50">
+                        <div className="flex items-center space-x-4">
+                          <div className="p-2 bg-primary/10 rounded-lg">
+                            <DoorOpen className="h-6 w-6 text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold">{turnstile.name}</h3>
+                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                              <span>Última verificação: {new Date(turnstile.lastChecked).toLocaleTimeString()}</span>
+                            </div>
+                            {turnstile.details?.terminalIntegration === 'enabled' && (
+                              <div className="flex items-center space-x-1 mt-1">
+                                <Zap className="h-3 w-3 text-blue-500" />
+                                <span className="text-xs text-blue-600">Integração Terminal Ativa</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-3">
+                          {turnstile.details?.qrReaderStatus === 'active' && (
+                            <div className="flex items-center space-x-1">
+                              <QrCode className="h-4 w-4 text-green-600" />
+                              <span className="text-xs text-green-600">QR OK</span>
+                            </div>
+                          )}
+                          
+                          {turnstile.details?.cardReaderStatus === 'active' && (
+                            <div className="flex items-center space-x-1">
+                              <CreditCard className="h-4 w-4 text-blue-600" />
+                              <span className="text-xs text-blue-600">Cartão OK</span>
+                            </div>
+                          )}
+                          
+                          <Badge 
+                            variant={turnstile.status === 'online' ? "default" : "destructive"}
+                          >
+                            {turnstile.status === 'online' ? 'Online' : 'Offline'}
+                          </Badge>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => testTurnstileConnection(turnstile.id)}
+                            disabled={testLoading}
+                          >
+                            Testar
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {turnstiles.length === 0 && detectedTurnstiles.length === 0 ? (
+                <div className="text-center p-8 text-muted-foreground">
+                  <DoorOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Nenhuma catraca encontrada</p>
+                  <p className="text-sm mb-4">Configure catracas manualmente ou verifique as conexões de rede</p>
+                  <Button onClick={() => setShowAddDialog(true)} variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Adicionar Primeira Catraca
+                  </Button>
+                </div>
+              ) : null}
             </CardContent>
           </Card>
         </TabsContent>
@@ -374,6 +576,14 @@ const TurnstileManager = () => {
                     <Button onClick={() => saveTurnstileConfig(turnstile)}>
                       Salvar Configuração
                     </Button>
+                    
+                    <Button 
+                      variant="destructive"
+                      onClick={() => deleteTurnstile(turnstile.id)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Remover
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -485,6 +695,69 @@ const TurnstileManager = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Dialog para adicionar nova catraca */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Adicionar Nova Catraca</DialogTitle>
+            <DialogDescription>
+              Configure uma nova catraca Topdata Fit no sistema
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Nome
+              </Label>
+              <Input
+                id="name"
+                value={newTurnstile.name}
+                onChange={(e) => setNewTurnstile(prev => ({ ...prev, name: e.target.value }))}
+                className="col-span-3"
+                placeholder="Ex: Catraca Entrada Principal"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="location" className="text-right">
+                Local
+              </Label>
+              <Input
+                id="location"
+                value={newTurnstile.location}
+                onChange={(e) => setNewTurnstile(prev => ({ ...prev, location: e.target.value }))}
+                className="col-span-3"
+                placeholder="Ex: Entrada Principal"
+              />
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="ipAddress" className="text-right">
+                IP
+              </Label>
+              <Input
+                id="ipAddress"
+                value={newTurnstile.ipAddress}
+                onChange={(e) => setNewTurnstile(prev => ({ ...prev, ipAddress: e.target.value }))}
+                className="col-span-3"
+                placeholder="192.168.1.100"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={addNewTurnstile}>
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Catraca
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
