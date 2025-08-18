@@ -25,7 +25,8 @@ import {
   Shield,
   Computer,
   Bug,
-  Rocket
+  Rocket,
+  DoorOpen
 } from "lucide-react";
 
 import {
@@ -196,6 +197,16 @@ export function AdminSidebar({
       title: "Terminal",
       icon: Computer,
       category: "sales",
+    });
+  }
+
+  // Gerenciamento de Catracas (apenas admins/masters)
+  if (userPermissions.role === "master" || userPermissions.role === "admin") {
+    sidebarItems.push({
+      id: "turnstiles",
+      title: "Catracas",
+      icon: DoorOpen,
+      category: "system",
     });
   }
 

@@ -28,6 +28,7 @@ import { SystemHealth } from '@/components/admin/SystemHealth';
 import { AuditLogs } from '@/components/admin/AuditLogs';
 import TerminalManager from '@/components/admin/TerminalManager';
 import TerminalMonitoring from '@/components/admin/TerminalMonitoring';
+import TurnstileManager from '@/components/admin/TurnstileManager';
 import TestingSuite from '@/components/admin/TestingSuite';
 import ProductionReadiness from '@/components/admin/ProductionReadiness';
 
@@ -86,7 +87,7 @@ const Admin = () => {
       if (hasPermission(userPermissions, 'payments_config')) availableTabs.push('payments');
       
       if (userPermissions.role === 'master' || userPermissions.role === 'admin') {
-        availableTabs.push('reports', 'backup', 'branding', 'performance', 'analytics', 'system-health', 'terminal-monitoring', 'testing-suite', 'production-readiness');
+        availableTabs.push('reports', 'backup', 'branding', 'performance', 'analytics', 'system-health', 'terminal-monitoring', 'turnstiles', 'testing-suite', 'production-readiness');
       }
       
       if (hasPermission(userPermissions, 'users_manage')) availableTabs.push('users', 'audit');
@@ -202,6 +203,11 @@ const Admin = () => {
         component: <TerminalMonitoring />,
         title: 'Monitoramento de Terminais',
         description: 'Status em tempo real dos terminais de autoatendimento'
+      },
+      'turnstiles': {
+        component: <TurnstileManager />,
+        title: 'Gerenciamento de Catracas',
+        description: 'Configure e monitore as catracas Topdata Fit com leitores QR e cartões'
       },
       'testing-suite': {
         component: <TestingSuite />,
