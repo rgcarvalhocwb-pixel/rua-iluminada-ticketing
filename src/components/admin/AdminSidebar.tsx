@@ -165,6 +165,15 @@ export function AdminSidebar({
 
   if (hasPermission(userPermissions, "dashboard_view")) {
     sidebarItems.push({
+      id: "data-test",
+      title: "Teste de Dados",
+      icon: Database,
+      category: "system",
+    });
+  }
+
+  if (hasPermission(userPermissions, "dashboard_view")) {
+    sidebarItems.push({
       id: "production-readiness",
       title: "Produção",
       icon: Rocket,

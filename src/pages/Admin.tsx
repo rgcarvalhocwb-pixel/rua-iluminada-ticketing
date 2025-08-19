@@ -31,6 +31,7 @@ import TerminalMonitoring from '@/components/admin/TerminalMonitoring';
 import TurnstileManager from '@/components/admin/TurnstileManager';
 import TestingSuite from '@/components/admin/TestingSuite';
 import ProductionReadiness from '@/components/admin/ProductionReadiness';
+import { DataInsertionTester } from '@/components/admin/DataInsertionTester';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -87,7 +88,7 @@ const Admin = () => {
       if (hasPermission(userPermissions, 'payments_config')) availableTabs.push('payments');
       
       if (userPermissions.role === 'master' || userPermissions.role === 'admin') {
-        availableTabs.push('reports', 'backup', 'branding', 'performance', 'analytics', 'system-health', 'terminal-monitoring', 'turnstiles', 'testing-suite', 'production-readiness');
+        availableTabs.push('reports', 'backup', 'branding', 'performance', 'analytics', 'system-health', 'terminal-monitoring', 'turnstiles', 'testing-suite', 'data-test', 'production-readiness');
       }
       
       if (hasPermission(userPermissions, 'users_manage')) availableTabs.push('users', 'audit');
@@ -213,6 +214,11 @@ const Admin = () => {
         component: <TestingSuite />,
         title: 'Suite de Testes',
         description: 'Validação automática de funcionalidades críticas'
+      },
+      'data-test': {
+        component: <DataInsertionTester />,
+        title: 'Teste de Inserção de Dados',
+        description: 'Teste completo das funcionalidades de inserção manual com dados fictícios'
       },
       'production-readiness': {
         component: <ProductionReadiness />,
