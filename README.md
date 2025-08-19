@@ -173,4 +173,4 @@ Para suporte técnico ou dúvidas sobre implementação, consulte:
 
 ---
 
-**Desenvolvido com ❤️ para eventos inesquecíveis**
+**Desenvolvido pela Rayzer Serviços e Tecnologia com ❤️ para eventos inesquecíveis**
