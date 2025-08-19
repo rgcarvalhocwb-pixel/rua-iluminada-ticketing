@@ -1,4 +1,15 @@
 # Rua Iluminada - Sistema de Bilheteria
+# Escopo do Projeto: Rua Iluminada - Sistema de Bilheteria
+O projeto "Rua Iluminada" consiste em um sistema completo para gerenciamento de ingressos e vendas para eventos, incluindo um terminal de autoatendimento, uma plataforma de gestão administrativa e um aplicativo móvel para gestores. O objetivo é oferecer uma solução robusta e segura para a venda, controle e monitoramento de ingressos de eventos, garantindo uma experiência fluida para os usuários e eficiência para os organizadores.
+
+🎯 Objetivos do Projeto
+Desenvolver um sistema de bilheteria completo e integrado.
+
+Criar uma experiência de compra autônoma e intuitiva para o cliente final.
+
+Fornecer ferramentas de gestão e monitoramento em tempo real para os organizadores do evento.
+
+Assegurar a máxima segurança dos dados e das transações financeiras.
 
 Sistema completo de gerenciamento de ingressos e vendas para eventos, com terminal de autoatendimento e gestão administrativa.
 
