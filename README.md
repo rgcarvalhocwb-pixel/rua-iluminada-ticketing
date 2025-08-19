@@ -176,12 +176,8 @@ supabase/
 - Métricas de segurança em tempo real
 
 ## 📞 **Suporte**
-
-Para suporte técnico ou dúvidas sobre implementação, consulte:
-- Documentação do Supabase: https://supabase.com/docs
-- Documentação do PagSeguro: https://dev.pagseguro.uol.com.br/
-- Documentação do Capacitor: https://capacitorjs.com/docs
-
+Rodolpho Gonçalves Carvalho
+41 99937-2241
 ---
 
 **Desenvolvido pela Rayzer Serviços e Tecnologia com ❤️ para eventos inesquecíveis**
