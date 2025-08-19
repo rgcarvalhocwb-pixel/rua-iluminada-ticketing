@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TerminalStatusBar } from "@/components/ui/terminal-status-bar";
 import { useTerminalHardware } from "@/hooks/useTerminalHardware";
+import { useNativeHardware } from "@/hooks/useNativeHardware";
 
 interface Event {
   id: string;
@@ -60,6 +61,8 @@ const SelfServiceTerminal = () => {
     isAnyPrinterOnline, 
     isAnyPinpadOnline 
   } = useTerminalHardware();
+
+  const { printNatively, isAnyPrinterConnected } = useNativeHardware();
 
   useEffect(() => {
     loadEvents();
@@ -184,7 +187,7 @@ const SelfServiceTerminal = () => {
       }
 
       // Verificar se há impressora disponível
-      if (!isAnyPrinterOnline()) {
+      if (!isAnyPrinterOnline() && !isAnyPrinterConnected) {
         toast({
           title: "Impressora Indisponível",
           description: "Nenhuma impressora está disponível. Verifique as conexões.",
@@ -341,25 +344,80 @@ const SelfServiceTerminal = () => {
   const handlePaymentApproved = async (orderId: string) => {
     try {
       setCurrentStep('printing');
-      setLoading(false);
+      setLoading(true);
       
-      // Buscar ingressos gerados
+      // Buscar ingressos gerados para obter dados completos
       const { data: tickets, error: ticketsError } = await supabase
         .from('tickets')
-        .select('id')
+        .select(`
+          id,
+          ticket_number,
+          qr_code,
+          order_item_id,
+          order_items(
+            order_id,
+            orders(
+              session_id,
+              event_sessions(
+                event_id,
+                events(name, start_date),
+                show_time_id,
+                show_times(time_slot)
+              )
+            ),
+            ticket_type_id,
+            ticket_types(name)
+          )
+        `)
         .eq('order_item_id', orderId);
 
       if (ticketsError) throw ticketsError;
 
       if (tickets && tickets.length > 0) {
-        // Imprimir ingressos
-        await printTickets(tickets.map(t => t.id));
+        // Tentar impressão nativa primeiro
+        let printSuccess = false;
         
-        toast({
-          title: "Compra finalizada!",
-          description: `${tickets.length} ingresso(s) impresso(s) com sucesso!`,
-        });
+        if (isAnyPrinterConnected) {
+          console.log('Usando impressão nativa do navegador...');
+          
+          const ticketContent = tickets.map(ticket => `
+            <div style="margin-bottom: 20px; border-bottom: 2px dashed #000; padding-bottom: 10px;">
+              <div style="text-align: center; font-weight: bold; font-size: 16px;">RUA ILUMINADA</div>
+              <div style="text-align: center; margin: 10px 0;">${selectedEvent?.name || 'Evento'}</div>
+              <div>Data: ${selectedEvent?.start_date ? new Date(selectedEvent.start_date).toLocaleDateString() : ''}</div>
+              <div>Horário: ${ticketTypes.find(tt => tt.id === selectedTicketType?.id)?.name || ''}</div>
+              <div>Tipo: ${selectedTicketType?.name || ''}</div>
+              <div>Número: ${ticket.ticket_number}</div>
+              <div style="margin: 10px 0; text-align: center; font-size: 10px;">
+                QR Code: ${ticket.qr_code}
+              </div>
+              <div style="text-align: center; font-size: 12px;">
+                Apresente este ingresso na entrada
+              </div>
+            </div>
+          `).join('');
+          
+          printSuccess = await printNatively(ticketContent);
+        }
+        
+        // Fallback para sistema tradicional se necessário
+        if (!printSuccess) {
+          console.log('Usando sistema de impressão tradicional...');
+          const fallbackResult = await printTickets(tickets.map(t => t.id));
+          printSuccess = fallbackResult.success;
+        }
+
+        if (printSuccess) {
+          toast({
+            title: "Compra finalizada!",
+            description: `${tickets.length} ingresso(s) impresso(s) com sucesso!`,
+          });
+        } else {
+          throw new Error('Falha na impressão dos ingressos');
+        }
       }
+
+      setLoading(false);
 
       // Voltar ao estado inicial após 3 segundos
       setTimeout(() => {
@@ -373,6 +431,7 @@ const SelfServiceTerminal = () => {
         description: "Erro ao processar ingressos: " + error.message,
         variant: "destructive"
       });
+      setLoading(false);
       handleBackToIdle();
     }
   };

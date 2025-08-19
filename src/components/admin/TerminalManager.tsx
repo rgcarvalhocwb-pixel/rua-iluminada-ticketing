@@ -9,6 +9,7 @@ import { Upload, Play, Image, Settings, Ticket, DollarSign, AlertCircle, CheckCi
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
+import { NativeHardwareDetector } from '@/components/ui/native-hardware-detector';
 
 interface Event {
   id: string;
@@ -1276,6 +1277,11 @@ const TerminalManager = () => {
               <Button onClick={() => toast({ title: "Configurações salvas", description: "Configurações da impressora salvas com sucesso!" })}>
                 Salvar Configurações da Impressora
               </Button>
+
+              {/* Nova seção para detecção nativa de hardware */}
+              <div className="pt-6 border-t">
+                <NativeHardwareDetector />
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
