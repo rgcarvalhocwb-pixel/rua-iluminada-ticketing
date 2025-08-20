@@ -266,6 +266,12 @@ export function AdminSidebar({
         title: "Saúde do Sistema",
         icon: Activity,
         category: "admin",
+      },
+      {
+        id: "integrations",
+        title: "Integrações",
+        icon: Globe,
+        category: "admin",
       }
     );
   }
