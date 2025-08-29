@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Copy, ExternalLink, Key, Webhook } from 'lucide-react';
+import { Copy, ExternalLink, Key, Webhook, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -56,6 +56,310 @@ export const ExternalIntegrationDocs = () => {
     });
   };
 
+  const generateSystemPrompt = () => {
+    return `PROMPT COMPLETO PARA RECRIAR O SISTEMA DE VENDAS DE INGRESSOS - "RUA ILUMINADA"
+================================================================================
+
+## 1. VISÃO GERAL DO SISTEMA
+Criar um sistema completo de venda de ingressos online/presencial com gestão administrativa, incluindo:
+- Site público para compra de ingressos (integração PagSeguro)
+- Terminal de autoatendimento (kiosk mode)
+- Painel administrativo completo
+- Sistema de validação mobile (QR Code/Cartão)
+- Integração com hardware (impressoras, pinpads, catracas)
+- API para integração com sites externos
+- Sistema de backup e auditoria
+
+## 2. TECNOLOGIAS BASE
+- **Frontend**: React + TypeScript + Vite + Tailwind CSS
+- **Backend**: Supabase (Auth + Database + Edge Functions + Storage)
+- **Pagamento**: PagSeguro API
+- **UI**: Radix UI + Shadcn/ui
+- **Estado**: Zustand + React Query
+- **Roteamento**: React Router DOM
+
+## 3. ESTRUTURA DO BANCO DE DADOS
+
+### Tabelas Principais:
+\`\`\`sql
+-- Eventos e configurações
+events (id, name, description, start_date, end_date, location, active, max_capacity)
+show_times (id, event_id, show_date, show_time, capacity)
+event_sessions (id, event_id, show_time_id, session_date, available_tickets)
+ticket_types (id, name, price, half_price, description, event_id, visible, max_quantity, color)
+
+-- Sistema de vendas
+orders (id, customer_name, customer_email, customer_cpf, total_amount, payment_status, created_by)
+order_items (id, order_id, ticket_type_id, quantity, unit_price, total_price)
+tickets (id, order_id, ticket_type_id, ticket_number, qr_code, validation_status, validated_at)
+
+-- Gestão financeira
+stores (id, name, location, commission_rate, active)
+online_sales (id, platform_name, event_name, ticket_count, unit_price, total_amount, sale_date)
+online_transfers (id, platform_name, amount, transfer_date, description)
+store_daily_sales (id, store_id, sale_date, ticket_count, gross_amount, commission, net_amount)
+daily_closures (id, closure_date, total_sales, total_tickets, cash_amount, card_amount)
+admin_transfers (id, transfer_date, amount, description, transfer_type)
+
+-- Sistema de usuários e permissões
+user_roles (user_id, role, status, account_status, created_at)
+user_permissions (user_id, permission)
+user_audit_logs (user_id, action, entity_type, details, timestamp)
+
+-- Hardware e terminais
+terminal_config (id, background_image_url, ticket_types, updated_at)
+turnstiles (id, name, model, ip_address, port, status, location)
+validations (id, ticket_id, turnstile_id, validation_time, validator_user, method)
+terminal_commands, terminal_updates, terminal_heartbeats, system_alerts
+
+-- Configurações
+payment_settings (id, pagseguro_email, pagseguro_token, active)
+branding_config (id, company_name, logo_url, primary_color, secondary_color)
+\`\`\`
+
+## 4. ESTRUTURA DE PÁGINAS E COMPONENTES
+
+### Páginas Principais:
+1. **Index** (\`/\`) - Site público de vendas
+   - Hero Section com imagem de fundo
+   - Seletor de ingressos com calendário
+   - Formulário de cliente
+   - Integração com PagSeguro
+
+2. **Admin** (\`/admin\`) - Painel administrativo
+   - Sistema de autenticação
+   - Sidebar com navegação por permissões
+   - Módulos: Eventos, Vendas, Caixa, Relatórios, Usuários, etc.
+
+3. **SelfServiceTerminal** (\`/terminal\`) - Terminal de autoatendimento
+   - Interface fullscreen
+   - Integração com hardware (impressora/pinpad)
+   - Detecção de hardware nativo
+
+4. **TicketValidation** (\`/validator\`) - App mobile de validação
+   - Scanner QR Code
+   - Validação offline
+   - Interface otimizada para mobile
+
+5. **Dashboard** (\`/dashboard\`) - Dashboard analítico
+   - Gráficos e métricas
+   - Visão geral de vendas
+
+### Hooks Personalizados:
+\`\`\`typescript
+// Fluxo de compra de ingressos
+useTicketFlow() - Gerencia steps: selection → customer-form → payment
+
+// Hardware e terminal
+useTerminalHardware(terminalId) - Conecta com impressoras, pinpads, catracas
+useNativeHardware() - Detecção de hardware via Web APIs
+useOfflineMode() - Sincronização offline/online
+
+// Permissões e segurança
+useUserPermissions() - Sistema de roles (admin, user, terminal, master)
+useAdvancedSecurity() - Logs de segurança e auditoria
+\`\`\`
+
+## 5. INTEGRAÇÃO COM PAGAMENTOS
+
+### PagSeguro Integration:
+\`\`\`typescript
+// Edge Function: create-pagseguro-payment
+- Recebe dados do pedido
+- Cria transação no PagSeguro
+- Retorna URL de pagamento
+- Salva order no banco
+
+// Edge Function: process-payment-confirmation
+- Webhook do PagSeguro
+- Confirma pagamento
+- Atualiza status do pedido
+- Gera tickets com QR codes
+\`\`\`
+
+## 6. SISTEMA DE HARDWARE
+
+### Componentes de Hardware:
+\`\`\`typescript
+// Impressoras (Web APIs + fallback para terminal)
+- Detecção automática via Web Serial API
+- Impressão de tickets com QR codes
+- Fallback para window.print()
+
+// Pinpads (integração terminal)
+- Processamento de pagamentos locais
+- Comunicação via Edge Functions
+
+// Catracas Topdata Fit
+- Validação QR Code + Cartão
+- Comandos via IP/TCP
+- Monitoramento em tempo real
+\`\`\`
+
+## 7. API EXTERNA PARA INTEGRAÇÃO
+
+### Webhook para Sites Externos:
+\`\`\`typescript
+// URL: /functions/v1/external-sales-webhook
+// Métodos suportados:
+POST /webhook
+Content-Type: application/json
+Authorization: HMAC-SHA256
+
+// Payload para vendas:
+{
+  "type": "sale",
+  "data": {
+    "external_sale_id": "string",
+    "platform_name": "string",
+    "event_name": "string",
+    "customer_name": "string",
+    "customer_email": "string",
+    "ticket_count": number,
+    "unit_price": number,
+    "total_amount": number,
+    "sale_date": "ISO string",
+    "event_date": "ISO string"
+  }
+}
+\`\`\`
+
+## 8. CONFIGURAÇÕES E SECRETS
+
+### Secrets do Supabase:
+- PAGSEGURO_EMAIL
+- PAGSEGURO_TOKEN
+- WEBHOOK_SECRET
+- SUPABASE_SERVICE_ROLE_KEY
+
+### Configurações de Ambiente:
+\`\`\`env
+VITE_SUPABASE_URL=https://tzqriohyfazftfulwcuj.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIs...
+\`\`\`
+
+## 9. SISTEMA DE PERMISSÕES
+
+### Roles:
+- **master**: Acesso total
+- **admin**: Gestão completa exceto usuários master
+- **user**: Operações básicas (caixa, vendas)
+- **terminal**: Apenas terminal de autoatendimento
+
+### Permissions:
+- events_manage, tickets_manage
+- cash_daily, cash_general
+- stores_manage, online_sales
+- orders_view, payments_config
+- users_manage, dashboard_view
+
+## 10. FEATURES ESPECIAIS
+
+### Tema Natalino:
+- Efeitos de neve (ChristmasEffects)
+- Cores temáticas
+- Avatar natalino
+
+### Offline Mode:
+- Cache local de dados
+- Sincronização automática
+- Queue de transações offline
+
+### Mobile Optimizations:
+- Interface responsiva
+- Detecção de dispositivo móvel
+- Otimizações de performance
+
+### Sistema de Backup:
+- Backups automáticos
+- Exportação de dados
+- Recovery functions
+
+## 11. EDGE FUNCTIONS NECESSÁRIAS
+
+1. \`create-pagseguro-payment\` - Integração pagamentos
+2. \`process-payment-confirmation\` - Webhook PagSeguro
+3. \`external-sales-webhook\` - API para sites externos
+4. \`terminal-hardware-status\` - Status hardware
+5. \`terminal-print-ticket\` - Impressão de tickets
+6. \`terminal-payment\` - Pagamentos terminal
+7. \`turnstile-qr-validation\` - Validação catracas
+8. \`system-backup\` - Backups automáticos
+9. \`expire-pending-orders\` - Limpeza de pedidos
+10. \`reset-user-password\` - Reset de senhas
+
+## 12. PASSOS DE IMPLEMENTAÇÃO
+
+1. **Setup inicial**: Configurar Supabase + React + dependências
+2. **Database**: Criar todas as tabelas e relationships
+3. **Autenticação**: Sistema de usuários e permissões
+4. **Site público**: Página de vendas + integração PagSeguro
+5. **Painel admin**: Todas as telas de gestão
+6. **Terminal**: Interface de autoatendimento
+7. **Mobile validator**: App de validação
+8. **Hardware**: Integração com impressoras/catracas
+9. **API externa**: Webhook para integração
+10. **Deploy**: Configuração de produção
+
+## 13. COMPONENTES UI PERSONALIZADOS
+
+### Design System:
+- Christmas Effects (neve animada)
+- Hero Section responsivo
+- Ticket Selector com calendário
+- Customer Form com validação
+- Terminal Status Bar
+- Mobile Optimizations
+
+### Hooks Utilitários:
+- useAccessibility - Recursos de acessibilidade
+- useAnimations - Animações suaves
+- useImageCompression - Otimização de imagens
+- usePerformanceOptimization - Cache e performance
+- useRealtimeNotifications - Notificações em tempo real
+
+## 14. SEGURANÇA E AUDITORIA
+
+### Sistema de Logs:
+- Audit Logs completos
+- Security Events
+- User Actions tracking
+- System Alerts
+
+### Advanced Security:
+- Row Level Security (RLS)
+- HMAC signatures
+- Session management
+- Permission-based access
+
+Este prompt contém TODOS os elementos necessários para recriar o sistema completo, incluindo estrutura de dados, componentes, integrações e funcionalidades especiais.
+
+=== FIM DO PROMPT ===
+Gerado em: ${new Date().toLocaleString('pt-BR')}
+Sistema: Rua Iluminada - Sistema de Vendas de Ingressos
+Versão: 1.0
+`;
+  };
+
+  const downloadSystemPrompt = () => {
+    const promptContent = generateSystemPrompt();
+    const blob = new Blob([promptContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `sistema-rua-iluminada-prompt-${new Date().toISOString().split('T')[0]}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Download Concluído!",
+      description: "Prompt do sistema baixado com sucesso."
+    });
+  };
+
   const saleExample = {
     type: "sale",
     timestamp: "2024-12-20T10:30:00Z",
@@ -91,9 +395,19 @@ export const ExternalIntegrationDocs = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Webhook className="w-6 h-6" />
-        <h2 className="text-2xl font-bold">Integração com Sites Externos</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Webhook className="w-6 h-6" />
+          <h2 className="text-2xl font-bold">Integração com Sites Externos</h2>
+        </div>
+        <Button
+          onClick={downloadSystemPrompt}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <Download className="w-4 h-4" />
+          Baixar Prompt do Sistema (.txt)
+        </Button>
       </div>
 
       <Card>
