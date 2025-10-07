@@ -26,7 +26,8 @@ import {
   Computer,
   Bug,
   Rocket,
-  DoorOpen
+  DoorOpen,
+  Webhook
 } from "lucide-react";
 
 import {
@@ -271,6 +272,12 @@ export function AdminSidebar({
         id: "integrations",
         title: "Integrações",
         icon: Globe,
+        category: "admin",
+      },
+      {
+        id: "comprenozet-transactions",
+        title: "Compre no Zet",
+        icon: Webhook,
         category: "admin",
       }
     );

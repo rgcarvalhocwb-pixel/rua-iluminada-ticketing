@@ -34,6 +34,7 @@ import ProductionReadiness from '@/components/admin/ProductionReadiness';
 import { DataInsertionTester } from '@/components/admin/DataInsertionTester';
 import { ExternalIntegrationDocs } from '@/components/admin/ExternalIntegrationDocs';
 import { IntegrationHub } from '@/components/admin/IntegrationHub';
+import { CompreNoZetTransactions } from '@/components/admin/CompreNoZetTransactions';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -241,6 +242,11 @@ const Admin = () => {
         component: <ExternalIntegrationDocs />,
         title: 'Documentação API Externa',
         description: 'API e especificações para integração com sites externos'
+      },
+      'comprenozet-transactions': {
+        component: <CompreNoZetTransactions />,
+        title: 'Transações Compre no Zet',
+        description: 'Histórico completo de webhooks e vendas recebidas via Compre no Zet'
       }
     };
 

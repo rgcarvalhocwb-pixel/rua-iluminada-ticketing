@@ -1146,6 +1146,50 @@ export type Database = {
           },
         ]
       }
+      webhook_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          order_id: string | null
+          payload: Json
+          processed: boolean | null
+          processing_error: string | null
+          reference: string
+          source: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          payload: Json
+          processed?: boolean | null
+          processing_error?: string | null
+          reference: string
+          source?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          order_id?: string | null
+          payload?: Json
+          processed?: boolean | null
+          processing_error?: string | null
+          reference?: string
+          source?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_logs_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

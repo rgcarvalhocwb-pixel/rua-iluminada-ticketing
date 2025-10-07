@@ -75,19 +75,49 @@ Deno.serve(async (req) => {
       event: payload.data.event.name,
     });
 
+    // Register webhook log for audit
+    const { data: webhookLog, error: logError } = await supabase
+      .from('webhook_logs')
+      .insert({
+        source: 'comprenozet',
+        action: payload.action,
+        reference: payload.data.order.uuid,
+        payload: payload,
+        processed: false,
+      })
+      .select()
+      .single();
+
+    if (logError) {
+      console.error('⚠️ Failed to log webhook:', logError);
+    }
+
     // Validate payload structure
     if (!payload.action || !payload.data?.order?.uuid) {
       throw new Error('Invalid payload structure');
     }
 
+    let orderId: string | null = null;
+
     if (payload.action === 'CP') {
       // Process confirmed purchase
-      await handleConfirmedPurchase(supabase, payload);
+      orderId = await handleConfirmedPurchase(supabase, payload);
     } else if (payload.action === 'ES') {
       // Process refund
-      await handleRefund(supabase, payload);
+      orderId = await handleRefund(supabase, payload);
     } else {
       throw new Error(`Unknown action: ${payload.action}`);
+    }
+
+    // Update webhook log as processed
+    if (webhookLog) {
+      await supabase
+        .from('webhook_logs')
+        .update({ 
+          processed: true, 
+          order_id: orderId 
+        })
+        .eq('id', webhookLog.id);
     }
 
     return new Response(
@@ -97,6 +127,22 @@ Deno.serve(async (req) => {
 
   } catch (error: any) {
     console.error('❌ Error processing webhook:', error);
+    
+    // Try to update webhook log with error if it exists
+    try {
+      const payload: CompreNoZetPayload = await req.json();
+      await supabase
+        .from('webhook_logs')
+        .update({ 
+          processed: false,
+          processing_error: error.message 
+        })
+        .eq('reference', payload.data.order.uuid)
+        .eq('processed', false);
+    } catch (logError) {
+      console.error('⚠️ Failed to update webhook log error:', logError);
+    }
+    
     return new Response(
       JSON.stringify({ 
         success: false, 
@@ -107,7 +153,7 @@ Deno.serve(async (req) => {
   }
 });
 
-async function handleConfirmedPurchase(supabase: any, payload: CompreNoZetPayload) {
+async function handleConfirmedPurchase(supabase: any, payload: CompreNoZetPayload): Promise<string> {
   const { order, eventTicketCodes, event } = payload.data;
 
   // Check for duplicate (idempotency)
@@ -120,7 +166,13 @@ async function handleConfirmedPurchase(supabase: any, payload: CompreNoZetPayloa
 
   if (existingImport) {
     console.log('⚠️ Duplicate webhook detected, skipping:', order.uuid);
-    return;
+    // Return the order ID from the duplicate if available
+    const { data: existingOrder } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('payment_reference', order.uuid)
+      .maybeSingle();
+    return existingOrder?.id || null;
   }
 
   // Find event by external_id, external_slug, or name
@@ -308,9 +360,11 @@ async function handleConfirmedPurchase(supabase: any, payload: CompreNoZetPayloa
     tickets: eventTicketCodes.length,
     amount: order.totalValue - order.discount,
   });
+
+  return createdOrder.id;
 }
 
-async function handleRefund(supabase: any, payload: CompreNoZetPayload) {
+async function handleRefund(supabase: any, payload: CompreNoZetPayload): Promise<string> {
   const { order, eventTicketCodes } = payload.data;
 
   // Find existing order
@@ -361,4 +415,6 @@ async function handleRefund(supabase: any, payload: CompreNoZetPayload) {
     orderUuid: order.uuid,
     ticketsRefunded: eventTicketCodes.length,
   });
+
+  return existingOrder.id;
 }
