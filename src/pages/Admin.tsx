@@ -33,6 +33,7 @@ import TestingSuite from '@/components/admin/TestingSuite';
 import ProductionReadiness from '@/components/admin/ProductionReadiness';
 import { DataInsertionTester } from '@/components/admin/DataInsertionTester';
 import { ExternalIntegrationDocs } from '@/components/admin/ExternalIntegrationDocs';
+import { IntegrationHub } from '@/components/admin/IntegrationHub';
 
 const Admin = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -89,7 +90,7 @@ const Admin = () => {
       if (hasPermission(userPermissions, 'payments_config')) availableTabs.push('payments');
       
       if (userPermissions.role === 'master' || userPermissions.role === 'admin') {
-        availableTabs.push('reports', 'backup', 'branding', 'performance', 'analytics', 'system-health', 'terminal-monitoring', 'turnstiles', 'testing-suite', 'data-test', 'production-readiness', 'integrations');
+        availableTabs.push('reports', 'backup', 'branding', 'performance', 'analytics', 'system-health', 'terminal-monitoring', 'turnstiles', 'testing-suite', 'data-test', 'production-readiness', 'integrations', 'external-api');
       }
       
       if (hasPermission(userPermissions, 'users_manage')) availableTabs.push('users', 'audit');
@@ -232,9 +233,14 @@ const Admin = () => {
         description: 'Verificações de integridade e status dos módulos'
       },
       'integrations': {
+        component: <IntegrationHub />,
+        title: 'Central de Integrações',
+        description: 'Configure todas as chaves de API e integrações em um só lugar'
+      },
+      'external-api': {
         component: <ExternalIntegrationDocs />,
-        title: 'Integração com Sites Externos',
-        description: 'API e especificações para integração automática com plataformas de venda'
+        title: 'Documentação API Externa',
+        description: 'API e especificações para integração com sites externos'
       }
     };
 
