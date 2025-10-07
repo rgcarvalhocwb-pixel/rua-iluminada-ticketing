@@ -80,6 +80,9 @@ verify_jwt = false
 [functions.external-sales-webhook]
 verify_jwt = false
 
+[functions.comprenozet-webhook]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54332
