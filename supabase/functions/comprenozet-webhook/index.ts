@@ -136,21 +136,49 @@ async function handleConfirmedPurchase(supabase: any, payload: CompreNoZetPayloa
 
   console.log('✅ Event mapped:', { external: event.name, internal: internalEvent.name });
 
-  // Get or create a default session for today
+  // Get or create show_time and session for today
   const today = new Date().toISOString().split('T')[0];
+  // Try to use the ticket time if provided, fallback to 18:00
+  const firstTicketTime = payload.data.eventTicketCodes?.[0]?.time || '18:00';
+  const normalizedTime = `${firstTicketTime.padEnd(5, '0')}:00`.slice(0, 8); // HH:MM:SS
+
+  // Get or create a show_time for this event and time slot
+  let { data: showTime } = await supabase
+    .from('show_times')
+    .select('id')
+    .eq('event_id', internalEvent.id)
+    .eq('time_slot', normalizedTime)
+    .maybeSingle();
+
+  if (!showTime) {
+    const { data: newShowTime, error: stError } = await supabase
+      .from('show_times')
+      .insert({
+        event_id: internalEvent.id,
+        time_slot: normalizedTime,
+        capacity: 1000,
+      })
+      .select()
+      .single();
+    if (stError) throw stError;
+    showTime = newShowTime;
+  }
+
+  // Get or create the session for this date and show_time
   let { data: session } = await supabase
     .from('event_sessions')
     .select('id')
     .eq('event_id', internalEvent.id)
+    .eq('show_time_id', showTime.id)
     .eq('session_date', today)
     .maybeSingle();
 
   if (!session) {
-    // Create default session
     const { data: newSession, error: sessionError } = await supabase
       .from('event_sessions')
       .insert({
         event_id: internalEvent.id,
+        show_time_id: showTime.id,
         session_date: today,
         capacity: 1000,
         available_tickets: 1000,
@@ -158,7 +186,6 @@ async function handleConfirmedPurchase(supabase: any, payload: CompreNoZetPayloa
       })
       .select()
       .single();
-
     if (sessionError) throw sessionError;
     session = newSession;
   }
