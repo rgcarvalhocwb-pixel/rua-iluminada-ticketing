@@ -13,6 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -41,6 +42,47 @@ import {
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+interface TicketData {
+  barcode: string;
+  name: string;
+  email: string;
+  phone: string;
+  document: string;
+  used: boolean;
+  dateTimeUsed?: string;
+  code: string;
+}
+
+interface EventData {
+  id: string;
+  name: string;
+  slug: string;
+  date: string;
+  time: string;
+}
+
+interface PayloadData {
+  action: string;
+  data: {
+    order: {
+      referenceID: string;
+      name: string;
+      email: string;
+      cpf: string;
+      phone: string;
+      totalValue: number;
+      totalTax: number;
+      discount: number;
+      paymentType: string;
+      paymentSituation: string;
+      paymentConfirmeDate?: string;
+      createdAt: string;
+    };
+    event: EventData;
+    eventTicketCodes: TicketData[];
+  };
+}
+
 interface WebhookLog {
   id: string;
   source: string;
@@ -60,6 +102,9 @@ export function CompreNoZetTransactions() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterAction, setFilterAction] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterPaymentType, setFilterPaymentType] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
   const [selectedLog, setSelectedLog] = useState<WebhookLog | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
@@ -121,7 +166,16 @@ export function CompreNoZetTransactions() {
       (filterStatus === "error" && !log.processed && log.processing_error) ||
       (filterStatus === "pending" && !log.processed && !log.processing_error);
 
-    return matchesSearch && matchesAction && matchesStatus;
+    const matchesPaymentType = filterPaymentType === "all" || 
+      log.payload?.data?.order?.paymentType === filterPaymentType;
+
+    const matchesDateFrom = dateFrom === "" || 
+      new Date(log.created_at) >= new Date(dateFrom);
+
+    const matchesDateTo = dateTo === "" || 
+      new Date(log.created_at) <= new Date(dateTo + "T23:59:59");
+
+    return matchesSearch && matchesAction && matchesStatus && matchesPaymentType && matchesDateFrom && matchesDateTo;
   });
 
   const stats = {
@@ -134,16 +188,35 @@ export function CompreNoZetTransactions() {
   };
 
   const exportToCSV = () => {
-    const headers = ["Data/Hora", "Referência", "Ação", "Cliente", "Email", "Valor", "Status"];
-    const rows = filteredLogs.map(log => [
-      format(new Date(log.created_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR }),
-      log.reference,
-      log.action === 'CP' ? 'Compra' : 'Estorno',
-      log.payload?.data?.order?.name || '-',
-      log.payload?.data?.order?.email || '-',
-      `R$ ${(log.payload?.data?.order?.totalValue - log.payload?.data?.order?.discount || 0).toFixed(2)}`,
-      log.processed ? 'Processado' : (log.processing_error ? 'Erro' : 'Pendente')
-    ]);
+    const headers = [
+      "Data/Hora", "Referência", "Ação", "Cliente", "Email", "CPF", "Telefone",
+      "Pagamento", "Situação", "Valor Total", "Taxas", "Desconto", "Valor Líquido", 
+      "Ingressos", "Status"
+    ];
+    const rows = filteredLogs.map(log => {
+      const totalValue = log.payload?.data?.order?.totalValue || 0;
+      const totalTax = log.payload?.data?.order?.totalTax || 0;
+      const discount = log.payload?.data?.order?.discount || 0;
+      const liquidValue = totalValue - totalTax - discount;
+
+      return [
+        format(new Date(log.created_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR }),
+        log.reference,
+        log.action === 'CP' ? 'Compra' : 'Estorno',
+        log.payload?.data?.order?.name || '-',
+        log.payload?.data?.order?.email || '-',
+        log.payload?.data?.order?.cpf || '-',
+        log.payload?.data?.order?.phone || '-',
+        formatPaymentType(log.payload?.data?.order?.paymentType),
+        log.payload?.data?.order?.paymentSituation || '-',
+        `R$ ${totalValue.toFixed(2)}`,
+        `R$ ${totalTax.toFixed(2)}`,
+        `R$ ${discount.toFixed(2)}`,
+        `R$ ${liquidValue.toFixed(2)}`,
+        log.payload?.data?.eventTicketCodes?.length || '0',
+        log.processed ? 'Processado' : (log.processing_error ? 'Erro' : 'Pendente')
+      ];
+    });
 
     const csv = [headers, ...rows]
       .map(row => row.map(cell => `"${cell}"`).join(','))
@@ -170,6 +243,37 @@ export function CompreNoZetTransactions() {
     return action === 'CP' 
       ? <Badge className="bg-blue-500">Compra</Badge> 
       : <Badge className="bg-orange-500">Estorno</Badge>;
+  };
+
+  const getPaymentSituationBadge = (situation?: string) => {
+    if (!situation) return <Badge variant="outline">-</Badge>;
+    
+    switch (situation.toLowerCase()) {
+      case "approved":
+      case "paid":
+        return <Badge className="bg-green-500">Aprovado</Badge>;
+      case "pending":
+        return <Badge className="bg-yellow-500">Pendente</Badge>;
+      case "cancelled":
+      case "refunded":
+        return <Badge className="bg-red-500">Cancelado</Badge>;
+      default:
+        return <Badge variant="outline">{situation}</Badge>;
+    }
+  };
+
+  const formatPaymentType = (type?: string) => {
+    if (!type) return "-";
+    const types: Record<string, string> = {
+      "credit_card": "Cartão de Crédito",
+      "debit_card": "Cartão de Débito",
+      "pix": "PIX",
+      "boleto": "Boleto",
+      "1": "Cartão de Crédito",
+      "2": "Boleto",
+      "3": "PIX"
+    };
+    return types[type] || type;
   };
 
   return (
@@ -222,49 +326,79 @@ export function CompreNoZetTransactions() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar por referência, nome ou email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9"
-                />
+          <div className="flex flex-col gap-4 mb-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex-1 min-w-[200px]">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por referência, nome ou email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
               </div>
-            </div>
-            
-            <Select value={filterAction} onValueChange={setFilterAction}>
-              <SelectTrigger className="w-full md:w-[150px]">
-                <SelectValue placeholder="Ação" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas ações</SelectItem>
-                <SelectItem value="CP">Compras</SelectItem>
-                <SelectItem value="ES">Estornos</SelectItem>
-              </SelectContent>
-            </Select>
+              
+              <Select value={filterAction} onValueChange={setFilterAction}>
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue placeholder="Ação" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas ações</SelectItem>
+                  <SelectItem value="CP">Compras</SelectItem>
+                  <SelectItem value="ES">Estornos</SelectItem>
+                </SelectContent>
+              </Select>
 
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-full md:w-[150px]">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos status</SelectItem>
-                <SelectItem value="processed">Processados</SelectItem>
-                <SelectItem value="error">Com erro</SelectItem>
-                <SelectItem value="pending">Pendentes</SelectItem>
-              </SelectContent>
-            </Select>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-[130px]">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos status</SelectItem>
+                  <SelectItem value="processed">Processados</SelectItem>
+                  <SelectItem value="error">Com erro</SelectItem>
+                  <SelectItem value="pending">Pendentes</SelectItem>
+                </SelectContent>
+              </Select>
 
-            <div className="flex gap-2">
-              <Button onClick={fetchLogs} variant="outline" size="icon">
-                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
-              <Button onClick={exportToCSV} variant="outline" size="icon">
-                <Download className="h-4 w-4" />
-              </Button>
+              <Select value={filterPaymentType} onValueChange={setFilterPaymentType}>
+                <SelectTrigger className="w-[170px]">
+                  <SelectValue placeholder="Pagamento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos pagamentos</SelectItem>
+                  <SelectItem value="1">Cartão de Crédito</SelectItem>
+                  <SelectItem value="2">Boleto</SelectItem>
+                  <SelectItem value="3">PIX</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Input
+                type="date"
+                placeholder="Data Inicial"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="w-[150px]"
+              />
+
+              <Input
+                type="date"
+                placeholder="Data Final"
+                value={dateTo}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="w-[150px]"
+              />
+
+              <div className="flex gap-2">
+                <Button onClick={fetchLogs} variant="outline" size="icon">
+                  <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                </Button>
+                <Button onClick={exportToCSV} variant="outline" size="icon">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -277,7 +411,9 @@ export function CompreNoZetTransactions() {
                   <TableHead>Referência</TableHead>
                   <TableHead>Ação</TableHead>
                   <TableHead>Cliente</TableHead>
+                  <TableHead>Pagamento</TableHead>
                   <TableHead>Valor</TableHead>
+                  <TableHead>Taxas</TableHead>
                   <TableHead>Ingressos</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -286,13 +422,13 @@ export function CompreNoZetTransactions() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
+                    <TableCell colSpan={10} className="text-center py-8">
                       Carregando...
                     </TableCell>
                   </TableRow>
                 ) : filteredLogs.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                       Nenhuma transação encontrada
                     </TableCell>
                   </TableRow>
@@ -316,8 +452,17 @@ export function CompreNoZetTransactions() {
                           </span>
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <span className="text-sm">{formatPaymentType(log.payload?.data?.order?.paymentType)}</span>
+                          {getPaymentSituationBadge(log.payload?.data?.order?.paymentSituation)}
+                        </div>
+                      </TableCell>
                       <TableCell className="font-medium">
                         R$ {((log.payload?.data?.order?.totalValue || 0) - (log.payload?.data?.order?.discount || 0)).toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-sm text-red-600">
+                        R$ {(log.payload?.data?.order?.totalTax || 0).toFixed(2)}
                       </TableCell>
                       <TableCell>
                         {log.payload?.data?.eventTicketCodes?.length || 0}
@@ -346,7 +491,7 @@ export function CompreNoZetTransactions() {
 
       {/* Details Dialog */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Detalhes da Transação</DialogTitle>
             <DialogDescription>
@@ -356,121 +501,266 @@ export function CompreNoZetTransactions() {
 
           {selectedLog && (
             <Tabs defaultValue="summary" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="summary">Resumo</TabsTrigger>
+                <TabsTrigger value="tickets">Ingressos</TabsTrigger>
+                <TabsTrigger value="event">Evento</TabsTrigger>
                 <TabsTrigger value="payload">Payload</TabsTrigger>
-                <TabsTrigger value="order">Pedido</TabsTrigger>
               </TabsList>
 
+              {/* Aba Resumo */}
               <TabsContent value="summary" className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Status</p>
-                    <div className="mt-1">{getStatusBadge(selectedLog)}</div>
+                    <Label className="text-sm font-semibold">Referência</Label>
+                    <p className="font-mono">{selectedLog.reference}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Ação</p>
-                    <div className="mt-1">{getActionBadge(selectedLog.action)}</div>
+                    <Label className="text-sm font-semibold">Data</Label>
+                    <p>{format(new Date(selectedLog.created_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}</p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Data/Hora</p>
-                    <p className="mt-1">
-                      {format(new Date(selectedLog.created_at), "dd/MM/yyyy 'às' HH:mm:ss", { locale: ptBR })}
-                    </p>
+                    <Label className="text-sm font-semibold">Ação</Label>
+                    <div>{getActionBadge(selectedLog.action)}</div>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground">Cliente</p>
-                    <p className="mt-1">{selectedLog.payload?.data?.order?.name}</p>
+                    <Label className="text-sm font-semibold">Status</Label>
+                    <div>{getStatusBadge(selectedLog)}</div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Email</p>
-                    <p className="mt-1 text-sm">{selectedLog.payload?.data?.order?.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">CPF</p>
-                    <p className="mt-1">{selectedLog.payload?.data?.order?.cpf}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Valor Total</p>
-                    <p className="mt-1 text-lg font-bold">
-                      R$ {((selectedLog.payload?.data?.order?.totalValue || 0) - (selectedLog.payload?.data?.order?.discount || 0)).toFixed(2)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">Ingressos</p>
-                    <p className="mt-1 text-lg font-bold">
-                      {selectedLog.payload?.data?.eventTicketCodes?.length || 0}
-                    </p>
-                  </div>
+                  {selectedLog.order_id && (
+                    <div className="col-span-2">
+                      <Label className="text-sm font-semibold">ID do Pedido Interno</Label>
+                      <p className="font-mono text-sm">{selectedLog.order_id}</p>
+                    </div>
+                  )}
+                  {selectedLog.processing_error && (
+                    <div className="col-span-2">
+                      <Label className="text-sm font-semibold text-red-500">Erro de Processamento</Label>
+                      <p className="text-sm text-red-600">{selectedLog.processing_error}</p>
+                    </div>
+                  )}
                 </div>
 
-                {selectedLog.processing_error && (
-                  <div className="p-4 border border-red-200 bg-red-50 rounded-lg">
-                    <p className="text-sm font-medium text-red-800">Erro de Processamento</p>
-                    <p className="mt-1 text-sm text-red-600">{selectedLog.processing_error}</p>
+                {/* Dados do Cliente */}
+                {selectedLog.payload?.data?.order && (
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-3">Dados do Cliente</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Nome</Label>
+                        <p className="font-medium">{selectedLog.payload.data.order.name}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Email</Label>
+                        <p className="font-medium">{selectedLog.payload.data.order.email}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Telefone</Label>
+                        <p className="font-medium">{selectedLog.payload.data.order.phone || "-"}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">CPF</Label>
+                        <p className="font-medium">{selectedLog.payload.data.order.cpf || "-"}</p>
+                      </div>
+                    </div>
                   </div>
                 )}
 
-                {selectedLog.order_id && (
-                  <div className="flex items-center gap-2 p-4 border rounded-lg">
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">Pedido criado com sucesso</p>
-                      <p className="text-xs text-muted-foreground font-mono">{selectedLog.order_id}</p>
+                {/* Informações de Pagamento */}
+                {selectedLog.payload?.data?.order && (
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-3">Informações de Pagamento</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Forma de Pagamento</Label>
+                        <p className="font-medium">{formatPaymentType(selectedLog.payload.data.order.paymentType)}</p>
+                      </div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Situação</Label>
+                        <div className="mt-1">{getPaymentSituationBadge(selectedLog.payload.data.order.paymentSituation)}</div>
+                      </div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Data de Criação</Label>
+                        <p className="font-medium">
+                          {selectedLog.payload.data.order.createdAt 
+                            ? format(new Date(selectedLog.payload.data.order.createdAt), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                            : "-"}
+                        </p>
+                      </div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Data de Confirmação</Label>
+                        <p className="font-medium">
+                          {selectedLog.payload.data.order.paymentConfirmeDate 
+                            ? format(new Date(selectedLog.payload.data.order.paymentConfirmeDate), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                            : "-"}
+                        </p>
+                      </div>
                     </div>
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={`/admin?tab=orders`} target="_blank">
-                        Ver Pedido <ExternalLink className="ml-2 h-3 w-3" />
-                      </a>
-                    </Button>
+                  </div>
+                )}
+
+                {/* Detalhamento Financeiro */}
+                {selectedLog.payload?.data?.order && (
+                  <div className="border-t pt-4">
+                    <h3 className="font-semibold mb-3">Detalhamento Financeiro</h3>
+                    <div className="space-y-3 bg-muted/50 p-4 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <Label className="text-sm text-muted-foreground">Valor Total</Label>
+                        <p className="font-medium text-lg">R$ {selectedLog.payload.data.order.totalValue?.toFixed(2) || "0.00"}</p>
+                      </div>
+                      <div className="flex justify-between items-center text-red-600">
+                        <Label className="text-sm">Taxas da Plataforma</Label>
+                        <p className="font-medium">- R$ {selectedLog.payload.data.order.totalTax?.toFixed(2) || "0.00"}</p>
+                      </div>
+                      <div className="flex justify-between items-center text-orange-600">
+                        <Label className="text-sm">Desconto</Label>
+                        <p className="font-medium">- R$ {selectedLog.payload.data.order.discount?.toFixed(2) || "0.00"}</p>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-border">
+                        <Label className="text-sm font-semibold">Valor Líquido</Label>
+                        <p className="font-bold text-xl text-green-600">
+                          R$ {(
+                            (selectedLog.payload.data.order.totalValue || 0) - 
+                            (selectedLog.payload.data.order.totalTax || 0) - 
+                            (selectedLog.payload.data.order.discount || 0)
+                          ).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </TabsContent>
 
+              {/* Aba Ingressos */}
+              <TabsContent value="tickets" className="space-y-4">
+                {selectedLog.payload?.data?.eventTicketCodes && selectedLog.payload.data.eventTicketCodes.length > 0 ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">Total de Ingressos: {selectedLog.payload.data.eventTicketCodes.length}</h3>
+                    </div>
+                    <div className="grid gap-4">
+                      {selectedLog.payload.data.eventTicketCodes.map((ticket, index) => (
+                        <Card key={index} className="overflow-hidden">
+                          <CardHeader className="bg-muted/50 pb-3">
+                            <CardTitle className="text-base flex items-center justify-between">
+                              <span>Ingresso #{index + 1}</span>
+                              {ticket.used ? (
+                                <Badge className="bg-red-500">Utilizado</Badge>
+                              ) : (
+                                <Badge className="bg-green-500">Válido</Badge>
+                              )}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="pt-4 space-y-3">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label className="text-xs text-muted-foreground">Titular</Label>
+                                <p className="font-medium text-sm">{ticket.name}</p>
+                              </div>
+                              <div>
+                                <Label className="text-xs text-muted-foreground">Email</Label>
+                                <p className="font-medium text-sm">{ticket.email}</p>
+                              </div>
+                              <div>
+                                <Label className="text-xs text-muted-foreground">Telefone</Label>
+                                <p className="font-medium text-sm">{ticket.phone || "-"}</p>
+                              </div>
+                              <div>
+                                <Label className="text-xs text-muted-foreground">CPF</Label>
+                                <p className="font-medium text-sm">{ticket.document || "-"}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="border-t pt-3">
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label className="text-xs text-muted-foreground">Código do Ingresso</Label>
+                                  <p className="font-mono text-sm">{ticket.code}</p>
+                                </div>
+                                <div>
+                                  <Label className="text-xs text-muted-foreground">Código de Barras</Label>
+                                  <p className="font-mono text-sm">{ticket.barcode}</p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {ticket.used && ticket.dateTimeUsed && (
+                              <div className="border-t pt-3 bg-red-50 dark:bg-red-950/20 -mx-6 -mb-4 px-6 py-3">
+                                <Label className="text-xs text-muted-foreground">Utilizado em</Label>
+                                <p className="font-medium text-sm text-red-600 dark:text-red-400">
+                                  {format(new Date(ticket.dateTimeUsed), "dd/MM/yyyy 'às' HH:mm:ss", { locale: ptBR })}
+                                </p>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Nenhum ingresso encontrado para esta transação.
+                  </p>
+                )}
+              </TabsContent>
+
+              {/* Aba Evento */}
+              <TabsContent value="event" className="space-y-4">
+                {selectedLog.payload?.data?.event ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Informações do Evento</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm text-muted-foreground">ID do Evento</Label>
+                          <p className="font-mono font-medium">{selectedLog.payload.data.event.id}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Slug</Label>
+                          <p className="font-mono font-medium">{selectedLog.payload.data.event.slug}</p>
+                        </div>
+                        <div className="col-span-2">
+                          <Label className="text-sm text-muted-foreground">Nome do Evento</Label>
+                          <p className="font-semibold text-lg">{selectedLog.payload.data.event.name}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Data</Label>
+                          <p className="font-medium">{selectedLog.payload.data.event.date || "-"}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Horário</Label>
+                          <p className="font-medium">{selectedLog.payload.data.event.time || "-"}</p>
+                        </div>
+                      </div>
+
+                      <div className="border-t pt-4">
+                        <Label className="text-sm text-muted-foreground mb-2 block">Link Externo</Label>
+                        <a 
+                          href={`https://comprenozet.com.br/evento/${selectedLog.payload.data.event.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline font-medium flex items-center gap-2"
+                        >
+                          Ver evento no Compre no Zet
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    Informações do evento não disponíveis.
+                  </p>
+                )}
+              </TabsContent>
+
+              {/* Aba Payload */}
               <TabsContent value="payload">
                 <pre className="p-4 bg-muted rounded-lg overflow-x-auto text-xs">
                   {JSON.stringify(selectedLog.payload, null, 2)}
                 </pre>
-              </TabsContent>
-
-              <TabsContent value="order" className="space-y-4">
-                <div>
-                  <h4 className="font-medium mb-2">Evento</h4>
-                  <p>{selectedLog.payload?.data?.event?.name}</p>
-                </div>
-
-                <div>
-                  <h4 className="font-medium mb-2">Forma de Pagamento</h4>
-                  <p>{selectedLog.payload?.data?.order?.paymentType}</p>
-                </div>
-
-                <div>
-                  <h4 className="font-medium mb-2">Ingressos</h4>
-                  <div className="space-y-2">
-                    {selectedLog.payload?.data?.eventTicketCodes?.map((ticket: any, index: number) => (
-                      <div key={index} className="p-3 border rounded-lg">
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div>
-                            <span className="text-muted-foreground">Voucher:</span>
-                            <span className="ml-2 font-mono">{ticket.voucher}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Data:</span>
-                            <span className="ml-2">{ticket.date}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Horário:</span>
-                            <span className="ml-2">{ticket.time}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">Titular:</span>
-                            <span className="ml-2">{ticket.name}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </TabsContent>
             </Tabs>
           )}
