@@ -91,7 +91,7 @@ const Admin = () => {
       if (hasPermission(userPermissions, 'payments_config')) availableTabs.push('payments');
       
       if (userPermissions.role === 'master' || userPermissions.role === 'admin') {
-        availableTabs.push('reports', 'backup', 'branding', 'performance', 'analytics', 'system-health', 'terminal-monitoring', 'turnstiles', 'testing-suite', 'data-test', 'production-readiness', 'integrations', 'external-api');
+        availableTabs.push('reports', 'backup', 'branding', 'performance', 'analytics', 'system-health', 'terminal-monitoring', 'turnstiles', 'testing-suite', 'data-test', 'production-readiness', 'integrations', 'external-api', 'comprenozet-transactions');
       }
       
       if (hasPermission(userPermissions, 'users_manage')) availableTabs.push('users', 'audit');
