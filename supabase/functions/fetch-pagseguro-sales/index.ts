@@ -53,36 +53,75 @@ serve(async (req) => {
 
     console.log('Período formatado:', { initialDate, finalDate });
 
-    // Para demonstração, vamos simular dados do PagSeguro já que não temos credenciais reais
-    console.log('Simulando busca de transações PagSeguro...');
+    // Detectar ambiente (sandbox ou produção)
+    const pagseguroEnvironment = Deno.env.get('PAGSEGURO_ENVIRONMENT') || 'sandbox';
+    const apiUrl = pagseguroEnvironment === 'production' 
+      ? 'https://ws.pagseguro.uol.com.br/v4/transactions'
+      : 'https://ws.sandbox.pagseguro.uol.com.br/v4/transactions';
     
-    // Simular transações para demonstração
-    const mockTransactions = [
-      {
-        reference: 'REF' + Date.now(),
-        date: new Date().toISOString(),
-        grossAmount: 50.00,
-        netAmount: 48.50,
-        feeAmount: 1.50,
-        paymentMethod: {
-          type: 'CREDIT_CARD',
-          code: '101'
-        },
-        status: 'PAID'
-      },
-      {
-        reference: 'REF' + (Date.now() + 1),
-        date: new Date().toISOString(),
-        grossAmount: 30.00,
-        netAmount: 29.10,
-        feeAmount: 0.90,
-        paymentMethod: {
-          type: 'DEBIT_CARD',
-          code: '102'
-        },
-        status: 'PAID'
+    console.log(`Buscando transações reais do PagSeguro (${pagseguroEnvironment})...`);
+
+    // Implementar retry logic
+    let transactions: PagSeguroTransaction[] = [];
+    let retryCount = 0;
+    const maxRetries = 3;
+    
+    while (retryCount < maxRetries) {
+      try {
+        const response = await fetch(
+          `${apiUrl}?initialDate=${initialDate}&finalDate=${finalDate}&page=1&maxPageResults=100`,
+          {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${pagseguroToken}`,
+              'Accept': 'application/json'
+            }
+          }
+        );
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            throw new Error('Credenciais PagSeguro inválidas. Verifique o token e email configurados.');
+          } else if (response.status === 429) {
+            // Rate limit - aguardar antes de tentar novamente
+            const waitTime = Math.pow(2, retryCount) * 1000; // Backoff exponencial
+            console.log(`Rate limit atingido. Aguardando ${waitTime}ms antes de retry ${retryCount + 1}/${maxRetries}`);
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+            retryCount++;
+            continue;
+          } else {
+            throw new Error(`Erro na API PagSeguro: ${response.status} - ${response.statusText}`);
+          }
+        }
+
+        const data = await response.json();
+        
+        // Parsear resposta da API do PagSeguro
+        if (data.transactions && Array.isArray(data.transactions)) {
+          transactions = data.transactions.filter((t: any) => t.status === 'PAID');
+        } else if (data.transaction) {
+          // Resposta única
+          transactions = data.transaction.status === 'PAID' ? [data.transaction] : [];
+        }
+        
+        console.log(`Encontradas ${transactions.length} transações pagas`);
+        break; // Sucesso - sair do loop
+        
+      } catch (error: any) {
+        console.error(`Tentativa ${retryCount + 1}/${maxRetries} falhou:`, error.message);
+        
+        if (retryCount === maxRetries - 1) {
+          // Última tentativa falhou - retornar erro
+          throw error;
+        }
+        
+        // Aguardar antes de tentar novamente (backoff exponencial)
+        const waitTime = Math.pow(2, retryCount) * 1000;
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        retryCount++;
       }
-    ];
+    }
 
     // Criar cliente Supabase para verificar vendas já importadas
     const supabaseClient = createClient(
@@ -90,7 +129,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Verificar quais vendas já foram importadas (não apenas hoje, mas sempre)
+    // Verificar quais vendas já foram importadas
     const { data: existingSales } = await supabaseClient
       .from('imported_sales')
       .select('reference')
@@ -99,8 +138,8 @@ serve(async (req) => {
     const existingReferences = new Set(existingSales?.map(sale => sale.reference) || []);
 
     // Filtrar apenas vendas não importadas
-    const newTransactions = mockTransactions.filter(t => 
-      t.status === 'PAID' && !existingReferences.has(t.reference)
+    const newTransactions = transactions.filter(t => 
+      !existingReferences.has(t.reference)
     );
 
     // Transformar em formato para o livro caixa
@@ -128,7 +167,7 @@ serve(async (req) => {
         .insert(importedSalesData);
     }
 
-    console.log(`Simuladas ${cashEntries.length} transações para demonstração`);
+    console.log(`Importadas ${cashEntries.length} transações reais do PagSeguro (${pagseguroEnvironment})`);
 
     return new Response(JSON.stringify({ 
       success: true, 

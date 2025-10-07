@@ -36,7 +36,41 @@ export const useTerminalHardware = (terminalId: string = 'terminal-001') => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        // FALLBACK: Buscar último status do banco de dados
+        console.log('Edge function falhou, buscando dados em cache...');
+        const { data: lastStatus } = await supabase
+          .from('terminal_heartbeats')
+          .select('hardware_status')
+          .eq('terminal_id', terminalId)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        
+        if (lastStatus?.hardware_status) {
+          const hardwareStatus = lastStatus.hardware_status as any;
+          const allDevices = [
+            ...(hardwareStatus.printers || []),
+            ...(hardwareStatus.pinpads || []),
+            ...(hardwareStatus.turnstiles || [])
+          ];
+          
+          setHardwareStatus({
+            devices: allDevices,
+            isLoading: false,
+            lastUpdate: new Date().toISOString()
+          });
+          
+          toast({
+            title: "Modo Cache",
+            description: "Usando dados em cache. Hardware pode estar desatualizado.",
+            variant: "default",
+          });
+          return;
+        }
+        
+        throw error;
+      }
 
       if (data.success) {
         setHardwareStatus({
@@ -60,8 +94,8 @@ export const useTerminalHardware = (terminalId: string = 'terminal-001') => {
     } catch (error: any) {
       console.error('Erro ao verificar hardware:', error);
       toast({
-        title: "Erro na verificação de hardware",
-        description: error.message,
+        title: "Erro de Hardware",
+        description: "Não foi possível detectar hardware. Verifique conexões.",
         variant: "destructive",
       });
       setHardwareStatus(prev => ({ ...prev, isLoading: false }));

@@ -55,105 +55,6 @@ const TerminalMonitoring = () => {
   const [selectedTerminal, setSelectedTerminal] = useState<Terminal | null>(null);
   const { toast } = useToast();
 
-  // Simular dados dos terminais (em produção viria da API)
-  const mockTerminals: Terminal[] = [
-    {
-      id: 'terminal-001',
-      name: 'Terminal Principal',
-      location: 'Entrada Principal',
-      status: 'online',
-      lastHeartbeat: new Date().toISOString(),
-      version: '1.2.0',
-      hardware: {
-        printers: [
-          { name: 'Epson TM-T88V', status: 'online' },
-          { name: 'Bematech MP-4200', status: 'offline' }
-        ],
-        pinpads: [
-          { name: 'Ingenico iPP350', status: 'online' },
-          { name: 'PagBank Moderninha X', status: 'online' }
-        ]
-      },
-      metrics: {
-        dailySales: 2500.00,
-        transactionsToday: 45,
-        uptime: 98.5,
-        lastSale: new Date(Date.now() - 300000).toISOString()
-      }
-    },
-    {
-      id: 'terminal-002',
-      name: 'Terminal Secundário',
-      location: 'Área de Alimentação',
-      status: 'online',
-      lastHeartbeat: new Date(Date.now() - 120000).toISOString(),
-      version: '1.2.0',
-      hardware: {
-        printers: [
-          { name: 'Zebra ZD220', status: 'online' }
-        ],
-        pinpads: [
-          { name: 'Stone Ton T2', status: 'error' }
-        ]
-      },
-      metrics: {
-        dailySales: 1800.00,
-        transactionsToday: 32,
-        uptime: 95.2,
-        lastSale: new Date(Date.now() - 900000).toISOString()
-      }
-    },
-    {
-      id: 'terminal-003',
-      name: 'Terminal Móvel',
-      location: 'Área Externa',
-      status: 'offline',
-      lastHeartbeat: new Date(Date.now() - 3600000).toISOString(),
-      version: '1.1.8',
-      hardware: {
-        printers: [
-          { name: 'Elgin i9', status: 'offline' }
-        ],
-        pinpads: [
-          { name: 'Cielo LIO', status: 'offline' }
-        ]
-      },
-      metrics: {
-        dailySales: 0,
-        transactionsToday: 0,
-        uptime: 0,
-        lastSale: new Date(Date.now() - 86400000).toISOString()
-      }
-    }
-  ];
-
-  const mockAlerts: SystemAlert[] = [
-    {
-      id: '1',
-      terminal_id: 'terminal-002',
-      type: 'hardware',
-      message: 'Pinpad Stone Ton T2 não responde',
-      timestamp: new Date(Date.now() - 1800000).toISOString(),
-      resolved: false
-    },
-    {
-      id: '2',
-      terminal_id: 'terminal-003',
-      type: 'connection',
-      message: 'Terminal offline há mais de 1 hora',
-      timestamp: new Date(Date.now() - 3600000).toISOString(),
-      resolved: false
-    },
-    {
-      id: '3',
-      terminal_id: 'terminal-001',
-      type: 'warning',
-      message: 'Impressora Bematech MP-4200 desconectada',
-      timestamp: new Date(Date.now() - 900000).toISOString(),
-      resolved: false
-    }
-  ];
-
   useEffect(() => {
     loadTerminalsData();
     loadSystemAlerts();
@@ -164,15 +65,107 @@ const TerminalMonitoring = () => {
       loadSystemAlerts();
     }, 30000);
 
-    return () => clearInterval(interval);
+    // Subscription em tempo real para heartbeats
+    const heartbeatSubscription = supabase
+      .channel('terminal_heartbeats_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'terminal_heartbeats'
+      }, () => {
+        loadTerminalsData();
+      })
+      .subscribe();
+
+    return () => {
+      clearInterval(interval);
+      heartbeatSubscription.unsubscribe();
+    };
   }, []);
 
   const loadTerminalsData = async () => {
     try {
       setLoading(true);
-      // Em produção, aqui faria chamada para API real
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setTerminals(mockTerminals);
+      
+      // Buscar heartbeats mais recentes de cada terminal
+      const { data: heartbeats, error } = await supabase
+        .from('terminal_heartbeats')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Agrupar por terminal_id (pegar o mais recente)
+      const terminalMap = new Map();
+      heartbeats?.forEach((hb: any) => {
+        if (!terminalMap.has(hb.terminal_id)) {
+          terminalMap.set(hb.terminal_id, hb);
+        }
+      });
+      
+      // Para cada terminal, calcular métricas REAIS do banco
+      const terminalsData = await Promise.all(
+        Array.from(terminalMap.values()).map(async (hb: any) => {
+          const today = new Date().toISOString().split('T')[0];
+          
+          // Vendas do dia
+          const { data: dailySales } = await supabase
+            .from('orders')
+            .select('total_amount')
+            .eq('created_by', hb.terminal_id)
+            .eq('payment_status', 'paid')
+            .gte('created_at', today);
+          
+          const dailySalesTotal = dailySales?.reduce((sum: number, o: any) => 
+            sum + Number(o.total_amount), 0) || 0;
+          
+          // Transações do dia
+          const { count: transactionsToday } = await supabase
+            .from('orders')
+            .select('*', { count: 'exact', head: true })
+            .eq('created_by', hb.terminal_id)
+            .gte('created_at', today);
+          
+          // Última venda
+          const { data: lastSale } = await supabase
+            .from('orders')
+            .select('created_at')
+            .eq('created_by', hb.terminal_id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          
+          // Calcular uptime (% de tempo online nas últimas 24h)
+          const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+          const { data: recentHeartbeats } = await supabase
+            .from('terminal_heartbeats')
+            .select('status')
+            .eq('terminal_id', hb.terminal_id)
+            .gte('created_at', oneDayAgo);
+          
+          const onlineCount = recentHeartbeats?.filter((h: any) => h.status === 'online').length || 0;
+          const totalCount = recentHeartbeats?.length || 1;
+          const uptime = (onlineCount / totalCount) * 100;
+          
+          return {
+            id: hb.terminal_id,
+            name: hb.terminal_id,
+            location: hb.location || 'N/A',
+            status: hb.status,
+            lastHeartbeat: hb.created_at,
+            version: hb.version || '1.0.0',
+            hardware: hb.hardware_status || { printers: [], pinpads: [] },
+            metrics: {
+              dailySales: dailySalesTotal,
+              transactionsToday: transactionsToday || 0,
+              uptime: Math.round(uptime * 10) / 10,
+              lastSale: lastSale?.created_at || new Date().toISOString()
+            }
+          };
+        })
+      );
+      
+      setTerminals(terminalsData);
     } catch (error) {
       console.error('Erro ao carregar dados dos terminais:', error);
       toast({
@@ -187,7 +180,25 @@ const TerminalMonitoring = () => {
 
   const loadSystemAlerts = async () => {
     try {
-      setAlerts(mockAlerts);
+      const { data: alerts, error } = await supabase
+        .from('system_alerts')
+        .select('*')
+        .eq('resolved', false)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Transformar para o formato esperado pelo componente
+      const transformedAlerts = alerts?.map((alert: any) => ({
+        id: alert.id,
+        terminal_id: alert.terminal_id || 'N/A',
+        type: alert.alert_type as 'hardware' | 'connection' | 'error' | 'warning',
+        message: alert.message,
+        timestamp: alert.created_at,
+        resolved: alert.resolved
+      })) || [];
+      
+      setAlerts(transformedAlerts);
     } catch (error) {
       console.error('Erro ao carregar alertas:', error);
     }

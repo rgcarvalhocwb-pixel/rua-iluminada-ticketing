@@ -55,10 +55,10 @@ interface SystemStatus {
 const MobileManager = () => {
   const [notifications, setNotifications] = useState<MobileNotification[]>([]);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>({
-    terminals: { online: 2, total: 3 },
-    sales: { today: 4300.00, trend: 'up' },
-    alerts: { critical: 1, warnings: 2 },
-    network: { connected: true, strength: 85 }
+    terminals: { online: 0, total: 0 },
+    sales: { today: 0, trend: 'stable' },
+    alerts: { critical: 0, warnings: 0 },
+    network: { connected: true, strength: 0 }
   });
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [pushEnabled, setPushEnabled] = useState(false);
@@ -135,27 +135,84 @@ const MobileManager = () => {
   // Refresh system status
   const refreshSystemStatus = async () => {
     try {
-      // Simulate API call - replace with real data
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Importar supabase
+      const { supabase } = await import('@/integrations/supabase/client');
       
-      // Mock updated data
-      setSystemStatus(prev => ({
-        ...prev,
-        sales: {
-          today: prev.sales.today + Math.random() * 100,
-          trend: Math.random() > 0.5 ? 'up' : 'down'
+      // Buscar terminais online (últimos 10 minutos)
+      const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+      const { data: heartbeats } = await supabase
+        .from('terminal_heartbeats')
+        .select('terminal_id, status')
+        .gte('created_at', tenMinutesAgo);
+      
+      const uniqueTerminals = new Set(heartbeats?.map((h: any) => h.terminal_id));
+      const onlineTerminals = heartbeats?.filter((h: any) => h.status === 'online').length || 0;
+      
+      // Buscar vendas de hoje
+      const today = new Date().toISOString().split('T')[0];
+      const { data: todaySales } = await supabase
+        .from('orders')
+        .select('total_amount')
+        .eq('payment_status', 'paid')
+        .gte('created_at', today);
+      
+      const salesToday = todaySales?.reduce((sum: number, o: any) => 
+        sum + Number(o.total_amount), 0) || 0;
+      
+      // Buscar vendas de ontem para calcular trend
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const { data: yesterdaySales } = await supabase
+        .from('orders')
+        .select('total_amount')
+        .eq('payment_status', 'paid')
+        .gte('created_at', yesterday)
+        .lt('created_at', today);
+      
+      const salesYesterday = yesterdaySales?.reduce((sum: number, o: any) => 
+        sum + Number(o.total_amount), 0) || 0;
+      const trend: 'up' | 'down' | 'stable' = salesToday > salesYesterday ? 'up' : 
+        salesToday < salesYesterday ? 'down' : 'stable';
+      
+      // Buscar alertas não resolvidos
+      const { data: alerts } = await supabase
+        .from('system_alerts')
+        .select('severity')
+        .eq('resolved', false);
+      
+      const criticalAlerts = alerts?.filter((a: any) => a.severity === 'critical').length || 0;
+      const warningAlerts = alerts?.filter((a: any) => a.severity === 'warning').length || 0;
+      
+      // Calcular força do sinal de rede
+      const connection = (navigator as any).connection;
+      const networkStrength = connection 
+        ? connection.effectiveType === '4g' ? 90 : 70 
+        : 80;
+      
+      setSystemStatus({
+        terminals: { 
+          online: onlineTerminals, 
+          total: uniqueTerminals.size 
         },
-        network: {
-          connected: isOnline,
-          strength: Math.floor(Math.random() * 40) + 60
+        sales: { 
+          today: salesToday, 
+          trend 
+        },
+        alerts: { 
+          critical: criticalAlerts, 
+          warnings: warningAlerts 
+        },
+        network: { 
+          connected: isOnline, 
+          strength: networkStrength 
         }
-      }));
-
+      });
+      
       toast({
         title: "Status atualizado",
-        description: "Dados do sistema foram atualizados",
+        description: "Dados do sistema atualizados com sucesso",
       });
     } catch (error) {
+      console.error('Erro ao atualizar status:', error);
       toast({
         title: "Erro",
         description: "Não foi possível atualizar os dados",

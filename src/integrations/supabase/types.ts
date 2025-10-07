@@ -188,6 +188,7 @@ export type Database = {
           description: string | null
           end_date: string
           id: string
+          is_test_data: boolean | null
           name: string
           start_date: string
           updated_at: string
@@ -197,6 +198,7 @@ export type Database = {
           description?: string | null
           end_date: string
           id?: string
+          is_test_data?: boolean | null
           name: string
           start_date: string
           updated_at?: string
@@ -206,6 +208,7 @@ export type Database = {
           description?: string | null
           end_date?: string
           id?: string
+          is_test_data?: boolean | null
           name?: string
           start_date?: string
           updated_at?: string
@@ -218,6 +221,7 @@ export type Database = {
           created_at: string | null
           id: string
           import_date: string
+          is_test_data: boolean | null
           reference: string
           source: string
         }
@@ -226,6 +230,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           import_date: string
+          is_test_data?: boolean | null
           reference: string
           source?: string
         }
@@ -234,6 +239,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           import_date?: string
+          is_test_data?: boolean | null
           reference?: string
           source?: string
         }
@@ -381,6 +387,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           id: string
+          is_test_data: boolean | null
           payment_method: string | null
           payment_reference: string | null
           payment_status: string | null
@@ -395,6 +402,7 @@ export type Database = {
           customer_email: string
           customer_name: string
           id?: string
+          is_test_data?: boolean | null
           payment_method?: string | null
           payment_reference?: string | null
           payment_status?: string | null
@@ -409,6 +417,7 @@ export type Database = {
           customer_email?: string
           customer_name?: string
           id?: string
+          is_test_data?: boolean | null
           payment_method?: string | null
           payment_reference?: string | null
           payment_status?: string | null
@@ -483,12 +492,37 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          count: number | null
+          created_at: string | null
+          id: string
+          key: string
+          reset_at: string
+        }
+        Insert: {
+          count?: number | null
+          created_at?: string | null
+          id?: string
+          key: string
+          reset_at: string
+        }
+        Update: {
+          count?: number | null
+          created_at?: string | null
+          id?: string
+          key?: string
+          reset_at?: string
+        }
+        Relationships: []
+      }
       show_times: {
         Row: {
           capacity: number
           created_at: string
           event_id: string
           id: string
+          is_test_data: boolean | null
           time_slot: string
         }
         Insert: {
@@ -496,6 +530,7 @@ export type Database = {
           created_at?: string
           event_id: string
           id?: string
+          is_test_data?: boolean | null
           time_slot: string
         }
         Update: {
@@ -503,6 +538,7 @@ export type Database = {
           created_at?: string
           event_id?: string
           id?: string
+          is_test_data?: boolean | null
           time_slot?: string
         }
         Relationships: [
@@ -572,6 +608,7 @@ export type Database = {
           contact: string | null
           created_at: string
           id: string
+          is_test_data: boolean | null
           name: string
           responsible: string
           space_value: number
@@ -582,6 +619,7 @@ export type Database = {
           contact?: string | null
           created_at?: string
           id?: string
+          is_test_data?: boolean | null
           name: string
           responsible: string
           space_value?: number
@@ -592,6 +630,7 @@ export type Database = {
           contact?: string | null
           created_at?: string
           id?: string
+          is_test_data?: boolean | null
           name?: string
           responsible?: string
           space_value?: number
@@ -784,6 +823,7 @@ export type Database = {
           event_id: string
           id: string
           is_active: boolean
+          is_test_data: boolean | null
           name: string
           price: number
         }
@@ -794,6 +834,7 @@ export type Database = {
           event_id: string
           id?: string
           is_active?: boolean
+          is_test_data?: boolean | null
           name: string
           price: number
         }
@@ -804,6 +845,7 @@ export type Database = {
           event_id?: string
           id?: string
           is_active?: boolean
+          is_test_data?: boolean | null
           name?: string
           price?: number
         }
@@ -821,6 +863,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_test_data: boolean | null
           order_item_id: string
           qr_code: string
           status: string | null
@@ -832,6 +875,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_test_data?: boolean | null
           order_item_id: string
           qr_code: string
           status?: string | null
@@ -843,6 +887,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_test_data?: boolean | null
           order_item_id?: string
           qr_code?: string
           status?: string | null
@@ -866,6 +911,7 @@ export type Database = {
           created_at: string
           id: string
           ip_address: unknown | null
+          is_test_data: boolean | null
           location: string | null
           name: string
           status: string | null
@@ -875,6 +921,7 @@ export type Database = {
           created_at?: string
           id?: string
           ip_address?: unknown | null
+          is_test_data?: boolean | null
           location?: string | null
           name: string
           status?: string | null
@@ -884,6 +931,7 @@ export type Database = {
           created_at?: string
           id?: string
           ip_address?: unknown | null
+          is_test_data?: boolean | null
           location?: string | null
           name?: string
           status?: string | null
@@ -1046,6 +1094,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_rate_limits: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       expire_old_pending_orders: {
         Args: Record<PropertyKey, never>
         Returns: number
