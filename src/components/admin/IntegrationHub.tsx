@@ -287,8 +287,9 @@ export const IntegrationHub = () => {
       </Alert>
 
       <Tabs defaultValue="payment" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="payment">Pagamentos</TabsTrigger>
+          <TabsTrigger value="comprenozet">Compre no Zet</TabsTrigger>
           <TabsTrigger value="analytics">Analytics</TabsTrigger>
           <TabsTrigger value="webhook">Webhooks</TabsTrigger>
           <TabsTrigger value="email">Email</TabsTrigger>
@@ -335,6 +336,98 @@ export const IntegrationHub = () => {
                   </div>
                 </AlertDescription>
               </Alert>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* COMPRE NO ZET */}
+        <TabsContent value="comprenozet">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ExternalLink className="w-5 h-5" />
+                Integração Compre no Zet
+              </CardTitle>
+              <CardDescription>
+                Receba automaticamente vendas do Compre no Zet através de webhook
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>URL do Webhook Compre no Zet</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    value="https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/comprenozet-webhook" 
+                    readOnly 
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => copyToClipboard('https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/comprenozet-webhook')}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Configure esta URL no portal do Compre no Zet para receber notificações de vendas
+                </p>
+              </div>
+
+              <Alert>
+                <AlertDescription>
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <p className="font-semibold mb-2">📝 Como configurar:</p>
+                      <ol className="list-decimal pl-5 space-y-1">
+                        <li>Acesse o portal do Compre no Zet</li>
+                        <li>Vá em Configurações → Webhooks</li>
+                        <li>Adicione a URL acima</li>
+                        <li>Selecione os eventos: "Compra Confirmada" e "Estorno"</li>
+                        <li>Salve as alterações</li>
+                      </ol>
+                    </div>
+
+                    <div className="border-t pt-3">
+                      <p className="font-semibold mb-2">🔄 Dados recebidos automaticamente:</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>Compras confirmadas (PIX, Cartão de Crédito, Débito)</li>
+                        <li>Estornos e cancelamentos</li>
+                        <li>Dados completos do comprador e titular do ingresso</li>
+                        <li>Códigos de voucher únicos para cada ingresso</li>
+                      </ul>
+                    </div>
+
+                    <div className="border-t pt-3">
+                      <p className="font-semibold mb-2">⚙️ Mapeamento de eventos:</p>
+                      <p>Para que o sistema reconheça os eventos do Compre no Zet, você pode:</p>
+                      <ol className="list-decimal pl-5 space-y-1 mt-2">
+                        <li>Cadastrar eventos com o mesmo nome usado no Compre no Zet</li>
+                        <li>Ou adicionar o <code className="bg-muted px-1 rounded">external_slug</code> na tabela de eventos</li>
+                      </ol>
+                    </div>
+
+                    <div className="border-t pt-3 bg-blue-50 dark:bg-blue-950 p-3 rounded">
+                      <p className="font-semibold mb-1">ℹ️ Funcionalidades:</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>✅ Criação automática de pedidos e ingressos</li>
+                        <li>✅ QR codes gerados com vouchers do Compre no Zet</li>
+                        <li>✅ Proteção contra duplicatas (idempotência)</li>
+                        <li>✅ Suporte a múltiplos ingressos por pedido</li>
+                        <li>✅ Diferenciação entre comprador e titular do ingresso</li>
+                      </ul>
+                    </div>
+                  </div>
+                </AlertDescription>
+              </Alert>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => window.open('/docs/COMPRENOZET-INTEGRATION.md', '_blank')}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Ver Documentação Completa
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
@@ -514,7 +607,7 @@ export const IntegrationHub = () => {
           <CardTitle>Status das Integrações</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="flex items-center justify-between p-3 border rounded-lg">
               <div className="flex items-center gap-2">
                 <CreditCard className="w-5 h-5" />
@@ -529,6 +622,16 @@ export const IntegrationHub = () => {
                   <X className="w-3 h-3" /> Pendente
                 </Badge>
               )}
+            </div>
+
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="flex items-center gap-2">
+                <ExternalLink className="w-5 h-5" />
+                <span>Compre no Zet</span>
+              </div>
+              <Badge variant="default" className="flex items-center gap-1">
+                <Check className="w-3 h-3" /> Pronto
+              </Badge>
             </div>
 
             <div className="flex items-center justify-between p-3 border rounded-lg">

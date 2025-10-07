@@ -56,6 +56,25 @@ PAGSEGURO_ENVIRONMENT=production  # Ou 'sandbox' para testes
 2. Settings > Edge Functions
 3. Adicione cada secret manualmente
 
+### 2.1. Integração Compre no Zet
+
+**Webhook URL:** `https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/comprenozet-webhook`
+
+**Configuração:**
+1. Acesse o portal do Compre no Zet
+2. Vá em Configurações → Webhooks
+3. Adicione a URL acima
+4. Selecione eventos: "Compra Confirmada" e "Estorno"
+
+**Mapeamento de Eventos:**
+- Os eventos devem ter o mesmo nome no sistema e no Compre no Zet, OU
+- Adicionar `external_slug` na tabela `events`:
+  ```sql
+  UPDATE events SET external_slug = 'slug-comprenozet' WHERE name = 'Nome do Evento';
+  ```
+
+📖 **Documentação completa:** Ver `docs/COMPRENOZET-INTEGRATION.md`
+
 ### 3. Cadastro de Catracas
 
 **Admin > Gerenciar Catracas > Nova Catraca**

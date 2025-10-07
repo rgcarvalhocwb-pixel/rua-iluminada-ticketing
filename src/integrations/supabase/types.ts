@@ -187,6 +187,8 @@ export type Database = {
           created_at: string
           description: string | null
           end_date: string
+          external_id: string | null
+          external_slug: string | null
           id: string
           is_test_data: boolean | null
           name: string
@@ -197,6 +199,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_date: string
+          external_id?: string | null
+          external_slug?: string | null
           id?: string
           is_test_data?: boolean | null
           name: string
@@ -207,6 +211,8 @@ export type Database = {
           created_at?: string
           description?: string | null
           end_date?: string
+          external_id?: string | null
+          external_slug?: string | null
           id?: string
           is_test_data?: boolean | null
           name?: string
@@ -901,11 +907,15 @@ export type Database = {
       tickets: {
         Row: {
           created_at: string
+          external_voucher: string | null
           id: string
           is_test_data: boolean | null
           order_item_id: string
           qr_code: string
           status: string | null
+          ticket_holder_cpf: string | null
+          ticket_holder_email: string | null
+          ticket_holder_name: string | null
           ticket_number: string
           updated_at: string
           used_at: string | null
@@ -913,11 +923,15 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          external_voucher?: string | null
           id?: string
           is_test_data?: boolean | null
           order_item_id: string
           qr_code: string
           status?: string | null
+          ticket_holder_cpf?: string | null
+          ticket_holder_email?: string | null
+          ticket_holder_name?: string | null
           ticket_number: string
           updated_at?: string
           used_at?: string | null
@@ -925,11 +939,15 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          external_voucher?: string | null
           id?: string
           is_test_data?: boolean | null
           order_item_id?: string
           qr_code?: string
           status?: string | null
+          ticket_holder_cpf?: string | null
+          ticket_holder_email?: string | null
+          ticket_holder_name?: string | null
           ticket_number?: string
           updated_at?: string
           used_at?: string | null
