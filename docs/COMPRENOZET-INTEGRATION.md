@@ -9,7 +9,7 @@ Esta documentação descreve a integração entre o sistema Rua Iluminada e a pl
 Para configurar no portal do Compre no Zet:
 
 ```
-https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/comprenozet-webhook
+https://apizet.ruailuminada.com/webhook/comprenozet
 ```
 
 **Requisitos:**
@@ -17,6 +17,15 @@ https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/comprenozet-webhook
 - Content-Type: `application/json`
 - Timeout recomendado: 30 segundos
 - Resposta esperada: `200 OK` com JSON `{"success": true}`
+
+**Arquitetura:**
+```
+Compre no Zet → https://apizet.ruailuminada.com/webhook/comprenozet
+                 ↓ (Cloudflare Worker Proxy)
+                 https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/comprenozet-webhook
+                 ↓ (Supabase Edge Function)
+                 Banco de Dados
+```
 
 ---
 
@@ -198,7 +207,7 @@ const corsHeaders = {
 ### Teste de Compra Confirmada
 
 ```bash
-curl -X POST https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/comprenozet-webhook \
+curl -X POST https://apizet.ruailuminada.com/webhook/comprenozet \
   -H "Content-Type: application/json" \
   -d '{
     "action": "CP",
@@ -242,7 +251,7 @@ curl -X POST https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/comprenozet-w
 ### Teste de Estorno
 
 ```bash
-curl -X POST https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/comprenozet-webhook \
+curl -X POST https://apizet.ruailuminada.com/webhook/comprenozet \
   -H "Content-Type: application/json" \
   -d '{
     "action": "ES",
@@ -374,6 +383,35 @@ WHERE name = 'Nome do Evento Interno';
 4. **Tipo de ingresso padrão:** Se não existir um ticket_type "Ingresso Compre no Zet", o sistema cria automaticamente.
 
 5. **QR Code:** O voucher do Compre no Zet é usado como QR code. O sistema armazena em `tickets.qr_code` e `tickets.external_voucher`.
+
+---
+
+## 🔧 Troubleshooting do Proxy
+
+### Verificar se o proxy está funcionando
+
+```bash
+curl -X POST https://apizet.ruailuminada.com/webhook/comprenozet \
+  -H "Content-Type: application/json" \
+  -d '{"test": true}'
+```
+
+Resposta esperada (400): `{"error": "Invalid payload structure"}`
+
+### Logs do Cloudflare Worker
+
+1. Acessar: https://dash.cloudflare.com
+2. Ir em **Workers & Pages**
+3. Selecionar `comprenozet-webhook-proxy`
+4. Clicar em **Logs** (Real-time logs)
+5. Verificar requisições e erros
+
+### DNS não propagou
+
+Se `apizet.ruailuminada.com` não resolver:
+1. Verificar DNS: https://dnschecker.org
+2. Aguardar até 24h (normalmente 5-10min)
+3. Limpar cache DNS local: `ipconfig /flushdns` (Windows) ou `sudo dscacheutil -flushcache` (Mac)
 
 ---
 

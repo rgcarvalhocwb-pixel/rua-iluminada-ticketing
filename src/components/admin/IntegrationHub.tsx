@@ -357,13 +357,13 @@ export const IntegrationHub = () => {
                 <Label>URL do Webhook Compre no Zet</Label>
                 <div className="flex gap-2">
                   <Input 
-                    value="https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/comprenozet-webhook" 
+                    value="https://apizet.ruailuminada.com/webhook/comprenozet" 
                     readOnly 
                   />
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => copyToClipboard('https://tzqriohyfazftfulwcuj.supabase.co/functions/v1/comprenozet-webhook')}
+                    onClick={() => copyToClipboard('https://apizet.ruailuminada.com/webhook/comprenozet')}
                   >
                     <Copy className="w-4 h-4" />
                   </Button>
