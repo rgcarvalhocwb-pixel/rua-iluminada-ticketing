@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CheckCircle, XCircle, AlertCircle } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, AlertCircle, AlertTriangle } from "lucide-react";
 
 interface TestResult {
   name: string;
@@ -15,9 +16,23 @@ interface TestResult {
 }
 
 export const DataInsertionTester = () => {
+  const isDevelopment = import.meta.env.DEV;
   const [tests, setTests] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const { toast } = useToast();
+
+  if (!isDevelopment) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>⚠️ FERRAMENTA DE DESENVOLVIMENTO</strong>
+          <br />
+          Esta ferramenta está desabilitada em produção.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   const updateTest = (name: string, status: TestResult['status'], message: string, data?: any, error?: string) => {
     setTests(prev => {
@@ -40,7 +55,8 @@ export const DataInsertionTester = () => {
         name: `Evento Teste ${Date.now()}`,
         description: 'Evento fictício para teste do sistema',
         start_date: '2024-12-25',
-        end_date: '2024-12-31'
+        end_date: '2024-12-31',
+        is_test_data: true
       };
 
       const { data, error } = await supabase
@@ -69,7 +85,8 @@ export const DataInsertionTester = () => {
           price: 50.00,
           event_id: eventId,
           is_active: true,
-          display_order: 1
+          display_order: 1,
+          is_test_data: true
         },
         {
           name: 'Meia Entrada',
@@ -77,7 +94,8 @@ export const DataInsertionTester = () => {
           price: 25.00,
           event_id: eventId,
           is_active: true,
-          display_order: 2
+          display_order: 2,
+          is_test_data: true
         }
       ];
 
@@ -103,12 +121,14 @@ export const DataInsertionTester = () => {
         {
           event_id: eventId,
           time_slot: '19:00:00',
-          capacity: 100
+          capacity: 100,
+          is_test_data: true
         },
         {
           event_id: eventId,
           time_slot: '21:00:00',
-          capacity: 100
+          capacity: 100,
+          is_test_data: true
         }
       ];
 
@@ -135,7 +155,8 @@ export const DataInsertionTester = () => {
         responsible: 'João da Silva',
         contact: '(11) 99999-9999',
         space_value: 500.00,
-        commission_percentage: 10.00
+        commission_percentage: 10.00,
+        is_test_data: true
       };
 
       const { data, error } = await supabase
@@ -272,7 +293,8 @@ export const DataInsertionTester = () => {
         name: `Catraca Teste ${Date.now()}`,
         location: 'Entrada Principal - Teste',
         ip_address: '192.168.1.100',
-        status: 'active'
+        status: 'active',
+        is_test_data: true
       };
 
       const { data, error } = await supabase
@@ -401,6 +423,15 @@ export const DataInsertionTester = () => {
 
   return (
     <div className="space-y-6">
+      <Alert>
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>🧪 MODO DE TESTE</strong>
+          <br />
+          Todos os dados inseridos serão marcados como dados de teste (is_test_data = true)
+        </AlertDescription>
+      </Alert>
+      
       <Card>
         <CardHeader>
           <CardTitle>Teste de Inserção de Dados Manuais</CardTitle>

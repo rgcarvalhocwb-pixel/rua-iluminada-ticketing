@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   Play, 
   Square, 
@@ -57,6 +58,15 @@ const TestingSuite = () => {
 
   return (
     <div className="space-y-6">
+      <Alert>
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          <strong>🧪 AMBIENTE DE TESTE</strong>
+          <br />
+          Esta suite executa testes automatizados. Não executar em produção com dados reais.
+        </AlertDescription>
+      </Alert>
+      
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Suite de Testes</h2>

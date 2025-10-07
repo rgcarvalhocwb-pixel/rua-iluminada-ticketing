@@ -89,7 +89,7 @@ export const PaymentSettings = () => {
     if (!settings.pagseguroEmail || !settings.pagseguroToken) {
       toast({
         title: "Erro",
-        description: "Configure as credenciais antes de testar",
+        description: "Configure email e token antes de testar",
         variant: "destructive"
       });
       return;
@@ -98,17 +98,33 @@ export const PaymentSettings = () => {
     setLoading(true);
     
     try {
-      // Simulate connection test
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Chamar API REAL do PagSeguro
+      const apiUrl = settings.pagseguroEnvironment === 'production'
+        ? 'https://ws.pagseguro.uol.com.br/v3/sessions'
+        : 'https://ws.sandbox.pagseguro.uol.com.br/v3/sessions';
+      
+      const response = await fetch(`${apiUrl}?email=${encodeURIComponent(settings.pagseguroEmail)}&token=${encodeURIComponent(settings.pagseguroToken)}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        }
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Erro ${response.status}: ${errorText.substring(0, 100)}`);
+      }
+      
+      const sessionId = await response.text();
       
       toast({
-        title: "Teste de demonstração",
-        description: "Para integração real, configure os secrets no Supabase. A função retornará dados simulados.",
+        title: "✅ Conexão bem-sucedida",
+        description: `Conectado ao PagSeguro (${settings.pagseguroEnvironment}). Session ID recebida.`,
       });
     } catch (error: any) {
       toast({
-        title: "Erro de conexão",
-        description: "Verifique suas credenciais e tente novamente",
+        title: "❌ Erro de conexão",
+        description: error.message || 'Não foi possível conectar ao PagSeguro',
         variant: "destructive"
       });
     } finally {
@@ -118,13 +134,6 @@ export const PaymentSettings = () => {
 
   return (
     <div className="space-y-6">
-      <Alert>
-        <AlertDescription>
-          <strong>Modo Demonstração:</strong> A integração PagSeguro está configurada para retornar dados simulados. 
-          Para produção, configure os secrets PAGSEGURO_EMAIL e PAGSEGURO_TOKEN no painel do Supabase.
-        </AlertDescription>
-      </Alert>
-
       <Card>
         <CardHeader>
           <CardTitle>Credenciais do PagSeguro</CardTitle>
