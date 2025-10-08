@@ -62,12 +62,22 @@ Deno.serve(async (req) => {
     );
   }
 
+  // Read body once before try-catch to avoid "Body already consumed" error
+  let payload: CompreNoZetPayload;
+  try {
+    payload = await req.json();
+  } catch (parseError: any) {
+    console.error('❌ Failed to parse request body:', parseError);
+    return new Response(
+      JSON.stringify({ success: false, error: 'Invalid JSON payload' }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
-
-    const payload: CompreNoZetPayload = await req.json();
     
     console.log('📥 Webhook received from Compre no Zet:', {
       action: payload.action,
@@ -128,19 +138,24 @@ Deno.serve(async (req) => {
   } catch (error: any) {
     console.error('❌ Error processing webhook:', error);
     
-    // Try to update webhook log with error if it exists
-    try {
-      const payload: CompreNoZetPayload = await req.json();
-      await supabase
-        .from('webhook_logs')
-        .update({ 
-          processed: false,
-          processing_error: error.message 
-        })
-        .eq('reference', payload.data.order.uuid)
-        .eq('processed', false);
-    } catch (logError) {
-      console.error('⚠️ Failed to update webhook log error:', logError);
+    // Try to update webhook log with error if payload was parsed
+    if (payload?.data?.order?.uuid) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        await supabase
+          .from('webhook_logs')
+          .update({ 
+            processed: false,
+            processing_error: error.message 
+          })
+          .eq('reference', payload.data.order.uuid)
+          .eq('processed', false);
+      } catch (logError) {
+        console.error('⚠️ Failed to update webhook log error:', logError);
+      }
     }
     
     return new Response(
