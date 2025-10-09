@@ -45,16 +45,6 @@ const Index = () => {
       {/* Christmas Effects */}
       <ChristmasEffects />
       
-      {/* Header responsivo com botão admin */}
-      <header className="absolute top-0 right-0 z-20 p-3 md:p-6">
-        <Link 
-          to="/admin" 
-          className="ceara-button-pink px-3 md:px-4 py-2 text-sm md:text-base rounded-lg transition-colors"
-        >
-          Área Restrita
-        </Link>
-      </header>
-      
       <HeroSection />
       <TicketSelector onProceedToCheckout={proceedToCustomerForm} />
       <HalfPriceInfo />
