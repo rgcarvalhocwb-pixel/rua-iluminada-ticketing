@@ -414,16 +414,27 @@ async function handleRefund(supabase: any, payload: CompreNoZetPayload): Promise
   }
 
   // Update online_sales refund count
-  const { error: saleError } = await supabase
+  const saleDate = order.paymentConfirmeDate?.split('T')[0] || new Date().toISOString().split('T')[0];
+  
+  const { data: currentSale } = await supabase
     .from('online_sales')
-    .update({ 
-      quantity_refunded: supabase.raw('quantity_refunded + ?', [eventTicketCodes.length]) 
-    })
+    .select('quantity_refunded')
     .eq('platform_name', 'Compre no Zet')
-    .eq('sale_date', order.paymentConfirmeDate?.split('T')[0] || new Date().toISOString().split('T')[0]);
+    .eq('sale_date', saleDate)
+    .maybeSingle();
 
-  if (saleError) {
-    console.error('⚠️ Error updating online_sales refund:', saleError);
+  if (currentSale) {
+    const newRefundCount = (currentSale.quantity_refunded || 0) + eventTicketCodes.length;
+    
+    const { error: saleError } = await supabase
+      .from('online_sales')
+      .update({ quantity_refunded: newRefundCount })
+      .eq('platform_name', 'Compre no Zet')
+      .eq('sale_date', saleDate);
+
+    if (saleError) {
+      console.error('⚠️ Error updating online_sales refund:', saleError);
+    }
   }
 
   console.log('✅ Refund processed successfully:', {
