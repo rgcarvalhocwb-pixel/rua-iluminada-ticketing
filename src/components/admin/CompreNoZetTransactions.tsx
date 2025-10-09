@@ -95,6 +95,13 @@ interface WebhookLog {
   created_at: string;
 }
 
+interface Event {
+  id: string;
+  name: string;
+  external_id: string | null;
+  external_slug: string | null;
+}
+
 export function CompreNoZetTransactions() {
   const { toast } = useToast();
   const [logs, setLogs] = useState<WebhookLog[]>([]);
@@ -103,13 +110,16 @@ export function CompreNoZetTransactions() {
   const [filterAction, setFilterAction] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPaymentType, setFilterPaymentType] = useState<string>("all");
+  const [filterEvent, setFilterEvent] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [selectedLog, setSelectedLog] = useState<WebhookLog | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => {
     fetchLogs();
+    fetchEvents();
     
     // Subscribe to real-time updates
     const channel = supabase
@@ -131,6 +141,20 @@ export function CompreNoZetTransactions() {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  const fetchEvents = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('id, name, external_id, external_slug')
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      setEvents(data || []);
+    } catch (error: any) {
+      console.error('Erro ao carregar eventos:', error.message);
+    }
+  };
 
   const fetchLogs = async () => {
     try {
@@ -169,13 +193,17 @@ export function CompreNoZetTransactions() {
     const matchesPaymentType = filterPaymentType === "all" || 
       log.payload?.data?.order?.paymentType === filterPaymentType;
 
+    const matchesEvent = filterEvent === "all" || 
+      log.payload?.data?.event?.id === filterEvent ||
+      log.payload?.data?.event?.slug === filterEvent;
+
     const matchesDateFrom = dateFrom === "" || 
       new Date(log.created_at) >= new Date(dateFrom);
 
     const matchesDateTo = dateTo === "" || 
       new Date(log.created_at) <= new Date(dateTo + "T23:59:59");
 
-    return matchesSearch && matchesAction && matchesStatus && matchesPaymentType && matchesDateFrom && matchesDateTo;
+    return matchesSearch && matchesAction && matchesStatus && matchesPaymentType && matchesEvent && matchesDateFrom && matchesDateTo;
   });
 
   const stats = {
@@ -372,6 +400,23 @@ export function CompreNoZetTransactions() {
                   <SelectItem value="1">Cartão de Crédito</SelectItem>
                   <SelectItem value="2">Boleto</SelectItem>
                   <SelectItem value="3">PIX</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filterEvent} onValueChange={setFilterEvent}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Evento" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos eventos</SelectItem>
+                  {events.map((event) => (
+                    <SelectItem 
+                      key={event.id} 
+                      value={event.external_id || event.external_slug || event.id}
+                    >
+                      {event.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
